@@ -5,8 +5,10 @@
 | Fase | Nome | Mecânica nova | Status |
 |---|---|---|---|
 | 1 | Pedido #1042 | Picking a pé, embalagem e consolidação | ✅ v0.2 jogável |
-| 2 | Pallet no Alto | Dirigir a empilhadeira | 💡 Planejada |
-| 3 | Cadê o Coletor? | Exploração sem GPS, guiada pelo som | 💡 Planejada |
+| 2 | Pallet no Alto | Dirigir a empilhadeira | ✅ v0.3 jogável |
+| 3 | Cadê o Coletor? | Exploração sem GPS, guiada pelo som | ✅ v0.3 jogável |
+
+> v0.3: as 3 fases estão no jogo, em sequência (sem tela de seleção). Ficou de fora: zoom da câmera ao dirigir e caixas caídas virando obstáculo na fase 2.
 
 **Ordem de construção sugerida:** melhorias da fase 1 → reorganizar o código para suportar várias fases → fase 3 → fase 2.
 A fase 3 reaproveita o personagem a pé e o áudio posicional que já existem. A fase 2 exige física de veículo, que é a parte mais trabalhosa. A ordem dentro do jogo continua 1, 2, 3.

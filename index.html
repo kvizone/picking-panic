@@ -216,6 +216,18 @@
       color: #38bdf8;
     }
 
+    #musica-toggle-btn {
+      cursor: pointer;
+      font-size: calc(16px * var(--escala) / var(--dpr));
+      padding: calc(6px * var(--escala) / var(--dpr)) calc(8px * var(--escala) / var(--dpr));
+      display: flex;
+      align-items: center;
+      gap: calc(6px * var(--escala) / var(--dpr));
+      color: #fbbf24;
+      pointer-events: auto;
+    }
+    #musica-toggle-btn.desligada { color: #475569; }
+
     #audio-toggle-btn:hover {
       background: #1e293b;
     }
@@ -557,6 +569,101 @@
       visibility: visible;
     }
 
+    /* Briefing (ordem de serviço / comunicado) */
+    .briefing-box {
+      max-width: 460px;
+      background: #fdfbf3;
+      color: #111827;
+      border-color: #111827;
+    }
+    .briefing-topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px dashed #94a3b8;
+      padding-bottom: 8px;
+    }
+    .briefing-topo h2 { font-size: 11px; }
+    .briefing-selo {
+      font-size: 7px;
+      background: #b91c1c;
+      color: #fff;
+      padding: 3px 6px;
+      transform: rotate(4deg);
+    }
+    .briefing-linhas { display: flex; flex-direction: column; gap: 8px; font-size: 8px; line-height: 1.6; }
+    .briefing-linhas div { display: grid; grid-template-columns: 78px 1fr; gap: 8px; }
+    .briefing-linhas b { color: #1d4ed8; font-weight: normal; }
+    .briefing-controles {
+      font-size: 7px;
+      line-height: 1.8;
+      background: #111827;
+      color: #fbbf24;
+      padding: 8px;
+    }
+    .briefing-obs { font-size: 7px; color: #b91c1c; line-height: 1.6; text-align: center; }
+
+    /* Minigame de erguer o garfo */
+    .erguer-area { display: flex; justify-content: center; margin: 10px 0; }
+    .erguer-coluna {
+      position: relative;
+      width: 90px;
+      height: 200px;
+      background: repeating-linear-gradient(0deg, #1e293b 0 2px, #0f172a 2px 12px);
+      border: 3px solid #ffffff;
+      box-shadow: 4px 4px 0 #000;
+    }
+    .erguer-nivel {
+      position: absolute;
+      left: 0;
+      right: 0;
+      border-top: 2px dashed #475569;
+    }
+    .erguer-nivel span, .erguer-alvo span {
+      position: absolute;
+      right: -30px;
+      top: -6px;
+      font-size: 8px;
+      color: #64748b;
+    }
+    .erguer-alvo {
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: rgba(52, 211, 153, 0.35);
+      border-top: 2px solid #34d399;
+      border-bottom: 2px solid #34d399;
+    }
+    .erguer-alvo span { color: #34d399; }
+    .erguer-garfo {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      height: 10px;
+      background: #cbd5e1;
+      border: 2px solid #000;
+      bottom: 0;
+    }
+    .erguer-garfo.perigo { background: #ef4444; }
+    .erguer-garfo.ok { background: #34d399; }
+
+    /* Boot do WMS */
+    .boot-tela {
+      width: 100%;
+      max-width: 520px;
+      min-height: 220px;
+      background: #021a0d;
+      border: 4px solid #14532d;
+      box-shadow: 0 0 30px rgba(34, 197, 94, 0.25), 8px 8px 0 #000;
+      color: #4ade80;
+      font-size: 9px;
+      line-height: 2;
+      padding: 18px;
+      white-space: pre-wrap;
+      text-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+    }
+
     /* Minigame de Embalagem */
     .sequence-box-wrapper {
       display: flex;
@@ -738,8 +845,12 @@
 
         <div class="hud-right-group">
           <div class="pixel-box inventory-container" id="hud-inv-box">
-            <span class="inv-label">CARGA</span>
+            <span class="inv-label" id="hud-inv-label">CARGA</span>
             <span class="inv-status" id="hud-inv-status">0/4</span>
+          </div>
+
+          <div id="musica-toggle-btn" class="pixel-box" title="Rádio caipira (R)">
+            <span id="musica-icon">📻</span> <span>[R]</span>
           </div>
 
           <div id="audio-toggle-btn" class="pixel-box" title="Alternar Som (M)">
@@ -757,7 +868,7 @@
       <!-- Rodapé -->
       <div class="hud-bottom-bar">
         <div class="controls-hint">
-          <span>WASD</span> Mover | <span>SHIFT</span> Correr | <span>E</span> Ação | <span>Q</span> Etiqueta | <span>M</span> Som | <span>F2</span> CRT
+          <span>WASD</span> Mover | <span>SHIFT</span> Correr | <span>E</span> Ação | <span>Q</span> Etiqueta | <span>M</span> Som | <span>R</span> Rádio | <span>F2</span> CRT
         </div>
 
         <!-- Minimapa Retrô -->
@@ -775,7 +886,7 @@
         <h1 style="margin: 0;">
           <img src="assets/logo-800.png" alt="PICKING PANIC" class="logo-img">
         </h1>
-        <p style="color: #fbbf24; font-size: 8px; margin-top: 4px;">OPERADOR DE ARMAZÉM 1996</p>
+        <p style="color: #fbbf24; font-size: 8px; margin-top: 4px;">OPERADOR DE ARMAZÉM 1996 · 3 FASES</p>
 
         <div style="background: #050a17; border: 2px solid #1e293b; padding: 12px; text-align: left; font-size: 8px; line-height: 1.8; color: #cbd5e1;">
           <strong style="color: #ffffff;">COMANDOS:</strong><br>
@@ -784,6 +895,7 @@
           - <span style="color:#38bdf8">E</span>: Ação / Coletar / Confirmar<br>
           - <span style="color:#38bdf8">Q</span>: Ver a etiqueta do pedido<br>
           - <span style="color:#38bdf8">M</span>: Ligar / Desligar Som<br>
+          - <span style="color:#38bdf8">R</span>: Rádio caipira do galpão<br>
           - <span style="color:#ef4444">3 EMPILHADEIRAS</span>: elas têm preferência (+5s)<br>
           - <span style="color:#34d399">F2</span>: Alternar linhas CRT
         </div>
@@ -855,6 +967,53 @@
       </div>
     </div>
 
+    <!-- MODAL: Briefing das fases 2 e 3 -->
+    <div id="modal-briefing" class="modal-overlay">
+      <div class="modal-box briefing-box">
+        <div class="briefing-topo">
+          <h2 id="brief-titulo">ORDEM DE SERVIÇO</h2>
+          <span class="briefing-selo" id="brief-selo">URGENTE</span>
+        </div>
+        <div class="briefing-linhas" id="brief-linhas"></div>
+        <div class="briefing-controles" id="brief-controles"></div>
+        <div class="briefing-obs" id="brief-obs"></div>
+        <button class="btn" id="btn-close-briefing">BORA! [E / ENTER]</button>
+      </div>
+    </div>
+
+    <!-- MODAL: Erguer o garfo (fase 2) -->
+    <div id="modal-erguer" class="modal-overlay">
+      <div class="modal-box" style="max-width: 360px; text-align: center;">
+        <h2 style="font-size: 12px; color: #fbbf24;">PULMÃO PUL-02 · NÍVEL 3</h2>
+        <div class="erguer-area">
+          <div class="erguer-coluna">
+            <div class="erguer-nivel" style="bottom: 25%;"><span>N1</span></div>
+            <div class="erguer-nivel" style="bottom: 50%;"><span>N2</span></div>
+            <div class="erguer-alvo" id="erguer-alvo"><span>N3</span></div>
+            <div class="erguer-garfo" id="erguer-garfo"></div>
+          </div>
+        </div>
+        <div id="erguer-feedback" style="font-size: 8px; color: #cbd5e1; line-height: 1.6; min-height: 26px;">SEGURE [E] PARA SUBIR. SOLTE NA FAIXA VERDE.</div>
+      </div>
+    </div>
+
+    <!-- MODAL: Boot do WMS (fase 3) -->
+    <div id="modal-boot" class="modal-overlay">
+      <div class="boot-tela" id="boot-tela"></div>
+    </div>
+
+    <!-- MODAL: Falha (fase 3, bateria) -->
+    <div id="modal-falha" class="modal-overlay">
+      <div class="modal-box" style="max-width: 420px; text-align: center;">
+        <h1 style="font-size: 14px; color: #ef4444;">BATERIA ACABOU</h1>
+        <p id="falha-texto" style="font-size: 8px; color: #cbd5e1; line-height: 1.8;"></p>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn" id="btn-falha-retry" style="flex: 1;">TENTAR DE NOVO [ENTER]</button>
+          <button class="btn btn-secondary" id="btn-falha-menu" style="flex: 1;">MENU</button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL: Pausa -->
     <div id="modal-pause" class="modal-overlay">
       <div class="modal-box" style="text-align: center; max-width: 400px;">
@@ -881,7 +1040,8 @@
       <div class="modal-box" style="text-align: center; z-index: 1;">
         <div id="stamp-new-record">★ RECORDE! ★</div>
 
-        <h1 style="font-size: 15px; color: #34d399;">EXPEDIÇÃO CONCLUÍDA!</h1>
+        <p id="res-fase" style="font-size: 8px; color: #64748b;">FASE 1/3</p>
+        <h1 id="res-titulo" style="font-size: 15px; color: #34d399;">EXPEDIÇÃO CONCLUÍDA!</h1>
         <p style="color: #94a3b8; font-size: 8px;" id="res-truck-info">Caminhão despachado.</p>
 
         <div class="stars-row">
@@ -892,19 +1052,21 @@
         <div id="result-rating-text" style="font-size: 9px; color: #fbbf24;">AVALIAÇÃO</div>
 
         <div style="background: #050a17; border: 2px solid #1e293b; padding: 12px; font-size: 8px; line-height: 1.8; margin-top: 6px; text-align: left;">
-          <div>TEMPO COLETAS: <span style="color:#ffffff;" id="res-time-raw">00:00.0</span></div>
+          <div>TEMPO: <span style="color:#ffffff;" id="res-time-raw">00:00.0</span></div>
           <div>PENALIDADES: <span style="color:#ef4444;" id="res-penalties">+0.0s</span></div>
           <div style="border-top: 1px solid #334155; padding-top: 4px; margin-top: 4px;">
             TEMPO FINAL: <span style="color:#38bdf8; font-size: 11px;" id="res-time-final">00:00.0</span>
           </div>
           <div>MELHOR TEMPO: <span style="color:#fbbf24;" id="res-best-recorded">--:--.-</span></div>
         </div>
+        <div id="res-campanha" style="display: none; background: #1e1b4b; border: 2px solid #fbbf24; padding: 10px; font-size: 8px; line-height: 1.9; text-align: left;"></div>
 
         <!-- Bonequinho comemorando em pixel art -->
         <canvas id="celeb-canvas" width="48" height="48"></canvas>
 
         <div style="display: flex; gap: 10px; margin-top: 4px;">
-          <button class="btn" id="btn-play-again" style="flex: 1;">JOGAR DE NOVO</button>
+          <button class="btn" id="btn-next-phase" style="flex: 1;">PRÓXIMA FASE [ENTER]</button>
+          <button class="btn btn-secondary" id="btn-play-again" style="flex: 1;">REPETIR</button>
           <button class="btn btn-secondary" id="btn-back-menu" style="flex: 1;">MENU</button>
         </div>
       </div>
@@ -923,7 +1085,12 @@
     const VEL_CORRER = 12.0;     // 192 px/s (corrida arcade)
     const VEL_CARREGANDO = 5.0;  // 80 px/s
 
-    const MISSAO_ATUAL = {
+    // As fases são jogadas em sequência: concluiu uma, vai para a próxima até zerar o jogo.
+    const FASE_1 = {
+      fase: 1,
+      nomeFase: "PEDIDO #1042",
+      resumo: "Separe, embale e expeça. A pé.",
+      empilhadeirasAtivas: [0, 1, 2],
       id: "pedido_1042",
       numero: "#1042",
       titulo: "Pedido #1042",
@@ -954,9 +1121,90 @@
       ]
     };
 
-    // Total de volumes do pedido (soma das quantidades dos itens)
-    MISSAO_ATUAL.quantidadeVolumes = MISSAO_ATUAL.itens.reduce((s, it) => s + it.qtd, 0);
-    MISSAO_ATUAL.itens.forEach(it => { it.coletados = 0; });
+    const FASE_2 = {
+      fase: 2,
+      nomeFase: "PALLET NO ALTO",
+      resumo: "Pegue a empilhadeira e desça um pallet do pulmão.",
+      empilhadeirasAtivas: [0, 1],
+      id: "pallet_no_alto",
+      numero: "#OS-207",
+      titulo: "Ordem de serviço #207",
+      cliente: "Reabastecimento interno",
+      docaSaida: "DOCA 1",
+      estrelas: { tres: 40, duas: 60 },
+      itens: [],
+      enderecoPulmao: "PUL-02",
+      nivelPulmao: 3,
+      briefing: {
+        titulo: "ORDEM DE SERVIÇO #207",
+        selo: "REABASTECIMENTO",
+        linhas: [
+          ["SITUAÇÃO", "A posição de picking da R02 zerou."],
+          ["MISSÃO", "Pegar o pallet do PULMÃO PUL-02, nível 3."],
+          ["ENTREGA", "Área demarcada da DOCA 1."],
+          ["VEÍCULO", "Empilhadeira 04, estacionada perto da Bancada 3."]
+        ],
+        controles: "W acelera · S freia e dá ré · A/D vira · E pega/solta · H buzina",
+        obs: "OBS: faixa de pedestre tem limite de velocidade. A multa é em segundos."
+      },
+      etapas: [
+        { id: "ENTRAR_EMP", titulo: "ASSUMIR O VOLANTE", descricaoCurta: "Vá até a Empilhadeira 04 e aperte [E] para subir." },
+        { id: "BUSCAR_PALLET", titulo: "IR AO PULMÃO", descricaoCurta: "Dirija até o PUL-02, de frente para o rack, e aperte [E]." },
+        { id: "ERGUER", titulo: "ERGUER O GARFO", descricaoCurta: "Segure [E] e solte com o garfo no NÍVEL 3." },
+        { id: "LEVAR_PALLET_EMP", titulo: "LEVAR À DOCA 1", descricaoCurta: "Leve o pallet até a área demarcada da DOCA 1." },
+        { id: "BAIXAR", titulo: "BAIXAR O PALLET", descricaoCurta: "Pare dentro da área e aperte [E] para baixar." },
+        { id: "EXPEDIR", titulo: "EXPEDIR CARGA", descricaoCurta: "Acompanhe a partida do caminhão da DOCA 1." }
+      ]
+    };
+
+    const FASE_3 = {
+      fase: 3,
+      nomeFase: "CADÊ O COLETOR?",
+      resumo: "Sem coletor não tem WMS. Ache pelo bip.",
+      empilhadeirasAtivas: [0, 1, 2],
+      id: "cade_o_coletor",
+      numero: "#1043",
+      titulo: "Pedido #1043",
+      cliente: "Papelaria Ponto Final Ltda.",
+      docaSaida: "DOCA 1",
+      estrelas: { tres: 60, duas: 85 },
+      bateriaSegundos: 70,
+      itens: [
+        { rua: "R02", posicao: "P10", nome: "GRAMPEADOR", qtd: 1 },
+        { rua: "R04", posicao: "P05", nome: "CLIPES (CX)", qtd: 1 }
+      ],
+      tempoColetaPorVolume: 1.0,
+      briefing: {
+        titulo: "COMUNICADO URGENTE",
+        selo: "SEM WMS",
+        linhas: [
+          ["SITUAÇÃO", "O coletor de dados sumiu no meio do turno."],
+          ["PROBLEMA", "Sem coletor: sem seta, sem mapa, sem etiqueta."],
+          ["PISTA", "Ele apita. Quanto mais perto, mais alto (e mais de um lado)."],
+          ["AJUDA", "Pergunte aos colegas com [E]. Alguém sempre jura que viu."]
+        ],
+        controles: "WASD anda · SHIFT corre · E pega/pergunta · barra SINAL no HUD",
+        obs: "OBS: A BATERIA DELE ESTÁ ACABANDO. TIPO, AGORA."
+      },
+      etapas: [
+        { id: "ACHAR_COLETOR", titulo: "ACHAR O COLETOR", descricaoCurta: "Siga o bip. Use o SINAL no HUD e pergunte aos colegas." },
+        { id: "COLETAR", titulo: "SEPARAR ITENS", descricaoCurta: "Colete os itens da etiqueta." },
+        { id: "LEVAR_EMBALAGEM", titulo: "LEVAR À EMBALAGEM", descricaoCurta: "Leve os volumes até uma bancada de embalagem." },
+        { id: "EMBALAR", titulo: "EMBALAR E SELAR", descricaoCurta: "Complete a sequência de comandos para fechar a caixa." },
+        { id: "LEVAR_PALLET", titulo: "CONSOLIDAÇÃO", descricaoCurta: "Deposite a caixa selada no pallet da DOCA 1." },
+        { id: "EXPEDIR", titulo: "EXPEDIR CARGA", descricaoCurta: "Acompanhe a partida do caminhão da DOCA 1." }
+      ]
+    };
+
+    const FASES = [FASE_1, FASE_2, FASE_3];
+    FASES.forEach(f => {
+      // Total de volumes do pedido (soma das quantidades dos itens)
+      f.quantidadeVolumes = f.itens.reduce((s, it) => s + it.qtd, 0);
+      f.itens.forEach(it => { it.coletados = 0; });
+    });
+
+    // Fase em jogo. Todo o código lê a missão daqui.
+    let MISSAO_ATUAL = FASE_1;
 
     /* ==========================================================================
        1b. TEXTOS DO JOGO (EDITÁVEL)
@@ -1059,6 +1307,95 @@
         "Pausa pro café. O cronômetro também precisa.",
         "Operação em espera. A empilhadeira também parou. Por enquanto.",
         "Respira. O pedido continua aqui."
+      ],
+
+      // ---------- Fase 2: empilhadeira ----------
+      inicioFase2: [
+        "A Empilhadeira 04 te espera. Ela não tem pressa. Você tem.",
+        "Pallet no alto, prazo embaixo. Bora.",
+        "Reabastecimento urgente. Todos são, mas esse é mais."
+      ],
+      subiuEmpilhadeira: [
+        "Cinto? Não tem. Juízo? Esperamos que sim.",
+        "Volante na mão. Pedestres, rezem.",
+        "Motor ligado. O apito de ré já tá ansioso."
+      ],
+      alinhado: [
+        "Alinhado. Agora com carinho no garfo.",
+        "De frente pro pulmão. Segura [E] e sobe."
+      ],
+      desalinhado: [
+        "Os garfos precisam ficar de frente pro rack. De frente.",
+        "Chega mais perto e endireita. O pallet não vem até você."
+      ],
+      passouPonto: [
+        "Passou do nível 3. O pallet balançou e uma caixa pulou fora.",
+        "Subiu demais. Lá se foi uma caixa. E três segundos."
+      ],
+      palletPego: [
+        "Pallet nos garfos. Agora devagar e sempre.",
+        "Pegou! Curva aberta, por favor."
+      ],
+      bateuRack: [
+        "O rack não saiu do lugar. Você é que bateu nele.",
+        "Caixa no chão. O inventário agradece.",
+        "Isso foi uma curva ou uma opinião?"
+      ],
+      multa: [
+        "Faixa de pedestre não é pista. Multa de 2 segundos.",
+        "Radar do galpão: você foi flagrado.",
+        "Devagar na faixa. Ninguém quer virar estatística."
+      ],
+      atropelou: [
+        "Ele pulou a tempo. Seu cronômetro, não.",
+        "Pedestre assustado, supervisor mais ainda.",
+        "Buzina existe. Usa."
+      ],
+      buzina: [
+        "BIII! Abram caminho.",
+        "Buzinou. Educadamente. Mais ou menos."
+      ],
+      foraDaArea: [
+        "Ainda não. Para dentro da área amarela.",
+        "Quase. O pallet precisa ficar dentro da demarcação."
+      ],
+      palletBaixado: [
+        "Pallet entregue. A R02 vai sobreviver.",
+        "Baixou bonito. Nem parecia que tava correndo."
+      ],
+
+      // ---------- Fase 3: coletor ----------
+      inicioFase3: [
+        "Sem coletor, sem WMS. Sem WMS, sem paz.",
+        "Alguém viu um aparelho preto que apita? Não? Ótimo.",
+        "O coletor sumiu. A bateria dele, quase."
+      ],
+      bateriaBaixa: [
+        "Bateria em 25%. O bip tá ficando tímido.",
+        "O coletor tá pedindo socorro. Baixinho."
+      ],
+      coletorAchado: [
+        "ACHOU! Ele tava aí o tempo todo, claro.",
+        "Coletor resgatado. O WMS voltou a respirar.",
+        "Achou! Agora coloca no carregador. Depois. Primeiro o pedido."
+      ],
+      semColetor: [
+        "Sem coletor não tem etiqueta. Acha ele primeiro.",
+        "A etiqueta tá no coletor. O coletor tá... pois é."
+      ],
+      bateriaAcabou: [
+        "A bateria acabou. O coletor descansa em paz. O pedido, não.",
+        "Bip... bip... bi. Fim."
+      ],
+      pistaModelo: [
+        "Vi alguém largando um troço preto {lugar}.",
+        "Ouvi um bip {lugar}. Ou era meu estômago.",
+        "Juro que tava {lugar}. Juro mais ou menos.",
+        "Coletor? Achei que era o controle da TV. Tava {lugar}."
+      ],
+      falha: [
+        "Não foi dessa vez. O coletor perdoa. Talvez.",
+        "Turno perdido. Café e tenta de novo."
       ]
     };
 
@@ -1097,6 +1434,14 @@
       }, 18);
       radioTimeout = setTimeout(() => box.classList.remove("show"), 2600 + texto.length * 35);
     }
+    // Fala com texto pronto (sem sortear evento)
+    function falarTexto(texto, cor) {
+      const evento = "__livre";
+      TEXTOS[evento] = [texto];
+      ultimaFala[evento] = -1;
+      falar(evento, cor);
+    }
+
     function calarRadio() {
       if (radioTimeout) clearTimeout(radioTimeout);
       if (radioTypeTimer) clearInterval(radioTypeTimer);
@@ -1562,10 +1907,211 @@
         masterGain.gain.setValueAtTime(isMuted ? 0 : 0.65, audioCtx.currentTime);
       }
       document.getElementById("audio-icon").textContent = isMuted ? "🔇" : "🔊";
+      RADIO_MUSICA.aplicarVolume();
       try {
         localStorage.setItem("pickingpanic_mute", isMuted.toString());
       } catch (e) {}
     }
+
+    /* ==========================================================================
+       2b. RÁDIO CAIPIRA (música de fundo via stream, com filtro de rádio AM)
+       Se a rádio permitir (CORS), o som passa por filtros: corta graves e agudos,
+       satura um pouco e soma chiado. Se não permitir, toca direto, mais baixo.
+       ========================================================================== */
+    const RADIO_MUSICA = {
+      url: "https://8758.brasilstream.com.br/stream",
+      volume: 0.55,          // volume da música com efeito AM
+      volumeSemEfeito: 0.3,  // volume se a rádio não permitir o efeito
+      ligada: true,
+      audio: null,
+      comEfeito: false,
+      tentouCors: false,
+      saida: null,
+      chiadoGain: null,
+
+      carregarPreferencia() {
+        try {
+          const v = localStorage.getItem("pickingpanic_radio");
+          if (v !== null) this.ligada = (v === "true");
+        } catch (e) {}
+      },
+
+      criarAudio(comCors) {
+        if (this.audio) {
+          this.audio.pause();
+          this.audio.removeAttribute("src");
+          this.audio.load();
+        }
+        const a = new Audio();
+        if (comCors) a.crossOrigin = "anonymous";
+        a.preload = "none";
+        a.src = this.url;
+        this.audio = a;
+        this.comEfeito = false;
+        a.addEventListener("error", () => {
+          // Primeira tentativa (com CORS) falhou: toca sem o efeito
+          if (comCors && !this.tentouCors) {
+            this.tentouCors = true;
+            this.criarAudio(false);
+            if (this.ligada) this.tocar();
+          }
+        });
+        if (comCors && audioCtx) {
+          try {
+            this.montarEfeitoAM(a);
+            this.comEfeito = true;
+          } catch (e) {
+            this.comEfeito = false;
+          }
+        }
+        this.aplicarVolume();
+      },
+
+      montarEfeitoAM(elemento) {
+        const src = audioCtx.createMediaElementSource(elemento);
+        // Banda estreita de rádio AM: sem grave, sem agudo
+        const passaAlta = audioCtx.createBiquadFilter();
+        passaAlta.type = "highpass";
+        passaAlta.frequency.value = 380;
+        const passaBaixa = audioCtx.createBiquadFilter();
+        passaBaixa.type = "lowpass";
+        passaBaixa.frequency.value = 2600;
+        passaBaixa.Q.value = 0.9;
+        const nasal = audioCtx.createBiquadFilter();
+        nasal.type = "peaking";
+        nasal.frequency.value = 1200;
+        nasal.gain.value = 5;
+        // Saturação leve de alto-falante pequeno
+        const sat = audioCtx.createWaveShaper();
+        const curva = new Float32Array(1024);
+        for (let i = 0; i < 1024; i++) {
+          const x = (i / 1023) * 2 - 1;
+          curva[i] = Math.tanh(x * 2.2) / Math.tanh(2.2);
+        }
+        sat.curve = curva;
+        const saida = audioCtx.createGain();
+        saida.gain.value = this.volume;
+        src.connect(passaAlta);
+        passaAlta.connect(passaBaixa);
+        passaBaixa.connect(nasal);
+        nasal.connect(sat);
+        sat.connect(saida);
+        saida.connect(masterGain);
+        this.saida = saida;
+
+        // Chiado de fundo da AM
+        const ruido = audioCtx.createBufferSource();
+        ruido.buffer = createNoiseBuffer(2);
+        ruido.loop = true;
+        const ruidoFiltro = audioCtx.createBiquadFilter();
+        ruidoFiltro.type = "bandpass";
+        ruidoFiltro.frequency.value = 2200;
+        ruidoFiltro.Q.value = 0.6;
+        const chiado = audioCtx.createGain();
+        chiado.gain.value = 0;
+        ruido.connect(ruidoFiltro);
+        ruidoFiltro.connect(chiado);
+        chiado.connect(masterGain);
+        ruido.start();
+        this.chiadoGain = chiado;
+      },
+
+      aplicarVolume() {
+        if (!this.audio) return;
+        if (this.comEfeito) {
+          this.audio.volume = 1;
+          this.audio.muted = false;
+          if (this.chiadoGain && audioCtx) {
+            this.chiadoGain.gain.setTargetAtTime(this.ligada && !isMuted ? 0.012 : 0, audioCtx.currentTime, 0.2);
+          }
+        } else {
+          // Sem Web Audio, o mudo geral precisa valer aqui também
+          this.audio.volume = this.volumeSemEfeito;
+          this.audio.muted = isMuted;
+        }
+      },
+
+      tocar() {
+        if (!this.ligada) return;
+        if (!this.audio) this.criarAudio(true);
+        this.aplicarVolume();
+        const prom = this.audio.play();
+        if (prom && prom.catch) prom.catch(() => {});
+      },
+
+      parar() {
+        if (this.audio) this.audio.pause();
+        if (this.chiadoGain && audioCtx) this.chiadoGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+      },
+
+      alternar() {
+        this.ligada = !this.ligada;
+        try { localStorage.setItem("pickingpanic_radio", String(this.ligada)); } catch (e) {}
+        if (this.ligada) {
+          this.tocar();
+          falarTexto("Rádio ligada. Moda de viola no talo (no talo de AM).", "#fbbf24");
+        } else {
+          this.parar();
+          falarTexto("Rádio desligada. O silêncio do galpão é quase assustador.", "#94a3b8");
+        }
+        atualizarIconeMusica();
+      }
+    };
+    RADIO_MUSICA.carregarPreferencia();
+
+    function atualizarIconeMusica() {
+      const btn = document.getElementById("musica-toggle-btn");
+      if (btn) btn.classList.toggle("desligada", !RADIO_MUSICA.ligada);
+    }
+
+    // Efeitos extras das fases 2 e 3
+    Object.assign(SFX, {
+      buzina() {
+        this.playTone(392, "square", 0.16, 0.22, 0.01, 0);
+        this.playTone(330, "square", 0.16, 0.18, 0.01, 0);
+        this.playTone(392, "square", 0.22, 0.22, 0.01, 0.2);
+        this.playTone(330, "square", 0.22, 0.18, 0.01, 0.2);
+      },
+      reBip() {
+        this.playTone(1050, "square", 0.09, 0.08, 0.005);
+      },
+      batidaVeiculo(forte) {
+        this.playTone(forte ? 70 : 110, "sawtooth", forte ? 0.25 : 0.1, forte ? 0.35 : 0.15, 0.01);
+        if (forte) this.empilhadeiraCrash();
+      },
+      garfoTick(nivel) {
+        this.playTone(160 + nivel * 500, "square", 0.03, 0.06, 0.005);
+      },
+      garfoOk() {
+        this.playTone(523, "square", 0.08, 0.2, 0.01, 0);
+        this.playTone(784, "square", 0.16, 0.22, 0.01, 0.08);
+      },
+      coletorBip(vol, pan) {
+        if (!audioCtx || isMuted) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(1760, now);
+        osc.frequency.setValueAtTime(2093, now + 0.05);
+        gain.gain.setValueAtTime(Math.max(0.0001, vol), now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+        osc.connect(gain);
+        if (audioCtx.createStereoPanner) {
+          const panner = audioCtx.createStereoPanner();
+          panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), now);
+          gain.connect(panner);
+          panner.connect(masterGain);
+        } else {
+          gain.connect(masterGain);
+        }
+        osc.start(now);
+        osc.stop(now + 0.12);
+      },
+      bootWms(i) {
+        this.playTone(440 + i * 110, "square", 0.05, 0.12, 0.01);
+      }
+    });
 
     /* ==========================================================================
        3. MÓDULO JUICE: FEEDBACK VISUAL PIXEL ART
@@ -1879,6 +2425,14 @@
       { id: "STAGE 3", x: 50 * TILE_SIZE, y: 10 * TILE_SIZE, w: 32, h: 32, boxes: 2, label: "STAGE 3" },
       { id: "STAGE 4", x: 50 * TILE_SIZE, y: 20 * TILE_SIZE, w: 32, h: 32, boxes: 1, label: "STAGE 4" }
     ];
+    PALLETS_CONSOLIDACAO.forEach(p => { p.boxesIniciais = p.boxes; });
+
+    // Fase 2: rack do pulmão (encostado na parede de baixo) e área de entrega da DOCA 1
+    const PULMAO = {
+      x: 728, y: 560, baiaW: 48, h: 40,
+      baias: ["PUL-01", "PUL-02", "PUL-03"]
+    };
+    const ZONA_ENTREGA_F2 = { x: 844, y: 200, w: 64, h: 76 };
 
     const CAMINHOES = [
       { docaId: "DOCA 1", x: DOCA_PAREDE_X + DOCA_PAREDE_W, y: 8  * TILE_SIZE, w: 160, h: 72, doorClosed: 1, departing: false, departOffset: 0 },
@@ -1900,6 +2454,7 @@
     ESTACOES_EMBALAGEM.forEach(est => colisoes.push({ x: est.x, y: est.y, w: est.w, h: est.h }));
     PALLETS_CONSOLIDACAO.forEach(p => colisoes.push({ x: p.x + 4, y: p.y + 4, w: p.w - 8, h: p.h - 8 }));
     CAMINHOES.forEach(c => colisoes.push({ x: c.x, y: c.y, w: c.w, h: c.h }));
+    colisoes.push({ x: PULMAO.x, y: PULMAO.y, w: PULMAO.baiaW * PULMAO.baias.length, h: PULMAO.h });
 
     const bayHeight = 48;
     const startY = 48;
@@ -2036,6 +2591,9 @@
       resetarEmpilhadeira(emp);
     });
 
+    // Empilhadeiras que circulam na fase atual
+    let empAtivas = empilhadeiras.slice();
+
     function resetarEmpilhadeira(emp) {
       emp.x = emp.waypoints[0].x;
       emp.y = emp.waypoints[0].y;
@@ -2100,11 +2658,42 @@
         return;
       }
 
+      // R: rádio caipira
+      if (e.code === "KeyR") {
+        initAudio();
+        RADIO_MUSICA.alternar();
+        return;
+      }
+
+      // Telas das fases
+      if (estadoJogo === "BRIEFING") {
+        if (e.code === "KeyE" || e.code === "Enter" || e.code === "Escape" || e.code === "KeyQ") {
+          SFX.menuBlip();
+          fecharBriefing();
+        }
+        return;
+      }
+      if (estadoJogo === "ERGUER") {
+        if (e.code === "KeyE" || e.code === "Space") erguendo = true;
+        return;
+      }
+      if (estadoJogo === "BOOT" || estadoJogo === "ERGUER_OK") return;
+      if (estadoJogo === "FALHOU") {
+        if (e.code === "Enter") { SFX.menuBlip(); reiniciarJogo(); }
+        else if (e.code === "Escape") voltarAoMenu();
+        return;
+      }
+      if (estadoJogo === "VITORIA") {
+        if (e.code === "Enter") { SFX.menuEnter(); proximaFase(); }
+        return;
+      }
+
       // Enter
       if (e.code === "Enter") {
         if (estadoJogo === "MENU") {
           SFX.menuEnter();
-          iniciarMissao();
+          RADIO_MUSICA.tocar();
+          comecarCampanha();
           return;
         } else if (estadoJogo === "CARD_PEDIDO") {
           SFX.menuBlip();
@@ -2131,11 +2720,19 @@
         return;
       }
 
-      // Q: Consulta pedido
+      // H: buzina (só pilotando)
+      if (e.code === "KeyH" && estadoJogo === "JOGANDO" && veiculo.pilotando) {
+        buzinar();
+        return;
+      }
+
+      // Q: Consulta pedido (fase 2 mostra a ordem de serviço; fase 3 só depois de achar o coletor)
       if (e.code === "KeyQ") {
         if (estadoJogo === "JOGANDO") {
           SFX.menuBlip();
-          abrirCardPedido();
+          if (faseIndex === 1) abrirBriefing();
+          else if (faseIndex === 2 && !coletor.achado) falar("semColetor", "#ef4444");
+          else abrirCardPedido();
         } else if (estadoJogo === "CARD_PEDIDO") {
           fecharCardPedido();
         }
@@ -2159,6 +2756,7 @@
 
     window.addEventListener("keyup", (e) => {
       keys[e.code] = false;
+      if (estadoJogo === "ERGUER" && (e.code === "KeyE" || e.code === "Space")) soltarGarfo();
       if (e.code === "KeyE") {
         interactDown = false;
         SFX.pararColetaTom();
@@ -2306,8 +2904,12 @@
       document.getElementById("hud").style.display = "flex";
       atualizarHUD();
       encaixarCameraNoJogador();
-      SFX.terminal();
-      abrirCardPedido();
+      if (faseIndex === 0) {
+        SFX.terminal();
+        abrirCardPedido();
+      } else {
+        abrirBriefing();
+      }
     }
 
     /* ---------- Etiqueta de separação ---------- */
@@ -2382,14 +2984,14 @@
       }, 70);
     }
 
-    function abrirCardPedido() {
+    function abrirCardPedido(forcarImpressao = false) {
       estadoJogo = "CARD_PEDIDO";
       limparInputs();
       SFX.pararColetaTom();
       montarEtiqueta();
       const etq = document.getElementById("etiqueta");
       document.getElementById("modal-order").style.display = "flex";
-      if (!cronometroIniciado) {
+      if (!cronometroIniciado || forcarImpressao) {
         // Primeira vez: sai da impressora linha por linha
         etq.classList.remove("na-mao");
         imprimirEtiqueta();
@@ -2487,6 +3089,20 @@
           const cam = CAMINHOES.find(c => c.docaId === MISSAO_ATUAL.docaSaida);
           return cam ? { x: cam.x + 80, y: cam.y + 36 } : null;
         }
+        // Fase 2
+        case "ENTRAR_EMP":
+          return { x: veiculo.x, y: veiculo.y };
+        case "BUSCAR_PALLET":
+        case "ERGUER": {
+          const b = posicaoBaiaAlvo();
+          return { x: b.x, y: b.y - 6 };
+        }
+        case "LEVAR_PALLET_EMP":
+        case "BAIXAR":
+          return { x: ZONA_ENTREGA_F2.x + ZONA_ENTREGA_F2.w / 2, y: ZONA_ENTREGA_F2.y + ZONA_ENTREGA_F2.h / 2 };
+        // Fase 3: sem coletor, sem seta
+        case "ACHAR_COLETOR":
+          return null;
         default:
           return null;
       }
@@ -2542,7 +3158,7 @@
 
     // Retorna a empilhadeira encostada no ponto (ou null)
     function empilhadeiraEm(px, py, raio) {
-      for (const emp of empilhadeiras) {
+      for (const emp of empAtivas) {
         if (tocaEmpilhadeira(emp, px, py, raio)) return emp;
       }
       return null;
@@ -2572,7 +3188,7 @@
     let stepSoundTimer = 0;
 
     function update(dt) {
-      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA") {
+      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU") {
         return;
       }
 
@@ -2632,9 +3248,16 @@
       // Sons ambientes (zumbido de galpão e scanner distante)
       SFX.atualizarAmbiente(dt);
 
+      // Fases 2 e 3: garfo subindo e bateria do coletor
+      if (estadoJogo === "ERGUER") atualizarErguer(dt);
+      if (faseIndex === 2 && estadoJogo === "JOGANDO") atualizarFase3(dt);
+      if (estadoJogo === "FALHOU") return;
+
       // 1. Movimento do Jogador
       let tocouEmpilhadeira = false;
-      if (estadoJogo === "JOGANDO") {
+      if (estadoJogo === "JOGANDO" && veiculo.pilotando) {
+        atualizarVeiculo(dt);
+      } else if (estadoJogo === "JOGANDO") {
         let moveX = 0;
         let moveY = 0;
 
@@ -2704,7 +3327,7 @@
 
       // 2. Empilhadeiras
       if (estadoJogo === "JOGANDO" && cronometroIniciado) {
-        empilhadeiras.forEach(emp => {
+        empAtivas.forEach(emp => {
           if (emp.brakingTimer > 0) {
             emp.brakingTimer -= dt;
             emp.beaconTimer += dt * 25;
@@ -2732,7 +3355,7 @@
           }
         });
 
-        const empBatida = player.invulnerableTimer <= 0
+        const empBatida = (player.invulnerableTimer <= 0 && !veiculo.pilotando)
           ? (empilhadeiraEm(player.x, player.y, player.radius + 1) || (tocouEmpilhadeira ? empilhadeiraEm(player.x, player.y, player.radius + 3) : null))
           : null;
         if (empBatida) {
@@ -2792,7 +3415,10 @@
         const dx = wp.x - npc.x;
         const dy = wp.y - npc.y;
         const d = Math.hypot(dx, dy);
-        if (d < 4) {
+        if (npc.parado > 0) {
+          // Parado: assustado com a buzina ou conversando com o jogador
+          npc.parado -= dt;
+        } else if (d < 4) {
           npc.wpIndex = (npc.wpIndex + 1) % npc.waypoints.length;
         } else {
           npc.x += (dx / d) * npc.speed * dt;
@@ -2801,7 +3427,7 @@
         }
 
         const dJog = Math.hypot(player.x - npc.x, player.y - npc.y);
-        if (dJog < (player.radius + 6)) {
+        if (!veiculo.pilotando && dJog < (player.radius + 6)) {
           SFX.npcBump();
           const pushX = (player.x - npc.x) / (dJog || 1);
           const pushY = (player.y - npc.y) / (dJog || 1);
@@ -2835,7 +3461,9 @@
       }
 
       if (estadoJogo === "JOGANDO") {
-        tratarZonasEInteracao(dt);
+        if (faseIndex === 1) tratarZonasFase2();
+        else if (faseIndex === 2 && !coletor.achado) tratarZonasFase3();
+        else tratarZonasEInteracao(dt);
       }
 
       interactPressedThisFrame = false;
@@ -2947,7 +3575,7 @@
 
       // Bancadas de Embalagem (retângulo da bancada + 12px)
       ESTACOES_EMBALAGEM.forEach(est => {
-        if (zonaRetangular(player.x, player.y, est, 12)) {
+        if (zonaRetangular(player.x, player.y, est, 14)) {
           player.currentZone = { tipo: "estacao_embalagem", dados: est };
           if (interactPressedThisFrame) {
             if (volumesColetados >= MISSAO_ATUAL.quantidadeVolumes && !pacoteEmbalado) {
@@ -2965,52 +3593,16 @@
 
       // Pallets de Consolidação (retângulo do pallet + 12px)
       PALLETS_CONSOLIDACAO.forEach(p => {
-        if (zonaRetangular(player.x, player.y, p, 12)) {
+        if (zonaRetangular(player.x, player.y, p, 16)) {
           player.currentZone = { tipo: "pallet_consolidacao", dados: p };
           if (interactPressedThisFrame) {
             if (p.id === MISSAO_ATUAL.docaSaida) {
               if (pacoteEmbalado && !cargaDepositada) {
                 // O GRANDE FINAL DA MISSÃO:
-                cargaDepositada = true;
-                p.boxes = 1;
+                p.boxes += 1;
                 pacoteEmbalado = false;
-                cronometroIniciado = false;
-                tempoFinalRegistrado = tempoDecorrido + tempoPenalidades;
-
-                // Som de depósito na madeira
-                SFX.depositarPallet();
-
-                // Hitstop de 60ms
-                JUICE.hitstop(60);
-
-                // Poeira de pixels nas laterais da caixa
                 JUICE.particulas(p.x + 16, p.y + 16, "poeira", 8);
-
-                // Cronômetro pisca verde com pulinho
-                const timerBox = document.getElementById("hud-timer-box");
-                timerBox.classList.add("pulse-green");
-                setTimeout(() => timerBox.classList.remove("pulse-green"), 350);
-
-                irParaEtapa("EXPEDIR");
-                JUICE.textoFlutuante(player.x, player.y - 14, "DEPOSITADO!", "#34d399");
-                falar("depositado", "#34d399");
-                atualizarHUD();
-
-                // Pan da câmera para a doca
-                camera.targetX = 64 * TILE_SIZE - VIEW_W / 2;
-                camera.targetY = 20 * TILE_SIZE - VIEW_H / 2;
-                camera.panSpeed = 0.05;
-
-                // Caminhão fecha porta e buzina
-                const cam = CAMINHOES.find(c => c.docaId === MISSAO_ATUAL.docaSaida);
-                if (cam) {
-                  SFX.caminhaoPorta();
-                  if (timerPartidaCaminhao) clearTimeout(timerPartidaCaminhao);
-                  timerPartidaCaminhao = setTimeout(() => {
-                    timerPartidaCaminhao = null;
-                    cam.departing = true;
-                  }, 500);
-                }
+                iniciarExpedicaoFinal("depositado", "DEPOSITADO!");
               } else if (!pacoteEmbalado && !cargaDepositada) {
                 SFX.enderecoErrado();
                 JUICE.textoFlutuante(player.x, player.y - 12, "EMBALE ANTES!", "#ef4444");
@@ -3024,6 +3616,40 @@
           }
         }
       });
+    }
+
+    // Fecha a missão: para o cronômetro, mostra a doca e manda o caminhão embora
+    function iniciarExpedicaoFinal(falaEvento, textoFlutuante) {
+      cargaDepositada = true;
+      cronometroIniciado = false;
+      tempoFinalRegistrado = tempoDecorrido + tempoPenalidades;
+
+      SFX.depositarPallet();
+      JUICE.hitstop(60);
+
+      const timerBox = document.getElementById("hud-timer-box");
+      timerBox.classList.add("pulse-green");
+      setTimeout(() => timerBox.classList.remove("pulse-green"), 350);
+
+      irParaEtapa("EXPEDIR");
+      JUICE.textoFlutuante(player.x, player.y - 14, textoFlutuante, "#34d399");
+      falar(falaEvento, "#34d399");
+      atualizarHUD();
+
+      const cam = CAMINHOES.find(c => c.docaId === MISSAO_ATUAL.docaSaida);
+      // Pan da câmera até a doca da missão
+      camera.targetX = 64 * TILE_SIZE - VIEW_W / 2;
+      camera.targetY = cam ? cam.y + cam.h / 2 - VIEW_H / 2 : 20 * TILE_SIZE - VIEW_H / 2;
+      camera.panSpeed = 0.05;
+
+      if (cam) {
+        SFX.caminhaoPorta();
+        if (timerPartidaCaminhao) clearTimeout(timerPartidaCaminhao);
+        timerPartidaCaminhao = setTimeout(() => {
+          timerPartidaCaminhao = null;
+          cam.departing = true;
+        }, 500);
+      }
     }
 
     /* ==========================================================================
@@ -3143,6 +3769,10 @@
 
     function desenharPainelDeAcao() {
       if (estadoJogo !== "JOGANDO") return;
+      if (faseIndex === 1 || (faseIndex === 2 && !coletor.achado)) {
+        desenharPainelFases();
+        return;
+      }
       const zona = player.currentZone;
       const itemAqui = (zona && zona.tipo === "posicao_wms") ? itemDaPosicao(zona.dados) : null;
       const naAlvo = !!(itemAqui && itemAqui.coletados < itemAqui.qtd);
@@ -3477,14 +4107,17 @@
         desenharBitmap(cam.docaId, curX + 22, curY + 36, "#ea580c", 1, "left");
       });
 
+      // 8b. Pulmão, área de entrega, empilhadeira do jogador e coletor
+      desenharCenarioFases();
+
       // 9. NPCs
       npcs.forEach(npc => renderPixelCharacter(npc.x, npc.y, npc.dir, 0, npc.vestColor, false, false));
 
       // 10. Empilhadeiras
-      empilhadeiras.forEach(emp => renderPixelForklift(emp.x, emp.y, emp.dir, emp.beaconTimer));
+      empAtivas.forEach(emp => renderPixelForklift(emp.x, emp.y, emp.dir, emp.beaconTimer));
 
       // 11. Jogador
-      if (player.invulnerableTimer <= 0 || Math.floor(Date.now() / 80) % 2 === 0) {
+      if (!veiculo.pilotando && (player.invulnerableTimer <= 0 || Math.floor(Date.now() / 80) % 2 === 0)) {
         renderPixelCharacter(
           player.x, player.y, player.dir, player.walkFrame,
           "#facc15", (volumesColetados > 0), pacoteEmbalado,
@@ -3761,6 +4394,33 @@
       minimapCtx.fillStyle = "#0f172a";
       minimapCtx.fillRect(0, 0, mw, mh);
 
+      if (faseIndex === 2 && !coletor.achado) {
+        // Sem coletor, sem WMS: só chuvisco
+        for (let i = 0; i < 260; i++) {
+          const v = Math.floor(Math.random() * 120) + 30;
+          minimapCtx.fillStyle = `rgb(${v},${v},${v})`;
+          minimapCtx.fillRect(Math.floor(Math.random() * mw), Math.floor(Math.random() * mh), 2, 1);
+        }
+        minimapCtx.fillStyle = "#0f172a";
+        minimapCtx.fillRect(mw / 2 - 26, mh / 2 - 6, 52, 12);
+        minimapCtx.fillStyle = "#ef4444";
+        minimapCtx.font = "8px monospace";
+        minimapCtx.textAlign = "center";
+        minimapCtx.fillText("SEM WMS", mw / 2, mh / 2 + 3);
+        minimapCtx.textAlign = "left";
+        return;
+      }
+
+      if (faseIndex === 1) {
+        minimapCtx.fillStyle = "#facc15";
+        const z = ZONA_ENTREGA_F2;
+        minimapCtx.fillRect(z.x * sx, z.y * sy, z.w * sx, z.h * sy);
+        minimapCtx.fillStyle = "#3b82f6";
+        minimapCtx.fillRect(PULMAO.x * sx, PULMAO.y * sy, PULMAO.baiaW * 3 * sx, PULMAO.h * sy);
+        minimapCtx.fillStyle = "#f97316";
+        minimapCtx.fillRect(veiculo.x * sx - 2, veiculo.y * sy - 2, 4, 4);
+      }
+
       minimapCtx.fillStyle = "#2563eb";
       RUAS_CONFIG.forEach(r => minimapCtx.fillRect(r.corridorX * sx, 48 * sy, 48 * sx, 480 * sy));
 
@@ -3772,7 +4432,7 @@
 
       // Empilhadeiras (perigo)
       minimapCtx.fillStyle = "#ef4444";
-      empilhadeiras.forEach(emp => minimapCtx.fillRect(emp.x * sx - 1, emp.y * sy - 1, 3, 3));
+      empAtivas.forEach(emp => minimapCtx.fillRect(emp.x * sx - 1, emp.y * sy - 1, 3, 3));
 
       // Itens pendentes da etiqueta
       if (MISSAO_ATUAL.etapas[etapaAtualIndex]?.id === "COLETAR") {
@@ -3811,7 +4471,7 @@
     function atualizarHUD() {
       const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex];
       if (etapa) {
-        document.getElementById("hud-obj-step").textContent = `ETAPA ${etapaAtualIndex + 1}/${MISSAO_ATUAL.etapas.length}: ${etapa.titulo}`;
+        document.getElementById("hud-obj-step").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ETAPA ${etapaAtualIndex + 1}/${MISSAO_ATUAL.etapas.length}: ${etapa.titulo}`;
         let desc = etapa.descricaoCurta;
         if (etapa.id === "COLETAR") {
           const falta = itensPendentes().map(it => `${it.rua}-${it.posicao}`);
@@ -3822,6 +4482,25 @@
       if (document.getElementById("modal-order").style.display === "flex") atualizarItensEtiqueta();
 
       const inv = document.getElementById("hud-inv-status");
+      const invLabel = document.getElementById("hud-inv-label");
+      invLabel.textContent = "CARGA";
+
+      if (faseIndex === 2 && !coletor.achado) {
+        // Barra de sinal do coletor (o bip em forma visual)
+        const sinal = sinalDoColetor().forca;
+        const barras = Math.max(0, Math.min(5, Math.round(sinal * 5 + 0.2)));
+        const bat = Math.max(0, Math.round(coletor.bateria / (MISSAO_ATUAL.bateriaSegundos || 70) * 100));
+        invLabel.textContent = `SINAL · BAT ${bat}%`;
+        inv.textContent = "▮".repeat(barras) + "▯".repeat(5 - barras);
+        inv.style.color = barras >= 4 ? "#34d399" : (barras >= 2 ? "#fbbf24" : "#ef4444");
+        return;
+      }
+      if (faseIndex === 1 && !cargaDepositada) {
+        inv.textContent = veiculo.comPallet ? "PALLET" : (veiculo.pilotando ? "GARFO VAZIO" : "A PÉ");
+        inv.style.color = veiculo.comPallet ? "#fbbf24" : "#94a3b8";
+        return;
+      }
+
       if (cargaDepositada) {
         inv.textContent = "ENTREGUE";
         inv.style.color = "#34d399";
@@ -3849,6 +4528,36 @@
       else if (tempoFinal <= MISSAO_ATUAL.estrelas.duas) estrelas = 2;
       document.getElementById("result-rating-text").textContent = sortearTexto("vitoria" + estrelas);
       calarRadio();
+
+      // Campanha: guarda o resultado da fase e prepara o botão de seguir
+      campanha.tempos[faseIndex] = tempoFinal;
+      campanha.estrelas[faseIndex] = estrelas;
+      const ultimaFase = faseIndex + 1 >= FASES.length;
+      document.getElementById("res-fase").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ${MISSAO_ATUAL.nomeFase}`;
+      document.getElementById("btn-next-phase").textContent = ultimaFase ? "MENU [ENTER]" : "PRÓXIMA FASE [ENTER]";
+      // Na última fase o botão principal já leva ao menu
+      document.getElementById("btn-back-menu").style.display = ultimaFase ? "none" : "";
+      const tituloEl = document.getElementById("res-titulo");
+      const campEl = document.getElementById("res-campanha");
+      if (ultimaFase && campanha.tempos.filter(t => t !== undefined).length === FASES.length) {
+        // Zerou o jogo jogando as 3 fases em sequência
+        const total = campanha.tempos.reduce((a, b) => a + b, 0);
+        const totalEstrelas = campanha.estrelas.reduce((a, b) => a + b, 0);
+        tituloEl.textContent = "VOCÊ ZEROU O PICKING PANIC!";
+        tituloEl.style.color = "#fbbf24";
+        campEl.style.display = "block";
+        campEl.innerHTML =
+          FASES.map((f, i) => `FASE ${i + 1} · ${f.nomeFase}: ${formatarTempo(campanha.tempos[i])} ${"★".repeat(campanha.estrelas[i])}`).join("<br>") +
+          `<br><span style="color:#fbbf24">TOTAL: ${formatarTempo(total)} · ${totalEstrelas}/9 ★</span>`;
+        try {
+          const melhor = parseFloat(localStorage.getItem("pickingpanic_campanha") || "Infinity");
+          if (total < melhor) localStorage.setItem("pickingpanic_campanha", String(total));
+        } catch (e) {}
+      } else {
+        tituloEl.textContent = faseIndex === 1 ? "PALLET ENTREGUE!" : "EXPEDIÇÃO CONCLUÍDA!";
+        tituloEl.style.color = "#34d399";
+        campEl.style.display = "none";
+      }
 
       // Persistência de recorde
       const storageKey = "pickingpanic_recorde_" + MISSAO_ATUAL.id;
@@ -4168,18 +4877,25 @@
         npc.y = npc.spawnY;
         npc.dir = npc.spawnDir;
         npc.wpIndex = 0;
+        npc.parado = 0;
       });
+
+      // Estado próprio de cada fase
+      resetarVeiculo();
+      resetarColetor();
+      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha"]
+        .forEach(id => { document.getElementById(id).style.display = "none"; });
 
       encaixarCameraNoJogador();
 
       CAMINHOES.forEach(c => {
         c.departing = false;
-        c.doorClosed = (c.docaId === "DOCA 1") ? 1 : 0;
+        // A doca da missão começa com a porta aberta, esperando a carga
+        c.doorClosed = (c.docaId === MISSAO_ATUAL.docaSaida) ? 0 : 1;
         c.departOffset = 0;
       });
 
-      const pDoca = PALLETS_CONSOLIDACAO.find(p => p.id === MISSAO_ATUAL.docaSaida);
-      if (pDoca) pDoca.boxes = 0;
+      PALLETS_CONSOLIDACAO.forEach(p => { p.boxes = p.boxesIniciais; });
 
       document.getElementById("hud-timer").textContent = "00:00.0";
       document.getElementById("hud-timer-box").classList.remove("pulse-red", "pulse-green");
@@ -4189,16 +4905,739 @@
       document.getElementById("modal-order").style.display = "none";
       document.getElementById("modal-packing").style.display = "none";
 
-      irParaEtapa("RECEBER");
+      irParaEtapa(MISSAO_ATUAL.etapas[0].id);
+      atualizarHUD();
       iniciarMissao();
+    }
+
+    /* ==========================================================================
+       16b. CAMPANHA: FASES EM SEQUÊNCIA E BRIEFING
+       ========================================================================== */
+    let faseIndex = 0;              // 0, 1, 2
+    const campanha = { tempos: [], estrelas: [] };
+
+    function carregarFase(i) {
+      faseIndex = i;
+      MISSAO_ATUAL = FASES[i];
+      empAtivas = MISSAO_ATUAL.empilhadeirasAtivas.map(n => empilhadeiras[n]);
+    }
+
+    function comecarCampanha() {
+      campanha.tempos = [];
+      campanha.estrelas = [];
+      carregarFase(0);
+      reiniciarJogo();
+    }
+
+    function proximaFase() {
+      if (faseIndex + 1 >= FASES.length) {
+        voltarAoMenu();
+        return;
+      }
+      carregarFase(faseIndex + 1);
+      reiniciarJogo();
+    }
+
+    function voltarAoMenu() {
+      limparTimersVitoria();
+      SFX.pararColetaTom();
+      calarRadio();
+      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing"]
+        .forEach(id => { document.getElementById(id).style.display = "none"; });
+      document.getElementById("hud").style.display = "none";
+      document.getElementById("modal-start").style.display = "flex";
+      estadoJogo = "MENU";
+      carregarMelhorTempoInicial();
+    }
+
+    function abrirBriefing() {
+      const b = MISSAO_ATUAL.briefing;
+      if (!b) return;
+      estadoJogo = "BRIEFING";
+      limparInputs();
+      document.getElementById("brief-titulo").textContent = b.titulo;
+      document.getElementById("brief-selo").textContent = b.selo;
+      document.getElementById("brief-linhas").innerHTML = b.linhas
+        .map(([k, v]) => `<div><b>${k}</b><span>${v}</span></div>`).join("");
+      document.getElementById("brief-controles").textContent = b.controles;
+      document.getElementById("brief-obs").textContent = b.obs;
+      document.getElementById("modal-briefing").style.display = "flex";
+      SFX.terminal();
+    }
+
+    function fecharBriefing() {
+      document.getElementById("modal-briefing").style.display = "none";
+      estadoJogo = "JOGANDO";
+      limparInputs();
+      if (!cronometroIniciado) {
+        cronometroIniciado = true;
+        JUICE.textoFlutuante(player.x, player.y - 14, "INICIAR!", "#38bdf8");
+        falar(faseIndex === 1 ? "inicioFase2" : "inicioFase3", "#38bdf8");
+      }
+      atualizarHUD();
+    }
+
+    /* ==========================================================================
+       16c. FASE 2: EMPILHADEIRA PILOTÁVEL
+       ========================================================================== */
+    const VEIC = {
+      ACEL: 230,          // px/s²
+      FREIO: 420,
+      ATRITO: 170,
+      MAX_FRENTE: 150,    // px/s
+      MAX_RE: 70,
+      MAX_COM_PALLET: 105,
+      GIRO: 2.7,          // rad/s
+      ADERENCIA: 7        // menor = derrapa mais
+    };
+    const veiculo = {
+      x: 600, y: 500, theta: Math.PI / 2,
+      vx: 0, vy: 0, vel: 0,
+      pilotando: false,
+      comPallet: false,
+      palletEntregue: false,
+      batidaCooldown: 0,
+      multaCooldown: 0,
+      reTimer: 0
+    };
+    let pulmaoPego = false;
+    let garfoNivel = 0;
+    let erguendo = false;
+    let garfoTickTimer = 0;
+    const GARFO_ALVO = { min: 0.66, max: 0.82, estouro: 0.94 };
+
+    function resetarVeiculo() {
+      Object.assign(veiculo, {
+        x: 600, y: 500, theta: Math.PI / 2, vx: 0, vy: 0, vel: 0,
+        pilotando: false, comPallet: false, palletEntregue: false,
+        batidaCooldown: 0, multaCooldown: 0, reTimer: 0
+      });
+      pulmaoPego = false;
+      garfoNivel = 0;
+      erguendo = false;
+    }
+
+    function frenteVeiculo() {
+      return { x: Math.sin(veiculo.theta), y: Math.cos(veiculo.theta) };
+    }
+    function pontoLocalVeiculo(lx, ly) {
+      const w = localParaMundo(lx, ly, veiculo.theta);
+      return { x: veiculo.x + w.x, y: veiculo.y + w.y };
+    }
+    function circulosVeiculo() {
+      const c = [
+        { ...pontoLocalVeiculo(0, -10), r: 11 },
+        { ...pontoLocalVeiculo(0, 6), r: 11 },
+        { ...pontoLocalVeiculo(0, 22), r: 6 }
+      ];
+      if (veiculo.comPallet) c.push({ ...pontoLocalVeiculo(0, 30), r: 10 });
+      return c;
+    }
+    function veiculoColide() {
+      return circulosVeiculo().some(c => checkCollision(c.x, c.y, c.r));
+    }
+
+    function atualizarVeiculo(dt) {
+      const v = veiculo;
+      if (v.batidaCooldown > 0) v.batidaCooldown -= dt;
+      if (v.multaCooldown > 0) v.multaCooldown -= dt;
+
+      const frente = keys["KeyW"] || keys["ArrowUp"];
+      const tras = keys["KeyS"] || keys["ArrowDown"];
+      const esq = keys["KeyA"] || keys["ArrowLeft"];
+      const dir = keys["KeyD"] || keys["ArrowRight"];
+      const maxFrente = v.comPallet ? VEIC.MAX_COM_PALLET : VEIC.MAX_FRENTE;
+
+      if (frente) {
+        v.vel += (v.vel < 0 ? VEIC.FREIO : VEIC.ACEL) * dt;
+      } else if (tras) {
+        v.vel -= (v.vel > 0 ? VEIC.FREIO : VEIC.ACEL * 0.7) * dt;
+      } else {
+        const atr = VEIC.ATRITO * dt;
+        v.vel = Math.abs(v.vel) <= atr ? 0 : v.vel - Math.sign(v.vel) * atr;
+      }
+      v.vel = Math.max(-VEIC.MAX_RE, Math.min(maxFrente, v.vel));
+
+      // Direção estilo tanque: gira mais com velocidade; na ré, inverte
+      const fatorGiro = Math.min(1, Math.abs(v.vel) / 50) * (v.comPallet ? 0.75 : 1);
+      const sentido = v.vel >= 0 ? 1 : -1;
+      if (esq) v.theta += VEIC.GIRO * fatorGiro * sentido * dt;
+      if (dir) v.theta -= VEIC.GIRO * fatorGiro * sentido * dt;
+
+      // Inércia: a velocidade real persegue a direção do nariz (derrapa um pouco)
+      const f = frenteVeiculo();
+      const k = Math.min(1, VEIC.ADERENCIA * dt);
+      v.vx += (f.x * v.vel - v.vx) * k;
+      v.vy += (f.y * v.vel - v.vy) * k;
+
+      const antX = v.x, antY = v.y;
+      v.x += v.vx * dt;
+      if (veiculoColide()) v.x = antX;
+      const bateuX = v.x === antX && Math.abs(v.vx) > 1;
+      v.y += v.vy * dt;
+      if (veiculoColide()) v.y = antY;
+      const bateuY = v.y === antY && Math.abs(v.vy) > 1;
+
+      if (bateuX || bateuY) {
+        const forte = Math.abs(v.vel) > 70;
+        if (v.batidaCooldown <= 0) {
+          v.batidaCooldown = 0.8;
+          SFX.batidaVeiculo(forte);
+          if (forte) {
+            adicionarPenalidade(3, "BATEU");
+            JUICE.shake(4, 0.25);
+            const tip = pontoLocalVeiculo(0, 30);
+            JUICE.particulas(tip.x, tip.y, "faisca", 8);
+            JUICE.lancarCaixasDoColo(tip.x, tip.y);
+            falar("bateuRack", "#ef4444");
+          }
+        }
+        v.vel *= -0.25;
+        if (bateuX) v.vx *= -0.3;
+        if (bateuY) v.vy *= -0.3;
+      }
+
+      // Apito de ré
+      if (v.vel < -5) {
+        v.reTimer -= dt;
+        if (v.reTimer <= 0) { v.reTimer = 0.45; SFX.reBip(); }
+      } else {
+        v.reTimer = 0;
+      }
+
+      // Faixa de pedestre: limite de velocidade
+      const rapido = Math.abs(v.vel) > 85;
+      if (rapido && v.multaCooldown <= 0) {
+        for (let zy = 120; zy < WORLD_HEIGHT - 120; zy += 180) {
+          if (v.x > 24 * TILE_SIZE && v.x < 34 * TILE_SIZE && v.y > zy - 4 && v.y < zy + 36) {
+            v.multaCooldown = 3;
+            adicionarPenalidade(2, "MULTA");
+            falar("multa", "#ef4444");
+            break;
+          }
+        }
+      }
+
+      // Empilhadeiras automáticas batendo na sua
+      if (player.invulnerableTimer <= 0) {
+        const bateuEmp = circulosVeiculo().some(c => empilhadeiraEm(c.x, c.y, c.r));
+        if (bateuEmp) {
+          player.invulnerableTimer = 1.6;
+          SFX.empilhadeiraCrash();
+          adicionarPenalidade(5, "BATIDA");
+          JUICE.hitstop(80);
+          JUICE.shake(6, 0.3);
+          JUICE.flashBorder("#ef4444", 2);
+          JUICE.particulas(v.x, v.y, "faisca", 14);
+          v.vel *= -0.4;
+          v.vx *= -0.4;
+          v.vy *= -0.4;
+          falar("empilhadeira", "#ef4444");
+        }
+      }
+
+      // Pedestres
+      npcs.forEach(npc => {
+        const perto = circulosVeiculo().some(c => Math.hypot(c.x - npc.x, c.y - npc.y) < c.r + 6);
+        if (!perto) return;
+        // Pedestre pula pro lado
+        const fx = npc.x - v.x, fy = npc.y - v.y;
+        const d = Math.hypot(fx, fy) || 1;
+        npc.x += (fx / d) * 14;
+        npc.y += (fy / d) * 14;
+        npc.parado = 1.2;
+        if (Math.abs(v.vel) > 30 && player.invulnerableTimer <= 0) {
+          player.invulnerableTimer = 1.2;
+          adicionarPenalidade(5, "PEDESTRE");
+          SFX.npcBump();
+          falar("atropelou", "#ef4444");
+        }
+      });
+
+      // A câmera segue o jogador: ele está dentro da empilhadeira
+      player.x = v.x;
+      player.y = v.y;
+    }
+
+    function buzinar() {
+      SFX.buzina();
+      falar("buzina", "#fbbf24");
+      npcs.forEach(npc => {
+        if (Math.hypot(npc.x - veiculo.x, npc.y - veiculo.y) < 110) npc.parado = 1.6;
+      });
+    }
+
+    function posicaoBaiaAlvo() {
+      const idx = PULMAO.baias.indexOf(MISSAO_ATUAL.enderecoPulmao);
+      return { x: PULMAO.x + idx * PULMAO.baiaW + PULMAO.baiaW / 2, y: PULMAO.y };
+    }
+
+    // Garfo de frente para a baia, perto e devagar
+    function estadoAlinhamento() {
+      const baia = posicaoBaiaAlvo();
+      const tip = pontoLocalVeiculo(0, 28);
+      const perto = Math.abs(tip.x - baia.x) < 40 && tip.y > baia.y - 50 && tip.y < baia.y + 6;
+      let dAng = veiculo.theta % (Math.PI * 2);
+      if (dAng > Math.PI) dAng -= Math.PI * 2;
+      if (dAng < -Math.PI) dAng += Math.PI * 2;
+      const alinhado = perto &&
+        Math.abs(tip.x - baia.x) < 14 &&
+        tip.y > baia.y - 16 &&
+        Math.abs(dAng) < 0.45 &&
+        Math.abs(veiculo.vel) < 30;
+      return { perto, alinhado };
+    }
+
+    function palletNaZona() {
+      const pc = pontoLocalVeiculo(0, 30);
+      const z = ZONA_ENTREGA_F2;
+      return pc.x > z.x && pc.x < z.x + z.w && pc.y > z.y && pc.y < z.y + z.h;
+    }
+
+    function tratarZonasFase2() {
+      player.currentZone = null;
+      const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
+
+      if (!veiculo.pilotando) {
+        if (Math.hypot(player.x - veiculo.x, player.y - veiculo.y) < 40) {
+          player.currentZone = { tipo: "veiculo" };
+          if (interactPressedThisFrame) {
+            veiculo.pilotando = true;
+            veiculo.vx = veiculo.vy = veiculo.vel = 0;
+            SFX.terminal();
+            falar("subiuEmpilhadeira", "#fbbf24");
+            irParaEtapa("BUSCAR_PALLET");
+          }
+        }
+        return;
+      }
+
+      if (etapa === "BUSCAR_PALLET") {
+        const a = estadoAlinhamento();
+        if (a.perto) {
+          player.currentZone = { tipo: a.alinhado ? "pulmao_ok" : "pulmao_alinhar" };
+          if (interactPressedThisFrame) {
+            if (a.alinhado) abrirErguer();
+            else falar("desalinhado", "#ef4444");
+          }
+        }
+      } else if (etapa === "LEVAR_PALLET_EMP" || etapa === "BAIXAR") {
+        const dentro = palletNaZona();
+        if (dentro && etapa === "LEVAR_PALLET_EMP") irParaEtapa("BAIXAR");
+        if (!dentro && etapa === "BAIXAR") irParaEtapa("LEVAR_PALLET_EMP");
+        const z = ZONA_ENTREGA_F2;
+        const pertoZona = Math.hypot(veiculo.x - (z.x + z.w / 2), veiculo.y - (z.y + z.h / 2)) < 90;
+        if (dentro) player.currentZone = { tipo: Math.abs(veiculo.vel) < 25 ? "zona_ok" : "zona_devagar" };
+        else if (pertoZona) player.currentZone = { tipo: "zona_fora" };
+        if (interactPressedThisFrame && (dentro || pertoZona)) {
+          if (dentro && Math.abs(veiculo.vel) < 25) {
+            veiculo.comPallet = false;
+            veiculo.palletEntregue = true;
+            veiculo.vel = veiculo.vx = veiculo.vy = 0;
+            const pc = pontoLocalVeiculo(0, 30);
+            veiculo.palletPos = pc;
+            JUICE.particulas(pc.x, pc.y, "poeira", 10);
+            iniciarExpedicaoFinal("palletBaixado", "ENTREGUE!");
+          } else {
+            falar("foraDaArea", "#ef4444");
+          }
+        }
+      }
+    }
+
+    function abrirErguer() {
+      estadoJogo = "ERGUER";
+      limparInputs();
+      veiculo.vel = veiculo.vx = veiculo.vy = 0;
+      garfoNivel = 0;
+      erguendo = false;
+      irParaEtapa("ERGUER");
+      const alvo = document.getElementById("erguer-alvo");
+      alvo.style.bottom = (GARFO_ALVO.min * 100) + "%";
+      alvo.style.height = ((GARFO_ALVO.max - GARFO_ALVO.min) * 100) + "%";
+      document.getElementById("erguer-feedback").textContent = "SEGURE [E] PARA SUBIR. SOLTE NA FAIXA VERDE.";
+      atualizarUIErguer();
+      document.getElementById("modal-erguer").style.display = "flex";
+    }
+
+    function atualizarUIErguer() {
+      const g = document.getElementById("erguer-garfo");
+      g.style.bottom = `calc(${(garfoNivel * 100).toFixed(1)}% - 5px)`;
+      const naFaixa = garfoNivel >= GARFO_ALVO.min && garfoNivel <= GARFO_ALVO.max;
+      g.classList.toggle("ok", naFaixa);
+      g.classList.toggle("perigo", garfoNivel > GARFO_ALVO.max);
+    }
+
+    function atualizarErguer(dt) {
+      if (!erguendo) return;
+      garfoNivel += dt * 0.42;
+      garfoTickTimer -= dt;
+      if (garfoTickTimer <= 0) { garfoTickTimer = 0.07; SFX.garfoTick(garfoNivel); }
+      if (garfoNivel >= GARFO_ALVO.estouro) {
+        // Passou do ponto: caixa cai, penalidade, garfo volta pro chão
+        erguendo = false;
+        garfoNivel = 0;
+        adicionarPenalidade(3, "PASSOU DO PONTO");
+        JUICE.shake(4, 0.25);
+        SFX.batidaVeiculo(true);
+        document.getElementById("erguer-feedback").textContent = "+3s · " + sortearTexto("passouPonto");
+      }
+      atualizarUIErguer();
+    }
+
+    function soltarGarfo() {
+      if (!erguendo) return;
+      erguendo = false;
+      if (garfoNivel >= GARFO_ALVO.min && garfoNivel <= GARFO_ALVO.max) {
+        SFX.garfoOk();
+        document.getElementById("erguer-feedback").textContent = "✓ PALLET NOS GARFOS!";
+        estadoJogo = "ERGUER_OK";
+        setTimeout(() => {
+          if (estadoJogo !== "ERGUER_OK") return;
+          document.getElementById("modal-erguer").style.display = "none";
+          estadoJogo = "JOGANDO";
+          pulmaoPego = true;
+          veiculo.comPallet = true;
+          // Dá uma ré automática pra sair do rack com folga
+          veiculo.vel = -20;
+          irParaEtapa("LEVAR_PALLET_EMP");
+          falar("palletPego", "#34d399");
+          atualizarHUD();
+        }, 450);
+      } else if (garfoNivel < GARFO_ALVO.min) {
+        document.getElementById("erguer-feedback").textContent = "AINDA BAIXO. SEGURE [E] DE NOVO.";
+      }
+    }
+
+    /* ==========================================================================
+       16d. FASE 3: CADÊ O COLETOR?
+       ========================================================================== */
+    const ESCONDERIJOS = [
+      { x: 168, y: 420 },  // meio da R02
+      { x: 40,  y: 598 },  // canto do fundo, à esquerda
+      { x: 608, y: 450 },  // atrás da Bancada 3
+      { x: 848, y: 372 },  // ao lado do STAGE 4
+      { x: 905, y: 140 },  // perto da porta da DOCA 1
+      { x: 485, y: 42 },   // atrás do terminal
+      { x: 330, y: 64 },   // entrada da R04
+      { x: 704, y: 600 }   // canto do pulmão
+    ];
+    const coletor = { x: 0, y: 0, achado: false, bateria: 70, bipTimer: 0, avisouBateria: false, hudTimer: 0 };
+    let npcMentiroso = 0;
+
+    function resetarColetor() {
+      const spot = ESCONDERIJOS[Math.floor(Math.random() * ESCONDERIJOS.length)];
+      coletor.x = spot.x;
+      coletor.y = spot.y;
+      coletor.achado = false;
+      coletor.bateria = MISSAO_ATUAL.bateriaSegundos || 70;
+      coletor.bipTimer = 1;
+      coletor.avisouBateria = false;
+      coletor.hudTimer = 0;
+      npcMentiroso = Math.floor(Math.random() * npcs.length);
+      npcs.forEach(n => { n.pistaCooldown = 0; });
+    }
+
+    function nomeDaRegiao(x, y) {
+      if (x < 370) {
+        const rua = RUAS_CONFIG.reduce((m, r) => Math.abs(r.corridorX + 24 - x) < Math.abs(m.corridorX + 24 - x) ? r : m);
+        if (y > 530) return "no corredor do fundo, embaixo das ruas";
+        if (y < 50) return "lá em cima, na entrada das ruas";
+        return "na rua " + rua.id;
+      }
+      if (x < 560) return y < 80 ? "perto do terminal" : "no corredor principal";
+      if (x < 660) return "perto das bancadas";
+      if (y > 520) return "perto do pulmão, lá no fundo";
+      return "na consolidação, perto das docas";
+    }
+
+    function pistaDoNpc(i) {
+      let lugar = nomeDaRegiao(coletor.x, coletor.y);
+      if (i === npcMentiroso) {
+        // Mentira: sorteia outro esconderijo com outra região
+        const outros = ESCONDERIJOS.map(e => nomeDaRegiao(e.x, e.y)).filter(r => r !== lugar);
+        lugar = outros[Math.floor(Math.random() * outros.length)] || lugar;
+      }
+      return sortearTexto("pistaModelo").replace("{lugar}", lugar);
+    }
+
+    function sinalDoColetor() {
+      const d = Math.hypot(coletor.x - player.x, coletor.y - player.y);
+      return { d, forca: Math.max(0, 1 - d / 900) };
+    }
+
+    function atualizarFase3(dt) {
+      if (coletor.achado || !cronometroIniciado) return;
+      coletor.bateria -= dt;
+      const pct = Math.max(0, coletor.bateria / (MISSAO_ATUAL.bateriaSegundos || 70));
+      if (!coletor.avisouBateria && pct < 0.25) {
+        coletor.avisouBateria = true;
+        falar("bateriaBaixa", "#ef4444");
+      }
+      if (coletor.bateria <= 0) {
+        falharFase("bateriaAcabou");
+        return;
+      }
+      const s = sinalDoColetor();
+      coletor.bipTimer -= dt;
+      if (coletor.bipTimer <= 0) {
+        // Perto: bipa rápido e alto. Bateria fraca: mais espaçado e baixo.
+        coletor.bipTimer = (0.3 + 1.5 * (1 - s.forca)) * (1 + (1 - pct) * 0.7);
+        const vol = 0.04 + 0.32 * s.forca * (0.45 + 0.55 * pct);
+        SFX.coletorBip(vol, (coletor.x - player.x) / 260);
+      }
+      npcs.forEach(n => { if (n.pistaCooldown > 0) n.pistaCooldown -= dt; });
+      coletor.hudTimer -= dt;
+      if (coletor.hudTimer <= 0) {
+        coletor.hudTimer = 0.15;
+        atualizarHUD();
+      }
+    }
+
+    function tratarZonasFase3() {
+      player.currentZone = null;
+      if (Math.hypot(coletor.x - player.x, coletor.y - player.y) < 22) {
+        player.currentZone = { tipo: "coletor" };
+        if (interactPressedThisFrame) pegarColetor();
+        return;
+      }
+      npcs.forEach((npc, i) => {
+        if (Math.hypot(npc.x - player.x, npc.y - player.y) < 24) {
+          player.currentZone = { tipo: "npc", dados: npc };
+          npc.parado = 0.6;
+          if (interactPressedThisFrame && npc.pistaCooldown <= 0) {
+            npc.pistaCooldown = 3;
+            falarTexto(pistaDoNpc(i), npc.vestColor);
+          }
+        }
+      });
+    }
+
+    function pegarColetor() {
+      coletor.achado = true;
+      JUICE.particulas(coletor.x, coletor.y, "confete", 24);
+      JUICE.textoFlutuante(player.x, player.y - 16, "ACHOU!", "#34d399");
+      SFX.novoRecorde();
+      falar("coletorAchado", "#34d399");
+      estadoJogo = "BOOT";
+      limparInputs();
+      const tela = document.getElementById("boot-tela");
+      tela.textContent = "";
+      document.getElementById("modal-boot").style.display = "flex";
+      const linhas = [
+        "E-SHIP WMS v1.996",
+        "> BATERIA............ " + Math.round(Math.max(0, coletor.bateria)) + "s",
+        "> CONECTANDO REDE.... OK",
+        "> CARREGANDO MAPA.... OK",
+        "> SINCRONIZANDO PEDIDO #1043 .... OK",
+        "",
+        "PRONTO. BOM TRABALHO, OPERADOR."
+      ];
+      let i = 0;
+      const t = setInterval(() => {
+        if (estadoJogo !== "BOOT") { clearInterval(t); return; }
+        tela.textContent += linhas[i] + "\n";
+        SFX.bootWms(i);
+        i++;
+        if (i >= linhas.length) {
+          clearInterval(t);
+          setTimeout(() => {
+            if (estadoJogo !== "BOOT") return;
+            document.getElementById("modal-boot").style.display = "none";
+            irParaEtapa("COLETAR");
+            abrirCardPedido(true);
+          }, 700);
+        }
+      }, 230);
+    }
+
+    function falharFase(evento) {
+      estadoJogo = "FALHOU";
+      cronometroIniciado = false;
+      limparInputs();
+      SFX.pararColetaTom();
+      SFX.estrelaPerdida();
+      calarRadio();
+      document.getElementById("falha-texto").textContent = sortearTexto(evento) + " " + sortearTexto("falha");
+      document.getElementById("modal-falha").style.display = "flex";
+    }
+
+    /* ---------- Desenho das fases 2 e 3 ---------- */
+    let SPRITES_VEICULO = {};
+    function pixelsEmpilhadeira(corCorpo, corLateral, comPallet) {
+      const px = [];
+      const push = (x, y, c) => px.push({ x, y, c });
+      for (let y = -17; y <= 17; y++) {
+        for (let x = -11; x <= 11; x++) {
+          const borda = (x === -11 || x === 11 || y === -17 || y === 17);
+          let c = borda ? "#000000" : corCorpo;
+          if (!borda && Math.abs(x) >= 9) c = corLateral;
+          if (!borda && x >= -7 && x <= 7 && y >= -13 && y <= -1) c = "#0f172a";
+          if (x >= -5 && x <= 5 && y >= -11 && y <= -3) c = "#7dd3fc";
+          push(x, y, c);
+        }
+      }
+      for (const wx of [-12, -11, 11, 12]) for (const wy of [-8, -7, -6, 5, 6, 7]) push(wx, wy, "#0f172a");
+      for (let y = 18; y <= 27; y++) for (const x of [-9, -8, -7, -6, 5, 6, 7, 8]) push(x, y, "#cbd5e1");
+      if (comPallet) {
+        for (let y = 19; y <= 40; y++) {
+          for (let x = -11; x <= 11; x++) {
+            const borda = (x === -11 || x === 11 || y === 19 || y === 40);
+            let c = borda ? "#451a03" : "#b45309";
+            if (!borda && (y === 29 || y === 30)) c = "#facc15";
+            if (!borda && (x === 0)) c = "#92400e";
+            push(x, y, c);
+          }
+        }
+      }
+      return px;
+    }
+    function spriteVeiculo(theta, comPallet) {
+      const passos = 48;
+      let q = Math.round(((theta % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * passos) % passos;
+      const chave = q + (comPallet ? "p" : "");
+      if (SPRITES_VEICULO[chave]) return SPRITES_VEICULO[chave];
+      const ang = q / passos * Math.PI * 2;
+      const mapa = new Map();
+      pixelsEmpilhadeira("#f97316", "#c2410c", comPallet).forEach(p => {
+        const w = localParaMundo(p.x, p.y, ang);
+        mapa.set(Math.round(w.x) + "," + Math.round(w.y), p.c);
+      });
+      const spr = [...mapa.entries()].map(([k, c]) => { const [x, y] = k.split(",").map(Number); return { x, y, c }; });
+      SPRITES_VEICULO[chave] = spr;
+      return spr;
+    }
+
+    function desenharPulmao() {
+      PULMAO.baias.forEach((nome, i) => {
+        const bx = PULMAO.x + i * PULMAO.baiaW;
+        const alvo = faseIndex === 1 && nome === MISSAO_ATUAL.enderecoPulmao;
+        ctx.fillStyle = "#1d4ed8";
+        ctx.fillRect(bx, PULMAO.y, PULMAO.baiaW, PULMAO.h);
+        ctx.fillStyle = "#ea580c";
+        ctx.fillRect(bx, PULMAO.y, PULMAO.baiaW, 3);
+        ctx.fillStyle = "#172554";
+        ctx.fillRect(bx, PULMAO.y, 2, PULMAO.h);
+        const vazio = alvo && pulmaoPego;
+        if (!vazio) {
+          ctx.fillStyle = "#78350f";
+          ctx.fillRect(bx + 8, PULMAO.y + 8, PULMAO.baiaW - 16, PULMAO.h - 12);
+          ctx.fillStyle = "#b45309";
+          ctx.fillRect(bx + 10, PULMAO.y + 10, PULMAO.baiaW - 20, PULMAO.h - 18);
+          ctx.fillStyle = "#facc15";
+          ctx.fillRect(bx + 10, PULMAO.y + 18, PULMAO.baiaW - 20, 2);
+        }
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(bx + 4, PULMAO.y - 9, PULMAO.baiaW - 8, 8);
+        desenharBitmap(nome, bx + PULMAO.baiaW / 2, PULMAO.y - 8, alvo ? "#facc15" : "#f8fafc", 1, "center");
+        if (alvo && !pulmaoPego) {
+          ctx.strokeStyle = (Math.floor(Date.now() / 180) % 2 === 0) ? "#facc15" : "#fef08a";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(bx, PULMAO.y, PULMAO.baiaW, PULMAO.h);
+          desenharBitmap("N3", bx + PULMAO.baiaW / 2, PULMAO.y + 26, "#facc15", 1, "center");
+        }
+      });
+    }
+
+    function desenharCenarioFases() {
+      desenharPulmao();
+      if (faseIndex === 1) {
+        const z = ZONA_ENTREGA_F2;
+        const pisca = Math.floor(Date.now() / 250) % 2 === 0;
+        ctx.fillStyle = "rgba(250, 204, 21, 0.14)";
+        ctx.fillRect(z.x, z.y, z.w, z.h);
+        ctx.fillStyle = pisca ? "#facc15" : "#ca8a04";
+        for (let x = z.x; x < z.x + z.w; x += 8) {
+          ctx.fillRect(x, z.y, 4, 2);
+          ctx.fillRect(x, z.y + z.h - 2, 4, 2);
+        }
+        for (let y = z.y; y < z.y + z.h; y += 8) {
+          ctx.fillRect(z.x, y, 2, 4);
+          ctx.fillRect(z.x + z.w - 2, y, 2, 4);
+        }
+        desenharBitmap("DOCA 1", z.x + z.w / 2, z.y + 4, "#facc15", 1, "center");
+        if (veiculo.palletEntregue && veiculo.palletPos) {
+          const p = veiculo.palletPos;
+          ctx.fillStyle = "#78350f";
+          ctx.fillRect(Math.round(p.x - 11), Math.round(p.y - 11), 22, 22);
+          ctx.fillStyle = "#b45309";
+          ctx.fillRect(Math.round(p.x - 9), Math.round(p.y - 9), 18, 18);
+          ctx.fillStyle = "#facc15";
+          ctx.fillRect(Math.round(p.x - 9), Math.round(p.y - 1), 18, 2);
+        }
+        // Empilhadeira do jogador
+        const spr = spriteVeiculo(veiculo.theta, veiculo.comPallet);
+        const ox = Math.round(veiculo.x), oy = Math.round(veiculo.y);
+        spr.forEach(p => { ctx.fillStyle = p.c; ctx.fillRect(ox + p.x, oy + p.y, 1, 1); });
+        ctx.fillStyle = (Math.floor(Date.now() / 300) % 2 === 0) ? "#3b82f6" : "#1e3a8a";
+        ctx.fillRect(ox - 2, oy - 2, 4, 4);
+        if (!veiculo.pilotando) desenharBitmap("04", ox, oy - 26, "#fbbf24", 1, "center");
+      }
+      if (faseIndex === 2 && !coletor.achado) {
+        // O coletor só aparece quando você está bem perto (ele está escondido)
+        const d = Math.hypot(coletor.x - player.x, coletor.y - player.y);
+        if (d < 60) {
+          const cx = Math.round(coletor.x), cy = Math.round(coletor.y);
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(cx - 4, cy - 7, 8, 14);
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(cx - 3, cy - 6, 6, 5);
+          ctx.fillStyle = "#64748b";
+          ctx.fillRect(cx - 3, cy, 6, 5);
+          ctx.fillStyle = (Math.floor(Date.now() / 200) % 2 === 0) ? "#22c55e" : "#14532d";
+          ctx.fillRect(cx - 1, cy - 9, 2, 2);
+        }
+      }
+    }
+
+    function desenharPainelFases() {
+      const z = player.currentZone;
+      if (!z) return false;
+      const textos = {
+        veiculo: ["[E] SUBIR NA 04", "#0b1326", "#ffffff", "#fbbf24"],
+        pulmao_ok: ["ALINHADO [E] ERGUER", "#052e16", "#34d399", "#bbf7d0"],
+        pulmao_alinhar: ["ALINHE O GARFO DE FRENTE", "#450a0a", "#ef4444", "#fecaca"],
+        zona_ok: ["[E] BAIXAR PALLET", "#052e16", "#34d399", "#bbf7d0"],
+        zona_devagar: ["PARE PARA BAIXAR", "#422006", "#facc15", "#fef08a"],
+        zona_fora: ["PALLET DENTRO DA AREA", "#422006", "#facc15", "#fef08a"],
+        coletor: ["[E] PEGAR O COLETOR", "#052e16", "#34d399", "#bbf7d0"],
+        npc: ["[E] PERGUNTAR", "#0b1326", "#ffffff", "#fbbf24"]
+      };
+      const t = textos[z.tipo];
+      if (!t) return false;
+      // Pilotando, o painel vai acima da empilhadeira para não cobrir o rack
+      desenharPainelBitmap(t[0], player.x, player.y + (veiculo.pilotando ? -48 : 12), t[1], t[2], t[3]);
+      return true;
     }
 
     /* ==========================================================================
        17. EVENT LISTENERS
        ========================================================================== */
     document.getElementById("btn-start-game").addEventListener("click", () => {
+      initAudio();
       SFX.menuEnter();
-      iniciarMissao();
+      RADIO_MUSICA.tocar();
+      comecarCampanha();
+    });
+    document.getElementById("btn-next-phase").addEventListener("click", () => {
+      SFX.menuEnter();
+      proximaFase();
+    });
+    document.getElementById("btn-close-briefing").addEventListener("click", () => {
+      SFX.menuBlip();
+      fecharBriefing();
+    });
+    document.getElementById("btn-falha-retry").addEventListener("click", () => {
+      SFX.menuBlip();
+      reiniciarJogo();
+    });
+    document.getElementById("btn-falha-menu").addEventListener("click", () => {
+      SFX.menuBlip();
+      voltarAoMenu();
+    });
+    document.getElementById("musica-toggle-btn").addEventListener("click", () => {
+      initAudio();
+      RADIO_MUSICA.alternar();
     });
     document.getElementById("btn-close-order").addEventListener("click", () => {
       SFX.menuBlip();
@@ -4218,13 +5657,7 @@
     });
     document.getElementById("btn-back-menu").addEventListener("click", () => {
       SFX.menuBlip();
-      limparTimersVitoria();
-      SFX.pararColetaTom();
-      document.getElementById("modal-result").style.display = "none";
-      document.getElementById("hud").style.display = "none";
-      document.getElementById("modal-start").style.display = "flex";
-      estadoJogo = "MENU";
-      carregarMelhorTempoInicial();
+      voltarAoMenu();
     });
 
     document.getElementById("audio-toggle-btn").addEventListener("click", alternarMudo);
@@ -4239,6 +5672,7 @@
     carregarMelhorTempoInicial();
     document.getElementById("audio-icon").textContent = isMuted ? "🔇" : "🔊";
     document.getElementById("check-reduce-fx").checked = reduzirEfeitos;
+    atualizarIconeMusica();
 
     /* ==========================================================================
        18. LOOP PRINCIPAL DE 60 FPS
@@ -4252,9 +5686,9 @@
 
       update(dt);
       if (audioCtx) {
-        let maisPerto = empilhadeiras[0];
+        let maisPerto = empAtivas[0];
         let menorD = Infinity;
-        empilhadeiras.forEach(emp => {
+        empAtivas.forEach(emp => {
           const d = Math.hypot(emp.x - player.x, emp.y - player.y);
           if (d < menorD) { menorD = d; maisPerto = emp; }
         });
