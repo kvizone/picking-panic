@@ -24,11 +24,11 @@ Abra o `index.html` no navegador ou jogue pelo GitHub Pages. As 3 fases são jog
 
 ### No celular
 
-Jogue com a tela deitada (se estiver em pé, o jogo pede para girar). Não tem joystick:
+Funciona em pé ou deitado: o mapa se ajusta ao formato da tela. Não tem joystick fixo:
 
-- **Segure o dedo na tela:** o operador vai na direção do dedo. Com o dedo longe, ele corre.
+- **Deslize o dedo** em qualquer lugar da tela: o operador anda na direção do deslize. Deslizando mais longe, ele corre. Um círculo mostra onde o dedo encostou.
 - **Botão amarelo:** aparece só quando tem algo para fazer ali. Segure para coletar.
-- **Empilhadeira:** segue o dedo. Com o dedo atrás dela, ela dá ré. O botão azul é a buzina.
+- **Empilhadeira:** deslize para onde ela deve ir. Deslizando para trás dela, ela dá ré. O botão azul é a buzina.
 - **Toque no tempo** para pausar e **no objetivo** para ver a etiqueta.
 
 ## Fase 1: Pedido #1042

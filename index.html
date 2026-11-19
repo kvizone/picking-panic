@@ -883,30 +883,51 @@
     #btn-erguer-toque { width: 100%; padding: 18px; font-size: 11px; touch-action: none; }
     #btn-erguer-toque.apertado { background: #34d399; color: #052e16; }
 
-    #girar-celular {
+    /* Guia do deslizar */
+    #toque-guia {
       position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: #05070c;
-      color: #fbbf24;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 0;
+      z-index: 50;
+      pointer-events: none;
       display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      text-align: center;
-      font-size: 12px;
-      padding: 24px;
     }
-    .girar-icone { font-size: 56px; animation: girar 1.6s ease-in-out infinite; }
-    .girar-sub { font-size: 8px; color: #94a3b8; line-height: 1.8; }
-    @keyframes girar {
-      0%, 30% { transform: rotate(0deg); }
-      60%, 100% { transform: rotate(-90deg); }
+    #toque-guia::before {
+      content: "";
+      position: absolute;
+      left: -40px;
+      top: -40px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.45);
+      background: rgba(15, 23, 42, 0.18);
     }
-    @media (orientation: portrait) {
-      html.toque #girar-celular { display: flex; }
+    #toque-guia.correndo::before { border-color: rgba(250, 204, 21, 0.75); }
+    #toque-ponto {
+      position: absolute;
+      left: -14px;
+      top: -14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+      border: 3px solid #000;
     }
+    #toque-guia.correndo #toque-ponto { background: rgba(250, 204, 21, 0.9); }
+
+    /* Celular em pé: HUD em duas linhas, objetivo ocupando a largura toda */
+    html.retrato .hud-top-bar { flex-wrap: wrap; row-gap: 6px; }
+    html.retrato #hud-obj-box { order: 10; flex-basis: 100%; }
+    html.retrato .hud-right-group { margin-left: auto; }
+    html.retrato #radio-box { max-width: 92%; bottom: 140px; }
+    html.retrato .btn-toque { bottom: 4%; }
+    html.retrato .btn-toque-buzina { bottom: 22%; }
+    html.retrato .modal-box { max-width: 96vw; }
+    html.retrato .etiqueta-wrap { zoom: 1; }
+    html.retrato .fases-grid { grid-template-columns: 1fr; }
 
     /* Telas baixas (celular deitado): modais compactos e com rolagem */
     @media (max-height: 520px) {
@@ -922,12 +943,8 @@
 </head>
 <body>
 
-  <!-- Celular em pé: pede para deitar a tela -->
-  <div id="girar-celular">
-    <div class="girar-icone">📱</div>
-    <p>GIRE O CELULAR</p>
-    <p class="girar-sub">O galpão é mais largo do que alto.</p>
-  </div>
+  <!-- Guia do deslizar (aparece onde o dedo encosta) -->
+  <div id="toque-guia"><div id="toque-ponto"></div></div>
 
   <div id="game-container">
     <div id="stage">
@@ -2521,8 +2538,11 @@
     const WORLD_WIDTH = MAP_COLS * TILE_SIZE;   // 1280 px
     const WORLD_HEIGHT = MAP_ROWS * TILE_SIZE; // 640 px
 
-    const VIEW_W = 480;
-    const VIEW_H = 270;
+    // Área de visão em pixels do mundo. No computador é sempre 480x270.
+    // No celular ela se adapta ao formato da tela (em pé ou deitado), sem barras pretas.
+    let VIEW_W = 480;
+    let VIEW_H = 270;
+    const TOQUE_DISPOSITIVO = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || ("ontouchstart" in window);
 
     const RUAS_CONFIG = [
       { id: "R01", corridorX: 4  * TILE_SIZE, rackLeftX: 3  * TILE_SIZE, rackRightX: 7  * TILE_SIZE },
@@ -3394,17 +3414,14 @@
         if (keys["KeyA"] || keys["ArrowLeft"]) moveX -= 1;
         if (keys["KeyD"] || keys["ArrowRight"]) moveX += 1;
 
-        // Toque: o bonequinho anda na direção do dedo; dedo longe = corre
+        // Toque: anda na direção em que o dedo desliza; deslizar longe = corre
         let correndoNoToque = false;
         if (toque.ativo) {
-          const alvo = toqueNoMundo();
-          const tdx = alvo.x - player.x;
-          const tdy = alvo.y - player.y;
-          const tdist = Math.hypot(tdx, tdy);
-          if (tdist > 6) {
-            moveX = tdx;
-            moveY = tdy;
-            correndoNoToque = tdist > 110;
+          const v = vetorToque();
+          if (v.mag > TOQUE_ZONA_MORTA) {
+            moveX = v.dx;
+            moveY = v.dy;
+            correndoNoToque = v.mag > TOQUE_CORRER;
           }
         }
 
@@ -3893,19 +3910,26 @@
       });
     }
 
+    // Mantém painéis do mundo dentro da área visível (tela estreita do celular em pé)
+    function prenderNaTela(px, pw) {
+      const esq = Math.round(camera.x) + 2;
+      const dir = Math.round(camera.x) + VIEW_W - pw - 2;
+      return Math.round(Math.max(esq, Math.min(px, dir)));
+    }
+
     function desenharPainelBitmap(texto, cx, cy, fundo, borda, corTexto) {
       const esc = 2;
       const tw = larguraBitmap(texto, esc);
       const pw = tw + 8;
       const ph = 14;
-      const px = Math.round(cx - pw / 2);
+      const px = prenderNaTela(cx - pw / 2, pw);
       const py = Math.round(cy);
       ctx.fillStyle = fundo;
       ctx.fillRect(px, py, pw, ph);
       ctx.strokeStyle = borda;
       ctx.lineWidth = 1;
       ctx.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
-      desenharBitmap(texto, cx, py + 2, corTexto, esc, "center");
+      desenharBitmap(texto, px + pw / 2, py + 2, corTexto, esc, "center");
       return { px, py, pw, ph };
     }
 
@@ -3926,7 +3950,7 @@
         const iconsW = itemAqui.qtd * 8 + 2;
         const pw = tw + iconsW + 8;
         const ph = 18;
-        const px = Math.round(player.x - pw / 2);
+        const px = prenderNaTela(player.x - pw / 2, pw);
         const py = Math.round(player.y - 32);
         const pct = Math.max(0, Math.min(1, progressoColeta / MISSAO_ATUAL.tempoColetaPorVolume));
         ctx.fillStyle = "#0b1326";
@@ -4487,9 +4511,25 @@
       const w = container.clientWidth * dpr;
       const h = container.clientHeight * dpr;
 
-      const scaleX = Math.floor(w / VIEW_W);
-      const scaleY = Math.floor(h / VIEW_H);
-      const scale = Math.max(1, Math.min(scaleX, scaleY));
+      let scale;
+      if (TOQUE_DISPOSITIVO) {
+        // Celular: o lado menor da tela mostra ~270 px do galpão; o lado maior acompanha a tela
+        scale = Math.max(1, Math.floor(Math.min(w, h) / 270));
+        const novoW = Math.min(WORLD_WIDTH, Math.floor(w / scale));
+        const novoH = Math.min(WORLD_HEIGHT, Math.floor(h / scale));
+        if (novoW !== VIEW_W || novoH !== VIEW_H) {
+          VIEW_W = novoW;
+          VIEW_H = novoH;
+          bufferCanvas.width = VIEW_W;
+          bufferCanvas.height = VIEW_H;
+          ctx.imageSmoothingEnabled = false;
+        }
+        document.documentElement.classList.toggle("retrato", VIEW_H > VIEW_W);
+      } else {
+        const scaleX = Math.floor(w / VIEW_W);
+        const scaleY = Math.floor(h / VIEW_H);
+        scale = Math.max(1, Math.min(scaleX, scaleY));
+      }
 
       displayCanvas.width = VIEW_W * scale;
       displayCanvas.height = VIEW_H * scale;
@@ -4502,7 +4542,9 @@
 
       // HUD com escala própria, menor que a do mapa, pra não cobrir o jogo em telas grandes
       const escalaCss = scale / dpr;
-      const escalaHud = Math.max(1, Math.min(2.5, escalaCss * 0.6));
+      const escalaHud = TOQUE_DISPOSITIVO
+        ? 1.25 // celular: texto do HUD um pouco maior para ler sem esforço
+        : Math.max(1, Math.min(2.5, escalaCss * 0.6));
       document.documentElement.style.setProperty("--escala", String(escalaHud));
       document.documentElement.style.setProperty("--dpr", "1");
 
@@ -5057,41 +5099,72 @@
        Sem joystick: o dedo na tela é o destino. O botão de ação só aparece
        quando tem algo para fazer. Os botões simulam as teclas do teclado.
        ========================================================================== */
-    const EH_TOQUE = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || ("ontouchstart" in window);
+    const EH_TOQUE = TOQUE_DISPOSITIVO;
     if (EH_TOQUE) document.documentElement.classList.add("toque");
 
-    const toque = { ativo: false, id: null, cx: 0, cy: 0 };
-
-    function toqueNoMundo() {
-      const r = displayCanvas.getBoundingClientRect();
-      const bx = (toque.cx - r.left) / r.width * VIEW_W;
-      const by = (toque.cy - r.top) / r.height * VIEW_H;
-      return { x: bx + Math.round(camera.x), y: by + Math.round(camera.y) };
-    }
+    // Deslizar: onde o dedo encosta vira o centro; arrastar dá a direção.
+    // Arrastar pouco anda, arrastar longe corre. O centro acompanha o dedo se ele for longe demais.
+    const TOQUE_ZONA_MORTA = 10;   // px de tela
+    const TOQUE_CORRER = 60;
+    const TOQUE_RAIO_MAX = 80;
+    const toque = { ativo: false, id: null, ox: 0, oy: 0, cx: 0, cy: 0 };
+    const guiaToque = document.getElementById("toque-guia");
+    const guiaPonto = document.getElementById("toque-ponto");
 
     function simularTecla(tipo, code) {
       window.dispatchEvent(new KeyboardEvent(tipo, { code, bubbles: true }));
     }
 
+    function vetorToque() {
+      const dx = toque.cx - toque.ox;
+      const dy = toque.cy - toque.oy;
+      return { dx, dy, mag: Math.hypot(dx, dy) };
+    }
+
+    function desenharGuiaToque() {
+      if (!guiaToque) return;
+      if (!toque.ativo) {
+        guiaToque.style.display = "none";
+        return;
+      }
+      guiaToque.style.display = "block";
+      guiaToque.style.left = toque.ox + "px";
+      guiaToque.style.top = toque.oy + "px";
+      const v = vetorToque();
+      const k = v.mag > TOQUE_RAIO_MAX ? TOQUE_RAIO_MAX / v.mag : 1;
+      guiaPonto.style.transform = `translate(${v.dx * k}px, ${v.dy * k}px)`;
+      guiaToque.classList.toggle("correndo", v.mag > TOQUE_CORRER);
+    }
+
     displayCanvas.addEventListener("pointerdown", (e) => {
       initAudio();
-      if (toque.ativo) return; // um dedo dirige; os outros ficam livres para os botões
+      if (toque.ativo) return; // um dedo controla; os outros ficam livres para os botões
       toque.ativo = true;
       toque.id = e.pointerId;
-      toque.cx = e.clientX;
-      toque.cy = e.clientY;
+      toque.ox = toque.cx = e.clientX;
+      toque.oy = toque.cy = e.clientY;
       try { displayCanvas.setPointerCapture(e.pointerId); } catch (err) {}
+      desenharGuiaToque();
       e.preventDefault();
     });
     displayCanvas.addEventListener("pointermove", (e) => {
       if (!toque.ativo || e.pointerId !== toque.id) return;
       toque.cx = e.clientX;
       toque.cy = e.clientY;
+      // Centro "flutuante": se o dedo passa do raio máximo, o centro vem junto
+      const v = vetorToque();
+      if (v.mag > TOQUE_RAIO_MAX) {
+        const excesso = (v.mag - TOQUE_RAIO_MAX) / v.mag;
+        toque.ox += v.dx * excesso;
+        toque.oy += v.dy * excesso;
+      }
+      desenharGuiaToque();
     });
     const soltarToque = (e) => {
       if (e.pointerId !== toque.id) return;
       toque.ativo = false;
       toque.id = null;
+      desenharGuiaToque();
     };
     displayCanvas.addEventListener("pointerup", soltarToque);
     displayCanvas.addEventListener("pointercancel", soltarToque);
@@ -5155,19 +5228,18 @@
         // Abriu uma tela por cima: solta o dedo que estava andando
         toque.ativo = false;
         toque.id = null;
+        desenharGuiaToque();
       }
     }
 
-    // Ao começar, tenta tela cheia e deitar a tela (funciona no Android; no iPhone é girar na mão)
+    // Ao começar, tenta tela cheia (Android). Em pé ou deitado, o mapa se ajusta à tela.
     function entrarModoCelular() {
       if (!EH_TOQUE) return;
       const el = document.documentElement;
       try {
         const p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: "hide" }) : null;
         if (p && p.then) {
-          p.then(() => {
-            if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
-          }).catch(() => {});
+          p.catch(() => {});
         }
       } catch (e) {}
     }
@@ -5309,16 +5381,15 @@
       let esq = keys["KeyA"] || keys["ArrowLeft"];
       let dir = keys["KeyD"] || keys["ArrowRight"];
 
-      // Toque: a empilhadeira segue o dedo. Dedo atrás dela = ré.
+      // Toque: deslize para onde a empilhadeira deve ir. Deslizar para trás dela = ré.
       if (toque.ativo) {
-        const alvo = toqueNoMundo();
-        const tdx = alvo.x - v.x;
-        const tdy = alvo.y - v.y;
-        const tdist = Math.hypot(tdx, tdy);
-        if (tdist > 14) {
+        const vt = vetorToque();
+        const tdx = vt.dx;
+        const tdy = vt.dy;
+        if (vt.mag > TOQUE_ZONA_MORTA) {
           let erro = Math.atan2(tdx, tdy) - v.theta;
           erro = Math.atan2(Math.sin(erro), Math.cos(erro));
-          const lim = Math.min(VEIC.MAX_FRENTE, 25 + tdist * 1.1);
+          const lim = Math.min(VEIC.MAX_FRENTE, (vt.mag - TOQUE_ZONA_MORTA) * 2.2);
           if (Math.abs(erro) > 2.3) {
             // Dedo atrás: dá ré, girando a traseira para o lado do dedo
             if (v.vel > -Math.min(VEIC.MAX_RE, lim)) tras = true;
