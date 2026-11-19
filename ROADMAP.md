@@ -4,7 +4,7 @@
 
 | Fase | Nome | Mecânica nova | Status |
 |---|---|---|---|
-| 1 | Pedido #1042 | Picking a pé, embalagem e consolidação | 🚧 Em ajustes |
+| 1 | Pedido #1042 | Picking a pé, embalagem e consolidação | ✅ v0.2 jogável |
 | 2 | Pallet no Alto | Dirigir a empilhadeira | 💡 Planejada |
 | 3 | Cadê o Coletor? | Exploração sem GPS, guiada pelo som | 💡 Planejada |
 
@@ -14,6 +14,8 @@ A fase 3 reaproveita o personagem a pé e o áudio posicional que já existem. A
 ---
 
 ## Fase 1: Pedido #1042 (melhorias)
+
+> Feito na v0.2: etiqueta térmica impressa, coleta em 3 endereços, rádio com falas sarcásticas (objeto `TEXTOS`) e 3 empilhadeiras. Pendente: a Karla revisar e reescrever as falas na voz dela.
 
 ### Pedido como etiqueta real
 - O terminal "imprime" o pedido: a etiqueta sai da impressora linha a linha, com som de impressora térmica.
