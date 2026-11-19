@@ -406,26 +406,22 @@
       color: #34d399;
     }
 
-    /* Rádio do galpão */
+    /* Rádio do galpão: uma linha fixa dentro do objetivo (não muda a altura do HUD) */
     #radio-box {
-      position: absolute;
-      left: 50%;
-      bottom: calc(46px * var(--escala));
-      transform: translate(-50%, 12px);
-      max-width: 72%;
-      display: flex;
-      gap: calc(6px * var(--escala));
-      align-items: baseline;
+      display: block;
+      min-height: 1.6em;
       font-size: calc(8px * var(--escala));
       line-height: 1.6;
-      opacity: 0;
-      transition: opacity 0.15s, transform 0.15s;
-      pointer-events: none;
+      color: var(--cor-radio, #e2e8f0);
+      border-top: 1px dashed rgba(148, 163, 184, 0.35);
+      padding-top: calc(3px * var(--escala));
+      visibility: hidden;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    #radio-box.show {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
+    #radio-box.show { visibility: visible; }
+    html.retrato #radio-box { white-space: normal; min-height: 3.2em; }
     .radio-tag {
       color: #fbbf24;
       white-space: nowrap;
@@ -922,7 +918,6 @@
     html.retrato .hud-top-bar { flex-wrap: wrap; row-gap: 6px; }
     html.retrato #hud-obj-box { order: 10; flex-basis: 100%; }
     html.retrato .hud-right-group { margin-left: auto; }
-    html.retrato #radio-box { max-width: 92%; bottom: 140px; }
     html.retrato .btn-toque { bottom: 4%; }
     html.retrato .btn-toque-buzina { bottom: 22%; }
     html.retrato .modal-box { max-width: 96vw; }
@@ -970,6 +965,8 @@
         <div class="pixel-box objective-container" id="hud-obj-box">
           <span class="objective-title" id="hud-obj-step">OBJETIVO</span>
           <span class="objective-desc" id="hud-obj-desc">Carregando...</span>
+          <!-- Rádio do galpão: fica dentro do HUD para não tapar o mapa -->
+          <span id="radio-box"><span class="radio-tag">📻</span> <span id="radio-text"></span></span>
         </div>
 
         <div class="hud-right-group">
@@ -986,12 +983,6 @@
             <span id="audio-icon">🔊</span> <span>[M]</span>
           </div>
         </div>
-      </div>
-
-      <!-- Rádio do galpão (falas sarcásticas) -->
-      <div id="radio-box" class="pixel-box">
-        <span class="radio-tag">📻 RÁDIO</span>
-        <span id="radio-text"></span>
       </div>
 
       <!-- Rodapé -->
@@ -1565,7 +1556,7 @@
       if (!box || !txt) return;
       if (radioTimeout) clearTimeout(radioTimeout);
       if (radioTypeTimer) clearInterval(radioTypeTimer);
-      box.style.borderColor = cor || "#ffffff";
+      box.style.setProperty("--cor-radio", cor || "#e2e8f0");
       box.classList.add("show");
       txt.textContent = "";
       let i = 0;
@@ -3954,7 +3945,7 @@
       const naAlvo = !!(itemAqui && itemAqui.coletados < itemAqui.qtd);
 
       if (naAlvo) {
-        const linha = `${itemAqui.rua}-${itemAqui.posicao} ✓ SEGURE [E]`;
+        const linha = TOQUE_DISPOSITIVO ? itemAqui.posicao : `${itemAqui.posicao} [E]`;
         const esc = 2;
         const tw = larguraBitmap(linha, esc);
         const iconsW = itemAqui.qtd * 8 + 2;
@@ -5265,8 +5256,8 @@
     const ROTULOS_ACAO = {
       terminal: "PEDIDO", posicao_wms: "COLETAR", estacao_embalagem: "EMBALAR",
       pallet_consolidacao: "DEPOSITAR", veiculo: "SUBIR", pulmao_ok: "ERGUER",
-      pulmao_alinhar: "ERGUER", zona_ok: "BAIXAR", zona_devagar: "BAIXAR",
-      zona_fora: "BAIXAR", coletor: "PEGAR", npc: "PERGUNTAR"
+      pulmao_alinhar: "ENCAIXE", zona_ok: "BAIXAR", zona_devagar: "PARE",
+      zona_fora: "ENTRE", coletor: "PEGAR", npc: "PERGUNTAR"
     };
     let rotuloAcaoAtual = "";
     function atualizarBotoesToque() {
@@ -5426,7 +5417,26 @@
       return c;
     }
     function veiculoColide() {
-      return circulosVeiculo().some(c => checkCollision(c.x, c.y, c.r));
+      return penetracaoVeiculo() > 0;
+    }
+
+    // Quanto a empilhadeira está "entrando" em paredes e racks (0 = livre).
+    // Um movimento só é bloqueado se aumentar a penetração: assim ela nunca fica presa.
+    function penetracaoVeiculo() {
+      let total = 0;
+      circulosVeiculo().forEach(c => {
+        for (let i = 0; i < colisoes.length; i++) {
+          const r = colisoes[i];
+          const px = Math.max(r.x, Math.min(c.x, r.x + r.w));
+          const py = Math.max(r.y, Math.min(c.y, r.y + r.h));
+          const d = Math.hypot(c.x - px, c.y - py);
+          if (d < c.r) total += (c.r - d);
+        }
+      });
+      return total;
+    }
+    function movimentoPiora(antes) {
+      return penetracaoVeiculo() > antes + 0.01;
     }
 
     function atualizarVeiculo(dt) {
@@ -5478,8 +5488,12 @@
       // Direção estilo tanque: gira mais com velocidade; na ré, inverte
       const fatorGiro = Math.min(1, Math.abs(v.vel) / 50) * (v.comPallet ? 0.75 : 1);
       const sentido = v.vel >= 0 ? 1 : -1;
+      // Girar também respeita a colisão (antes os garfos "entravam" no rack e a empilhadeira travava)
+      const thetaAnt = v.theta;
+      const penAntesGiro = penetracaoVeiculo();
       if (esq) v.theta += VEIC.GIRO * fatorGiro * sentido * dt;
       if (dir) v.theta -= VEIC.GIRO * fatorGiro * sentido * dt;
+      if (v.theta !== thetaAnt && movimentoPiora(penAntesGiro)) v.theta = thetaAnt;
 
       // Inércia: a velocidade real persegue a direção do nariz (derrapa um pouco)
       const f = frenteVeiculo();
@@ -5488,11 +5502,13 @@
       v.vy += (f.y * v.vel - v.vy) * k;
 
       const antX = v.x, antY = v.y;
+      let pen = penetracaoVeiculo();
       v.x += v.vx * dt;
-      if (veiculoColide()) v.x = antX;
+      if (movimentoPiora(pen)) v.x = antX;
       const bateuX = v.x === antX && Math.abs(v.vx) > 1;
+      pen = penetracaoVeiculo();
       v.y += v.vy * dt;
-      if (veiculoColide()) v.y = antY;
+      if (movimentoPiora(pen)) v.y = antY;
       const bateuY = v.y === antY && Math.abs(v.vy) > 1;
 
       if (bateuX || bateuY) {
@@ -5956,8 +5972,35 @@
       });
     }
 
+    // Marca no chão mostrando onde a empilhadeira deve parar, de frente para a baia
+    function desenharMarcaEncaixe() {
+      const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
+      if (faseIndex !== 1 || etapa !== "BUSCAR_PALLET" || !veiculo.pilotando) return;
+      const b = posicaoBaiaAlvo();
+      const a = estadoAlinhamento();
+      const cor = a.alinhado ? "#34d399" : ((Math.floor(Date.now() / 300) % 2 === 0) ? "#facc15" : "#ca8a04");
+      const x0 = b.x - 13, x1 = b.x + 13;
+      const y0 = b.y - 48, y1 = b.y - 2;
+      ctx.fillStyle = a.alinhado ? "rgba(52, 211, 153, 0.18)" : "rgba(250, 204, 21, 0.10)";
+      ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+      ctx.fillStyle = cor;
+      for (let y = y0; y < y1; y += 6) {
+        ctx.fillRect(x0, y, 2, 3);
+        ctx.fillRect(x1 - 2, y, 2, 3);
+      }
+      for (let x = x0; x < x1; x += 6) ctx.fillRect(x, y0, 3, 2);
+      // Setinha apontando para o rack: é para esse lado que o garfo deve ficar
+      const sy = y0 + 18;
+      ctx.fillRect(b.x - 1, sy - 8, 2, 8);
+      ctx.fillRect(b.x - 4, sy - 2, 8, 2);
+      ctx.fillRect(b.x - 3, sy, 6, 2);
+      ctx.fillRect(b.x - 2, sy + 2, 4, 2);
+      ctx.fillRect(b.x - 1, sy + 4, 2, 2);
+    }
+
     function desenharCenarioFases() {
       desenharPulmao();
+      desenharMarcaEncaixe();
       if (faseIndex === 1) {
         const z = ZONA_ENTREGA_F2;
         const pisca = Math.floor(Date.now() / 250) % 2 === 0;
@@ -6012,18 +6055,21 @@
       if (!z) return false;
       const textos = {
         veiculo: ["[E] SUBIR NA 04", "#0b1326", "#ffffff", "#fbbf24"],
-        pulmao_ok: ["ALINHADO [E] ERGUER", "#052e16", "#34d399", "#bbf7d0"],
-        pulmao_alinhar: ["ALINHE O GARFO DE FRENTE", "#450a0a", "#ef4444", "#fecaca"],
+        pulmao_ok: ["[E] ERGUER", "#052e16", "#34d399", "#bbf7d0"],
+        pulmao_alinhar: ["ENCAIXE NA MARCA", "#422006", "#facc15", "#fef08a"],
         zona_ok: ["[E] BAIXAR PALLET", "#052e16", "#34d399", "#bbf7d0"],
         zona_devagar: ["PARE PARA BAIXAR", "#422006", "#facc15", "#fef08a"],
-        zona_fora: ["PALLET DENTRO DA AREA", "#422006", "#facc15", "#fef08a"],
+        zona_fora: ["ENTRE NA AREA", "#422006", "#facc15", "#fef08a"],
         coletor: ["[E] PEGAR O COLETOR", "#052e16", "#34d399", "#bbf7d0"],
         npc: ["[E] PERGUNTAR", "#0b1326", "#ffffff", "#fbbf24"]
       };
       const t = textos[z.tipo];
       if (!t) return false;
+      if (TOQUE_DISPOSITIVO) return true; // no celular o botão de ação já mostra o que fazer
       // Pilotando, o painel vai acima da empilhadeira para não cobrir o rack
-      desenharPainelBitmap(t[0], player.x, player.y + (veiculo.pilotando ? -48 : 12), t[1], t[2], t[3]);
+      // Pilotando: o painel fica do lado oposto aos garfos, para não cobrir o caminho
+      const yPainel = veiculo.pilotando ? (frenteVeiculo().y > 0.3 ? -52 : 30) : 12;
+      desenharPainelBitmap(t[0], player.x, player.y + yPainel, t[1], t[2], t[3]);
       return true;
     }
 
