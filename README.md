@@ -13,14 +13,18 @@ Abra o `index.html` no navegador ou jogue pelo GitHub Pages. As 3 fases são jog
 
 | Tecla | Ação |
 |---|---|
-| WASD / Setas | Andar (ou dirigir, na fase 2) |
-| Shift | Correr (não funciona carregando volume) |
+| Setas | Andar (ou dirigir, na fase 2) |
+| Shift | Correr |
 | E | Interagir / segurar para coletar ou erguer o garfo |
+| C | Pegar ou soltar o carrinho de picking |
 | Q | Ver a etiqueta (fase 2: ordem de serviço) |
 | H | Buzina (dirigindo) |
-| R | Liga/desliga a rádio caipira |
-| M | Som |
+| R / M | Rádio caipira / som |
 | Esc | Pausar |
+
+Não precisa decorar: as dicas aparecem na hora certa, na primeira vez que cada coisa surge. Para vê-las de novo, use **Pausa → Mostrar dicas de novo**.
+
+**Carrinho de picking:** fica perto do terminal nas fases 1 e 3. Com ele você anda mais rápido e corre mesmo carregado, mas ele é mais largo e também leva batida de empilhadeira.
 
 ### No celular
 

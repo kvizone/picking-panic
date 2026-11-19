@@ -848,6 +848,16 @@
     }
     html.toque .btn-toque.visivel { display: flex; }
     .btn-toque.apertado { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #000; background: #fde047; }
+    .btn-toque-carrinho {
+      left: auto;
+      right: 3%;
+      bottom: 22%;
+      min-width: 64px;
+      height: 64px;
+      font-size: 24px;
+      background: #e2e8f0;
+    }
+    .btn-toque-carrinho.ligado { background: #38bdf8; }
     .btn-toque-buzina {
       left: auto;
       right: 3%;
@@ -934,6 +944,250 @@
       .inventory-container { min-width: 0; }
       .btn-toque { min-width: 76px; height: 76px; font-size: 9px; }
     }
+
+    /* ==========================================================================
+       v0.4 · HUD ENXUTO (sem bordas pesadas) e HIERARQUIA VISUAL
+       1º o que fazer agora (amarelo, maior) · 2º tempo · 3º carga, ícones, mapa
+       ========================================================================== */
+    #hud { padding: 0; }
+    #hud .hud-top-bar {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      background: linear-gradient(180deg, rgba(5, 10, 23, 0.92), rgba(5, 10, 23, 0.78));
+      border-bottom: 2px solid rgba(250, 204, 21, 0.55);
+      padding: calc(4px * var(--escala)) calc(8px * var(--escala));
+      pointer-events: none;
+    }
+    #hud .hud-top-bar > * { pointer-events: auto; }
+    #hud .timer-container {
+      min-width: 0;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding-right: calc(10px * var(--escala));
+      margin-right: calc(10px * var(--escala));
+      border-right: 1px solid rgba(148, 163, 184, 0.25);
+      background: none;
+      border-top: 0; border-left: 0; border-bottom: 0; outline: none; box-shadow: none;
+      cursor: pointer;
+    }
+    #hud .timer-container.pulse-red { transform: scale(1.08); background: rgba(127, 29, 29, 0.6); }
+    #hud .timer-container.pulse-green { transform: scale(1.08); background: rgba(6, 78, 59, 0.6); }
+    #hud .timer-value { font-size: calc(12px * var(--escala)); color: #f8fafc; letter-spacing: 1px; }
+    #hud .penalty-indicator { font-size: calc(7px * var(--escala)); margin-top: calc(2px * var(--escala)); }
+    #hud .objective-container {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      padding: 0;
+      gap: calc(3px * var(--escala));
+      justify-content: center;
+      background: none;
+      box-shadow: none;
+      outline: none;
+      cursor: pointer;
+    }
+    #hud .obj-linha-meta {
+      display: flex;
+      gap: calc(8px * var(--escala));
+      align-items: baseline;
+      min-width: 0;
+    }
+    #hud .objective-title { font-size: calc(7px * var(--escala)); color: #64748b; white-space: nowrap; }
+    #hud .objective-desc {
+      font-size: calc(9px * var(--escala));
+      color: #fde047;
+      line-height: 1.45;
+      text-shadow: 1px 1px 0 #000;
+    }
+    #hud #radio-box {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      border: 0;
+      padding: 0;
+      font-size: calc(7px * var(--escala));
+      color: var(--cor-radio, #cbd5e1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0.9;
+    }
+    #hud .hud-right-group { gap: calc(6px * var(--escala)); align-items: center; margin-left: calc(10px * var(--escala)); }
+    #hud .inventory-container {
+      min-width: 0;
+      background: none; border: 0; outline: none; box-shadow: none; padding: 0;
+      align-items: flex-end;
+    }
+    #hud .inv-label { font-size: calc(6px * var(--escala)); color: #64748b; margin-bottom: calc(2px * var(--escala)); white-space: nowrap; }
+    #hud .inv-status { font-size: calc(8px * var(--escala)); white-space: nowrap; }
+    #hud .hud-icone {
+      background: rgba(30, 41, 59, 0.7);
+      border: 0;
+      border-radius: 2px;
+      font-size: calc(11px * var(--escala));
+      padding: calc(3px * var(--escala)) calc(5px * var(--escala));
+      cursor: pointer;
+      line-height: 1;
+      outline: none;
+      box-shadow: none;
+    }
+    #hud .hud-icone:hover { background: rgba(51, 65, 85, 0.9); }
+    #hud #musica-toggle-btn.desligada { opacity: 0.35; }
+    #hud .hud-bottom-bar { justify-content: flex-end; padding: calc(6px * var(--escala)); }
+    #hud #minimap-card {
+      padding: 2px;
+      background: rgba(5, 10, 23, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      outline: none;
+      box-shadow: none;
+      opacity: 0.9;
+    }
+
+    /* Celular em pé: tempo e ícones na 1ª linha, objetivo inteiro na 2ª */
+    html.retrato #hud .hud-top-bar { flex-wrap: wrap; row-gap: calc(4px * var(--escala)); }
+    html.retrato #hud .objective-container { order: 10; flex-basis: 100%; }
+    html.retrato #hud .timer-container { border-right: 0; }
+    html.retrato #hud .obj-linha-meta { flex-direction: column; gap: 2px; }
+    html.retrato #hud #radio-box { white-space: normal; }
+
+    /* ---------- Balões (dicas just in time e fala dos colegas) ---------- */
+    .balao {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 40;
+      max-width: min(calc(240px * var(--escala)), 72vw);
+      padding: calc(5px * var(--escala)) calc(7px * var(--escala));
+      font-size: calc(7px * var(--escala));
+      line-height: 1.7;
+      color: #111827;
+      border: 2px solid #111827;
+      box-shadow: 3px 3px 0 #000;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .balao.visivel { opacity: 1; }
+    .balao::after {
+      content: "";
+      position: absolute;
+      left: var(--rabo-x, 50%);
+      bottom: -8px;
+      width: 10px;
+      height: 10px;
+      background: inherit;
+      border-right: 2px solid #111827;
+      border-bottom: 2px solid #111827;
+      transform: translateX(-50%) rotate(45deg);
+    }
+    .balao.abaixo::after { bottom: auto; top: -8px; transform: translateX(-50%) rotate(225deg); }
+    .balao-dica { background: #fef08a; }
+    .balao-tag {
+      display: inline-block;
+      background: #111827;
+      color: #fde047;
+      padding: 0 4px;
+      margin-right: 6px;
+      font-size: 7px;
+    }
+    .balao-dica kbd {
+      font-family: inherit;
+      background: #111827;
+      color: #ffffff;
+      padding: 0 3px;
+      margin: 0 1px;
+    }
+    .balao-npc { background: #ffffff; }
+
+    /* ==========================================================================
+       v0.4 · JANELAS NO ESTILO PIXEL UI (referência: janelas anos 90)
+       Barra de título azul, corpo cinza com chanfro, botões em relevo.
+       Telas internas escuras (como monitor) continuam escuras para contraste.
+       ========================================================================== */
+    .modal-box.janela {
+      background: #d4d8de;
+      color: #111827;
+      border: 2px solid #000000;
+      outline: none;
+      box-shadow: inset -2px -2px 0 #6b7280, inset 2px 2px 0 #ffffff, 6px 6px 0 rgba(0, 0, 0, 0.85);
+      padding: 0 18px 18px;
+      gap: 12px;
+    }
+    .modal-box.janela::before {
+      content: attr(data-titulo);
+      display: flex;
+      align-items: center;
+      margin: 0 -18px 4px;
+      padding: 6px 10px;
+      background: linear-gradient(90deg, #1e3a8a, #2563eb);
+      color: #ffffff;
+      font-size: 8px;
+      letter-spacing: 1px;
+      text-align: left;
+      border-bottom: 2px solid #000000;
+    }
+    .modal-box.janela::after {
+      content: "";
+      position: absolute;
+      top: 5px;
+      right: 8px;
+      width: 12px;
+      height: 12px;
+      background: #d4d8de;
+      border: 1px solid #000;
+      box-shadow: inset -1px -1px 0 #6b7280, inset 1px 1px 0 #fff;
+    }
+    .modal-box.janela.briefing-box::before { background: linear-gradient(90deg, #7f1d1d, #b91c1c); }
+    .modal-box.janela.briefing-box { background: #fdfbf3; }
+    .modal-box.janela > h1, .modal-box.janela > h2 { color: #0f172a; }
+    .modal-box.janela > p { color: #374151 !important; }
+    .modal-box.janela .blink-text { color: #111827 !important; }
+    #result-rating-text { color: #92400e !important; }
+    #start-best-time-box { color: #047857 !important; }
+    #falha-texto { color: #1f2937 !important; }
+    .modal-box.janela .star-icon { color: #9ca3af; }
+    .modal-box.janela .star-icon.active { color: #f59e0b; text-shadow: 2px 2px 0 #000; }
+    #packing-feedback, #erguer-feedback {
+      background: #0f172a;
+      padding: 8px;
+      border: 2px solid #000;
+      box-shadow: inset 2px 2px 0 #000;
+    }
+    .modal-box.janela .key-box { box-shadow: 3px 3px 0 #000; }
+
+    /* Botões em relevo: primário azul, secundário cinza */
+    .btn {
+      border: 2px solid #000000;
+      outline: none;
+      box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.35), inset 2px 2px 0 rgba(255, 255, 255, 0.35), 3px 3px 0 #000;
+    }
+    .btn:hover { box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.35), inset 2px 2px 0 rgba(255, 255, 255, 0.35), 4px 4px 0 #000; }
+    .btn:active { box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.35), 1px 1px 0 #000; }
+    .btn-secondary { background: #c0c4cc; color: #111827; }
+    .btn-secondary:hover { background: #d1d5db; }
+    .modal-overlay { background: rgba(2, 6, 23, 0.72); }
+
+    /* Tela inicial: só o essencial */
+    .tela-essencial {
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 2px solid #000;
+      box-shadow: inset 2px 2px 0 #000;
+      padding: 12px;
+      font-size: 9px;
+      line-height: 2;
+    }
+    .tela-essencial p { color: #94a3b8; font-size: 7px; margin-top: 4px; }
+    .tela-essencial kbd {
+      font-family: inherit;
+      background: #e2e8f0;
+      color: #0f172a;
+      padding: 1px 5px;
+      margin: 0 1px;
+      box-shadow: 2px 2px 0 #475569;
+    }
   </style>
 </head>
 <body>
@@ -951,80 +1205,62 @@
     <!-- Botões de toque (só aparecem no celular) -->
     <button id="btn-acao" class="btn-toque" type="button">AÇÃO</button>
     <button id="btn-buzina" class="btn-toque btn-toque-buzina" type="button">📯</button>
+    <button id="btn-carrinho" class="btn-toque btn-toque-carrinho" type="button">🛒</button>
 
     <!-- Camada de Interface HUD (mesmo retângulo do canvas) -->
     <div id="hud" style="display: none;">
-      <!-- Topo -->
+      <!-- Topo: uma faixa só. Hierarquia: 1) o que fazer agora  2) tempo  3) o resto -->
       <div class="hud-top-bar">
-        <div class="pixel-box timer-container" id="hud-timer-box">
-          <span class="timer-label">TEMPO</span>
+        <div class="timer-container" id="hud-timer-box" title="Pausar">
           <span class="timer-value" id="hud-timer">00:00.0</span>
           <span class="penalty-indicator" id="hud-penalty">+0.0s</span>
         </div>
 
-        <div class="pixel-box objective-container" id="hud-obj-box">
-          <span class="objective-title" id="hud-obj-step">OBJETIVO</span>
+        <div class="objective-container" id="hud-obj-box" title="Ver etiqueta (Q)">
+          <div class="obj-linha-meta">
+            <span class="objective-title" id="hud-obj-step">OBJETIVO</span>
+            <span id="radio-box"><span class="radio-tag">📻</span> <span id="radio-text"></span></span>
+          </div>
           <span class="objective-desc" id="hud-obj-desc">Carregando...</span>
-          <!-- Rádio do galpão: fica dentro do HUD para não tapar o mapa -->
-          <span id="radio-box"><span class="radio-tag">📻</span> <span id="radio-text"></span></span>
         </div>
 
         <div class="hud-right-group">
-          <div class="pixel-box inventory-container" id="hud-inv-box">
+          <div class="inventory-container" id="hud-inv-box">
             <span class="inv-label" id="hud-inv-label">CARGA</span>
             <span class="inv-status" id="hud-inv-status">0/4</span>
           </div>
-
-          <div id="musica-toggle-btn" class="pixel-box" title="Rádio caipira (R)">
-            <span id="musica-icon">📻</span> <span>[R]</span>
-          </div>
-
-          <div id="audio-toggle-btn" class="pixel-box" title="Alternar Som (M)">
-            <span id="audio-icon">🔊</span> <span>[M]</span>
-          </div>
+          <button type="button" id="musica-toggle-btn" class="hud-icone" title="Rádio caipira (R)"><span id="musica-icon">📻</span></button>
+          <button type="button" id="audio-toggle-btn" class="hud-icone" title="Som (M)"><span id="audio-icon">🔊</span></button>
         </div>
       </div>
 
-      <!-- Rodapé -->
+      <!-- Rodapé: só o minimapa, discreto -->
       <div class="hud-bottom-bar">
-        <div class="controls-hint">
-          <span>WASD</span> Mover | <span>SHIFT</span> Correr | <span>E</span> Ação | <span>Q</span> Etiqueta | <span>M</span> Som | <span>R</span> Rádio | <span>F2</span> CRT
-        </div>
-
-        <!-- Minimapa Retrô -->
         <div id="minimap-card">
           <canvas id="minimap-canvas" width="120" height="60"></canvas>
-          <span class="minimap-title">MAPA WMS</span>
         </div>
       </div>
     </div>
+
+    <!-- Dica "just in time" (aparece na primeira vez que cada coisa surge) -->
+    <div id="dica-jit" class="balao balao-dica"><span class="balao-tag">DICA</span><span id="dica-texto"></span></div>
+    <!-- Fala dos colegas (texto inteiro, perto de quem falou) -->
+    <div id="balao-npc" class="balao balao-npc"><span id="balao-npc-texto"></span></div>
     </div>
 
     <!-- MODAL: Menu Inicial Retrô -->
     <div id="modal-start" class="modal-overlay" style="display: flex;">
-      <div class="modal-box" style="text-align: center;">
+      <div data-titulo="PICKING_PANIC.EXE" class="modal-box janela" style="text-align: center;">
         <h1 style="margin: 0;">
           <img src="assets/logo-800.png" alt="PICKING PANIC" class="logo-img">
         </h1>
         <p style="color: #fbbf24; font-size: 8px; margin-top: 4px;">OPERADOR DE ARMAZÉM 1996 · 3 FASES</p>
 
-        <div class="so-toque" style="background: #050a17; border: 2px solid #1e293b; padding: 12px; text-align: left; font-size: 8px; line-height: 1.8; color: #cbd5e1;">
-          <strong style="color: #ffffff;">NO CELULAR:</strong><br>
-          - <span style="color:#38bdf8">SEGURE O DEDO</span> na tela: o operador vai até lá (longe = corre)<br>
-          - <span style="color:#38bdf8">BOTÃO AMARELO</span>: aparece quando tem ação (segure para coletar)<br>
-          - <span style="color:#38bdf8">EMPILHADEIRA</span>: segue o dedo; dedo atrás dela = ré<br>
-          - <span style="color:#38bdf8">TOQUE NO TEMPO</span>: pausa · <span style="color:#38bdf8">NO OBJETIVO</span>: etiqueta
-        </div>
-        <div class="so-teclado" style="background: #050a17; border: 2px solid #1e293b; padding: 12px; text-align: left; font-size: 8px; line-height: 1.8; color: #cbd5e1;">
-          <strong style="color: #ffffff;">COMANDOS:</strong><br>
-          - <span style="color:#38bdf8">WASD / SETAS</span>: Mover<br>
-          - <span style="color:#38bdf8">SHIFT</span>: Correr (bloqueado com caixas)<br>
-          - <span style="color:#38bdf8">E</span>: Ação / Coletar / Confirmar<br>
-          - <span style="color:#38bdf8">Q</span>: Ver a etiqueta do pedido<br>
-          - <span style="color:#38bdf8">M</span>: Ligar / Desligar Som<br>
-          - <span style="color:#38bdf8">R</span>: Rádio caipira do galpão<br>
-          - <span style="color:#ef4444">3 EMPILHADEIRAS</span>: elas têm preferência (+5s)<br>
-          - <span style="color:#34d399">F2</span>: Alternar linhas CRT
+        <!-- Só o essencial: o resto aparece na hora certa, durante o jogo -->
+        <div class="tela-essencial">
+          <div class="so-teclado"><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> andar &nbsp;·&nbsp; <kbd>E</kbd> ação</div>
+          <div class="so-toque">Deslize o dedo para andar · botão amarelo para agir</div>
+          <p>As outras dicas aparecem na hora certa, durante o turno.</p>
         </div>
 
         <div id="start-best-time-box" style="font-size: 8px; color: #34d399; display: none;">
@@ -1079,9 +1315,8 @@
 
     <!-- MODAL: Minigame de Embalagem Retrô -->
     <div id="modal-packing" class="modal-overlay">
-      <div class="modal-box" style="text-align: center; position: relative;">
+      <div data-titulo="BANCADA DE EMBALAGEM" class="modal-box janela" style="text-align: center; position: relative;">
         <div id="tape-banner"></div>
-        <h2 style="font-size: 12px; color: #38bdf8;">ESTAÇÃO DE EMBALAGEM</h2>
         <p style="color: #94a3b8; font-size: 8px; margin-top: 4px; line-height: 1.6;" id="packing-instrucao">Pressione a sequência para selar e etiquetar:</p>
 
         <div class="sequence-box-wrapper" id="packing-sequence-container">
@@ -1104,7 +1339,7 @@
 
     <!-- MODAL: Briefing das fases 2 e 3 -->
     <div id="modal-briefing" class="modal-overlay">
-      <div class="modal-box briefing-box">
+      <div data-titulo="ORDEM.TXT" class="modal-box janela briefing-box">
         <div class="briefing-topo">
           <h2 id="brief-titulo">ORDEM DE SERVIÇO</h2>
           <span class="briefing-selo" id="brief-selo">URGENTE</span>
@@ -1118,7 +1353,7 @@
 
     <!-- MODAL: Erguer o garfo (fase 2) -->
     <div id="modal-erguer" class="modal-overlay">
-      <div class="modal-box" style="max-width: 360px; text-align: center;">
+      <div data-titulo="PULMÃO · CONTROLE DO GARFO" class="modal-box janela" style="max-width: 360px; text-align: center;">
         <h2 style="font-size: 12px; color: #fbbf24;">PULMÃO PUL-02 · NÍVEL 3</h2>
         <div class="erguer-area">
           <div class="erguer-coluna">
@@ -1140,7 +1375,7 @@
 
     <!-- MODAL: Falha (fase 3, bateria) -->
     <div id="modal-falha" class="modal-overlay">
-      <div class="modal-box" style="max-width: 420px; text-align: center;">
+      <div data-titulo="ERRO DO SISTEMA" class="modal-box janela" style="max-width: 420px; text-align: center;">
         <h1 style="font-size: 14px; color: #ef4444;">BATERIA ACABOU</h1>
         <p id="falha-texto" style="font-size: 8px; color: #cbd5e1; line-height: 1.8;"></p>
         <div style="display: flex; gap: 10px;">
@@ -1152,8 +1387,8 @@
 
     <!-- MODAL: Pausa -->
     <div id="modal-pause" class="modal-overlay">
-      <div class="modal-box" style="text-align: center; max-width: 400px;">
-        <h2 style="font-size: 14px; color: #ffffff;">TURNO PAUSADO</h2>
+      <div data-titulo="PAUSA" class="modal-box janela" style="text-align: center; max-width: 400px;">
+        <h2 style="font-size: 12px;">TURNO PAUSADO</h2>
         <p style="color: #94a3b8; font-size: 8px; line-height: 1.6;" id="pause-sub">Operação em espera.</p>
 
         <div style="background: #050a17; border: 2px solid #1e293b; padding: 10px; margin: 8px 0; text-align: left; font-size: 8px;">
@@ -1166,6 +1401,7 @@
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <button class="btn" id="btn-resume-game">RETOMAR [ESC]</button>
           <button class="btn btn-secondary" id="btn-restart-game">REINICIAR MISSÃO</button>
+          <button class="btn btn-secondary" id="btn-rever-dicas">MOSTRAR DICAS DE NOVO</button>
         </div>
       </div>
     </div>
@@ -1173,7 +1409,7 @@
     <!-- MODAL: Resultado e Avaliação -->
     <div id="modal-result" class="modal-overlay">
       <canvas id="result-fx-canvas" width="640" height="480"></canvas>
-      <div class="modal-box" style="text-align: center; z-index: 1;">
+      <div data-titulo="RELATÓRIO DO TURNO" class="modal-box janela" style="text-align: center; z-index: 1;">
         <div id="stamp-new-record">★ RECORDE! ★</div>
 
         <p id="res-fase" style="font-size: 8px; color: #64748b;">FASE 1/3</p>
@@ -1187,7 +1423,7 @@
         </div>
         <div id="result-rating-text" style="font-size: 9px; color: #fbbf24;">AVALIAÇÃO</div>
 
-        <div style="background: #050a17; border: 2px solid #1e293b; padding: 12px; font-size: 8px; line-height: 1.8; margin-top: 6px; text-align: left;">
+        <div style="background: #050a17; color: #cbd5e1; border: 2px solid #1e293b; padding: 12px; font-size: 8px; line-height: 1.8; margin-top: 6px; text-align: left;">
           <div>TEMPO: <span style="color:#ffffff;" id="res-time-raw">00:00.0</span></div>
           <div>PENALIDADES: <span style="color:#ef4444;" id="res-penalties">+0.0s</span></div>
           <div style="border-top: 1px solid #334155; padding-top: 4px; margin-top: 4px;">
@@ -1220,6 +1456,8 @@
     const VEL_ANDAR = 6.5;       // 104 px/s
     const VEL_CORRER = 12.0;     // 192 px/s (corrida arcade)
     const VEL_CARREGANDO = 5.0;  // 80 px/s
+    const VEL_CARRINHO = 8.0;            // empurrando o carrinho de picking
+    const VEL_CARRINHO_CORRENDO = 12.5;  // carrinho + correr (mesmo carregado)
 
     // As fases são jogadas em sequência: concluiu uma, vai para a próxima até zerar o jogo.
     const FASE_1 = {
@@ -1280,7 +1518,8 @@
           ["ENTREGA", "Área demarcada da DOCA 1."],
           ["VEÍCULO", "Empilhadeira 04, estacionada perto da Bancada 3."]
         ],
-        controles: "W acelera · S freia e dá ré · A/D vira · E pega/solta · H buzina",
+        controles: "↑ acelera · ↓ freia e dá ré · ← → vira · E pega/solta · H buzina",
+        controlesToque: "Deslize para onde quer ir · para trás = ré · botão amarelo pega/solta · 📯 buzina",
         obs: "OBS: faixa de pedestre tem limite de velocidade. A multa é em segundos."
       },
       etapas: [
@@ -1319,7 +1558,8 @@
           ["PISTA", "Ele apita. Quanto mais perto, mais alto (e mais de um lado)."],
           ["AJUDA", "Pergunte aos colegas com [E]. Alguém sempre jura que viu."]
         ],
-        controles: "WASD anda · SHIFT corre · E pega/pergunta · barra SINAL no HUD",
+        controles: "Setas andam · SHIFT corre · E pega/pergunta · C carrinho · barra SINAL no topo",
+        controlesToque: "Deslize para andar · botão amarelo pega/pergunta · barra SINAL no topo",
         obs: "OBS: A BATERIA DELE ESTÁ ACABANDO. TIPO, AGORA."
       },
       etapas: [
@@ -2869,6 +3109,12 @@
         return;
       }
 
+      // C: pega/solta o carrinho de picking
+      if (e.code === "KeyC" && estadoJogo === "JOGANDO") {
+        alternarCarrinho();
+        return;
+      }
+
       // H: buzina (só pilotando)
       if (e.code === "KeyH" && estadoJogo === "JOGANDO" && veiculo.pilotando) {
         buzinar();
@@ -3410,10 +3656,11 @@
         let moveX = 0;
         let moveY = 0;
 
-        if (keys["KeyW"] || keys["ArrowUp"]) moveY -= 1;
-        if (keys["KeyS"] || keys["ArrowDown"]) moveY += 1;
-        if (keys["KeyA"] || keys["ArrowLeft"]) moveX -= 1;
-        if (keys["KeyD"] || keys["ArrowRight"]) moveX += 1;
+        // Movimento só pelas setas (WASD ficou livre)
+        if (keys["ArrowUp"]) moveY -= 1;
+        if (keys["ArrowDown"]) moveY += 1;
+        if (keys["ArrowLeft"]) moveX -= 1;
+        if (keys["ArrowRight"]) moveX += 1;
 
         // Toque: anda na direção em que o dedo desliza; deslizar longe = corre
         let correndoNoToque = false;
@@ -3431,24 +3678,38 @@
           moveX /= len;
           moveY /= len;
 
-          const isCarrying = (volumesColetados > 0 || pacoteEmbalado);
-          const isRunning = (!isCarrying && (keys["ShiftLeft"] || keys["ShiftRight"] || correndoNoToque));
+          const comCarrinho = carrinho.pego;
+          // Sem carrinho, carregar caixa deixa lento e não corre. Com carrinho, a carga vai nele.
+          const isCarrying = !comCarrinho && (volumesColetados > 0 || pacoteEmbalado);
+          const querCorrer = keys["ShiftLeft"] || keys["ShiftRight"] || correndoNoToque;
+          const isRunning = !isCarrying && querCorrer;
           let speedPx = VEL_ANDAR * TILE_SIZE;
 
           if (isCarrying) speedPx = VEL_CARREGANDO * TILE_SIZE;
+          else if (comCarrinho) speedPx = (isRunning ? VEL_CARRINHO_CORRENDO : VEL_CARRINHO) * TILE_SIZE;
           else if (isRunning) speedPx = VEL_CORRER * TILE_SIZE;
+
+          // O carrinho vai na frente: vira suave para a direção do movimento
+          if (comCarrinho) {
+            const k = Math.min(1, dt * 10);
+            carrinho.fx += (moveX - carrinho.fx) * k;
+            carrinho.fy += (moveY - carrinho.fy) * k;
+            const n = Math.hypot(carrinho.fx, carrinho.fy) || 1;
+            carrinho.fx /= n;
+            carrinho.fy /= n;
+          }
 
           const nextX = player.x + moveX * speedPx * dt;
           const nextY = player.y + moveY * speedPx * dt;
 
-          if (!checkCollision(nextX, player.y, player.radius) && !colideEmpilhadeira(nextX, player.y, player.radius)) {
+          if (posicaoLivre(nextX, player.y)) {
             player.x = nextX;
-          } else if (colideEmpilhadeira(nextX, player.y, player.radius)) {
+          } else if (tocaAlgumaEmpilhadeira(nextX, player.y)) {
             tocouEmpilhadeira = true;
           }
-          if (!checkCollision(player.x, nextY, player.radius) && !colideEmpilhadeira(player.x, nextY, player.radius)) {
+          if (posicaoLivre(player.x, nextY)) {
             player.y = nextY;
-          } else if (colideEmpilhadeira(player.x, nextY, player.radius)) {
+          } else if (tocaAlgumaEmpilhadeira(player.x, nextY)) {
             tocouEmpilhadeira = true;
           }
 
@@ -3515,8 +3776,11 @@
           }
         });
 
+        const cPos = carrinho.pego ? posicaoCarrinho() : null;
         const empBatida = (player.invulnerableTimer <= 0 && !veiculo.pilotando)
-          ? (empilhadeiraEm(player.x, player.y, player.radius + 1) || (tocouEmpilhadeira ? empilhadeiraEm(player.x, player.y, player.radius + 3) : null))
+          ? (empilhadeiraEm(player.x, player.y, player.radius + 1) ||
+             (cPos ? empilhadeiraEm(cPos.x, cPos.y, CARRINHO_RAIO + 1) : null) ||
+             (tocouEmpilhadeira ? empilhadeiraEm(player.x, player.y, player.radius + 3) : null))
           : null;
         if (empBatida) {
           const fx = empBatida.x;
@@ -3919,10 +4183,10 @@
     }
 
     function desenharPainelBitmap(texto, cx, cy, fundo, borda, corTexto) {
-      const esc = 2;
+      const esc = 1;
       const tw = larguraBitmap(texto, esc);
-      const pw = tw + 8;
-      const ph = 14;
+      const pw = tw + 6;
+      const ph = 9;
       const px = prenderNaTela(cx - pw / 2, pw);
       const py = Math.round(cy);
       ctx.fillStyle = fundo;
@@ -3945,43 +4209,35 @@
       const naAlvo = !!(itemAqui && itemAqui.coletados < itemAqui.qtd);
 
       if (naAlvo) {
+        // Painel compacto: posição + caixinhas enchendo + barra fina (sem bordas pesadas)
         const linha = TOQUE_DISPOSITIVO ? itemAqui.posicao : `${itemAqui.posicao} [E]`;
-        const esc = 2;
-        const tw = larguraBitmap(linha, esc);
-        const iconsW = itemAqui.qtd * 8 + 2;
+        const tw = larguraBitmap(linha, 1);
+        const iconsW = itemAqui.qtd * 7;
         const pw = tw + iconsW + 8;
-        const ph = 18;
+        const ph = 10;
         const px = prenderNaTela(player.x - pw / 2, pw);
-        const py = Math.round(player.y - 32);
+        const py = Math.round(player.y - 26);
         const pct = Math.max(0, Math.min(1, progressoColeta / MISSAO_ATUAL.tempoColetaPorVolume));
-        ctx.fillStyle = "#0b1326";
-        ctx.fillRect(px, py, pw, ph);
-        ctx.strokeStyle = "#facc15";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(px, py, pw, ph);
-        desenharBitmap(linha, px + 4, py + 3, "#f8fafc", esc, "left");
-        const ix0 = px + 4 + tw + 4;
+        ctx.fillStyle = "rgba(11, 19, 38, 0.85)";
+        ctx.fillRect(px, py, pw, ph + 3);
+        desenharBitmap(linha, px + 3, py + 3, "#fde047", 1, "left");
+        const ix0 = px + 3 + tw + 4;
         for (let i = 0; i < itemAqui.qtd; i++) {
-          const ix = ix0 + i * 8;
-          const iy = py + 4;
-          ctx.strokeStyle = "#facc15";
-          ctx.strokeRect(ix, iy, 6, 6);
+          const ix = ix0 + i * 7;
+          const iy = py + 2;
+          ctx.fillStyle = "#475569";
+          ctx.fillRect(ix, iy, 5, 6);
           const cheia = i < itemAqui.coletados;
           const parcial = (i === itemAqui.coletados) ? pct : 0;
           if (cheia || parcial > 0.02) {
             const h = cheia ? 6 : Math.max(1, Math.round(6 * parcial));
             ctx.fillStyle = "#facc15";
-            ctx.fillRect(ix, iy + 6 - h, 6, h);
+            ctx.fillRect(ix, iy + 6 - h, 5, h);
           }
         }
-        const barY = py + ph + 2;
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(px, barY, pw, 6);
+        // barra de progresso fina, colada embaixo
         ctx.fillStyle = "#10b981";
-        ctx.fillRect(px + 1, barY + 1, Math.max(0, (pw - 2) * pct), 4);
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(px, barY, pw, 6);
+        ctx.fillRect(px, py + ph + 1, Math.round(pw * pct), 2);
         return;
       }
 
@@ -4279,6 +4535,9 @@
 
       // 9. NPCs
       npcs.forEach(npc => renderPixelCharacter(npc.x, npc.y, npc.dir, 0, npc.vestColor, false, false));
+
+      // 9b. Carrinho de picking
+      desenharCarrinho();
 
       // 10. Empilhadeiras
       empAtivas.forEach(emp => renderPixelForklift(emp.x, emp.y, emp.dir, emp.beaconTimer));
@@ -4628,6 +4887,11 @@
         });
       }
 
+      if (carrinho.ativo && !carrinho.pego) {
+        minimapCtx.fillStyle = "#e2e8f0";
+        minimapCtx.fillRect(carrinho.x * sx - 1, carrinho.y * sy - 1, 2, 2);
+      }
+
       const alvo = obterAlvoAtual();
       if (alvo) {
         minimapCtx.fillStyle = (Math.floor(Date.now() / 150) % 2 === 0) ? "#38bdf8" : "#ffffff";
@@ -4686,6 +4950,7 @@
         return;
       }
 
+      invLabel.textContent = carrinho.pego ? "🛒 CARRINHO" : "CARGA";
       if (cargaDepositada) {
         inv.textContent = "ENTREGUE";
         inv.style.color = "#34d399";
@@ -4731,7 +4996,7 @@
         const total = campanha.tempos.reduce((a, b) => a + b, 0);
         const totalEstrelas = campanha.estrelas.reduce((a, b) => a + b, 0);
         tituloEl.textContent = "VOCÊ ZEROU O PICKING PANIC!";
-        tituloEl.style.color = "#fbbf24";
+        tituloEl.style.color = "#b45309";
         campEl.style.display = "block";
         campEl.innerHTML =
           FASES.map((f, i) => `FASE ${i + 1} · ${f.nomeFase}: ${formatarTempo(campanha.tempos[i])} ${"★".repeat(campanha.estrelas[i])}`).join("<br>") +
@@ -4742,7 +5007,7 @@
         } catch (e) {}
       } else {
         tituloEl.textContent = faseIndex === 1 ? "PALLET ENTREGUE!" : "EXPEDIÇÃO CONCLUÍDA!";
-        tituloEl.style.color = "#34d399";
+        tituloEl.style.color = "#047857";
         campEl.style.display = "none";
       }
 
@@ -5070,6 +5335,8 @@
       // Estado próprio de cada fase
       resetarVeiculo();
       resetarColetor();
+      resetarCarrinho();
+      resetarDicasDaPartida();
       ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
 
@@ -5195,6 +5462,7 @@
 
     ligarBotaoTecla(document.getElementById("btn-acao"), "KeyE");
     ligarBotaoTecla(document.getElementById("btn-buzina"), "KeyH");
+    ligarBotaoTecla(document.getElementById("btn-carrinho"), "KeyC");
     ligarBotaoTecla(document.getElementById("btn-erguer-toque"), "KeyE");
     (function segurarParaErguer() {
       const area = document.getElementById("modal-erguer");
@@ -5273,6 +5541,10 @@
       }
       btn.classList.toggle("visivel", mostrar || btn.classList.contains("apertado"));
       buz.classList.toggle("visivel", estadoJogo === "JOGANDO" && veiculo.pilotando);
+      const car = document.getElementById("btn-carrinho");
+      const mostrarCarrinho = estadoJogo === "JOGANDO" && !veiculo.pilotando && carrinho.ativo && (carrinho.pego || perto_doCarrinho());
+      car.classList.toggle("visivel", mostrarCarrinho);
+      car.classList.toggle("ligado", carrinho.pego);
       if (estadoJogo !== "JOGANDO" && estadoJogo !== "ERGUER" && toque.ativo && estadoJogo !== "PAUSADO") {
         // Abriu uma tela por cima: solta o dedo que estava andando
         toque.ativo = false;
@@ -5291,6 +5563,334 @@
           p.catch(() => {});
         }
       } catch (e) {}
+    }
+
+    /* ==========================================================================
+       16a2. CARRINHO DE PICKING
+       Em operação real, com muitos pedidos, o operador usa carrinho.
+       Aqui ele deixa andar mais rápido e correr mesmo carregado, mas é mais largo.
+       Tecla C (ou botão 🛒 no celular) pega e solta.
+       ========================================================================== */
+    const CARRINHO_SPAWN = { x: 500, y: 100 };
+    const carrinho = { x: CARRINHO_SPAWN.x, y: CARRINHO_SPAWN.y, pego: false, fx: 0, fy: 1, ativo: true };
+    const CARRINHO_DIST = 11;
+    const CARRINHO_RAIO = 6;
+
+    function resetarCarrinho() {
+      carrinho.x = CARRINHO_SPAWN.x;
+      carrinho.y = CARRINHO_SPAWN.y;
+      carrinho.pego = false;
+      carrinho.fx = 0;
+      carrinho.fy = 1;
+      carrinho.ativo = faseIndex !== 1; // na fase 2 o veículo é a empilhadeira
+    }
+
+    function posicaoCarrinho(px = player.x, py = player.y) {
+      if (!carrinho.pego) return { x: carrinho.x, y: carrinho.y };
+      return { x: px + carrinho.fx * CARRINHO_DIST, y: py + carrinho.fy * CARRINHO_DIST };
+    }
+
+    function tocaAlgumaEmpilhadeira(x, y) {
+      if (colideEmpilhadeira(x, y, player.radius)) return true;
+      if (!carrinho.pego) return false;
+      const c = posicaoCarrinho(x, y);
+      return colideEmpilhadeira(c.x, c.y, CARRINHO_RAIO);
+    }
+
+    // Livre para o operador e, se estiver empurrando, para o carrinho também.
+    // Se o carrinho já estiver encostado em algo, ele não impede de sair dali.
+    function posicaoLivre(x, y) {
+      if (checkCollision(x, y, player.radius) || colideEmpilhadeira(x, y, player.radius)) return false;
+      if (carrinho.pego) {
+        const atual = posicaoCarrinho();
+        const preso = checkCollision(atual.x, atual.y, CARRINHO_RAIO);
+        const c = posicaoCarrinho(x, y);
+        if (!preso && checkCollision(c.x, c.y, CARRINHO_RAIO)) return false;
+        if (colideEmpilhadeira(c.x, c.y, CARRINHO_RAIO)) return false;
+      }
+      return true;
+    }
+
+    function perto_doCarrinho() {
+      return carrinho.ativo && !carrinho.pego && Math.hypot(carrinho.x - player.x, carrinho.y - player.y) < 24;
+    }
+
+    function alternarCarrinho() {
+      if (!carrinho.ativo || veiculo.pilotando || estadoJogo !== "JOGANDO") return;
+      if (carrinho.pego) {
+        const c = posicaoCarrinho();
+        carrinho.x = c.x;
+        carrinho.y = c.y;
+        carrinho.pego = false;
+        SFX.playTone(180, "square", 0.05, 0.12, 0.01);
+        JUICE.textoFlutuante(player.x, player.y - 14, "SOLTOU", "#94a3b8");
+      } else if (perto_doCarrinho()) {
+        const dx = carrinho.x - player.x;
+        const dy = carrinho.y - player.y;
+        const d = Math.hypot(dx, dy) || 1;
+        carrinho.fx = dx / d;
+        carrinho.fy = dy / d;
+        carrinho.pego = true;
+        SFX.playTone(260, "square", 0.05, 0.15, 0.01);
+        SFX.playTone(390, "square", 0.06, 0.15, 0.01, 0.05);
+        JUICE.textoFlutuante(player.x, player.y - 14, "CARRINHO!", "#38bdf8");
+      }
+      atualizarHUD();
+    }
+
+    function desenharCarrinho() {
+      if (!carrinho.ativo || veiculo.pilotando) return;
+      const c = posicaoCarrinho();
+      const horizontal = Math.abs(carrinho.fx) > Math.abs(carrinho.fy);
+      const w = horizontal ? 15 : 11;
+      const h = horizontal ? 11 : 15;
+      const x = Math.round(c.x - w / 2);
+      const y = Math.round(c.y - h / 2);
+      // rodinhas
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(x - 1, y - 1, 3, 3);
+      ctx.fillRect(x + w - 2, y - 1, 3, 3);
+      ctx.fillRect(x - 1, y + h - 2, 3, 3);
+      ctx.fillRect(x + w - 2, y + h - 2, 3, 3);
+      // grade de metal
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+      ctx.fillStyle = "#64748b";
+      for (let i = x + 3; i < x + w - 1; i += 3) ctx.fillRect(i, y + 1, 1, h - 2);
+      // carga dentro do carrinho
+      const caixas = carrinho.pego ? Math.min(4, volumesColetados + (pacoteEmbalado ? 1 : 0)) : 0;
+      for (let b = 0; b < caixas; b++) {
+        const bx = x + 2 + (b % 2) * Math.floor((w - 4) / 2);
+        const by = y + 2 + Math.floor(b / 2) * Math.floor((h - 4) / 2);
+        ctx.fillStyle = pacoteEmbalado ? "#78350f" : "#b45309";
+        ctx.fillRect(bx, by, Math.floor((w - 4) / 2) - 1, Math.floor((h - 4) / 2) - 1);
+        ctx.fillStyle = "#facc15";
+        ctx.fillRect(bx, by + 2, Math.floor((w - 4) / 2) - 1, 1);
+      }
+      // alça azul, do lado de quem empurra
+      ctx.fillStyle = "#2563eb";
+      if (carrinho.pego) {
+        const hx = Math.round(c.x - carrinho.fx * (w / 2 + 1));
+        const hy = Math.round(c.y - carrinho.fy * (h / 2 + 1));
+        if (horizontal) ctx.fillRect(hx - 1, hy - 4, 2, 8);
+        else ctx.fillRect(hx - 4, hy - 1, 8, 2);
+      } else {
+        ctx.fillRect(x, y + h, w, 2);
+        if (Math.floor(Date.now() / 400) % 2 === 0) desenharBitmap("C", c.x, y - 8, "#38bdf8", 1, "center");
+      }
+    }
+
+    /* ==========================================================================
+       16a3. DICAS "JUST IN TIME" E BALÃO DE FALA
+       Cada dica aparece uma vez, no momento em que o recurso surge pela primeira vez
+       (ensinar fazendo, não com manual antes). Sai sozinha quando a pessoa faz a ação.
+       ========================================================================== */
+    let dicasVistas = new Set();
+    try { dicasVistas = new Set(JSON.parse(localStorage.getItem("pickingpanic_dicas") || "[]")); } catch (e) {}
+    const dica = { id: null, timer: 0, minimo: 0, fim: null, ancora: null };
+    const balaoNpc = { npc: null, timer: 0 };
+    const memoria = { inicioX: 0, inicioY: 0, andandoSemCorrer: 0, tempoNaEtapa: 0, etapaAnterior: -1, volumesAntes: 0 };
+
+    function salvarDicas() {
+      try { localStorage.setItem("pickingpanic_dicas", JSON.stringify([...dicasVistas])); } catch (e) {}
+    }
+    function reverDicas() {
+      dicasVistas = new Set();
+      salvarDicas();
+    }
+
+    function tentarDica(id, textoTeclado, textoToque, opts = {}) {
+      if (dica.id || dicasVistas.has(id)) return false;
+      dicasVistas.add(id);
+      salvarDicas();
+      dica.id = id;
+      dica.timer = opts.dur || 6;
+      dica.minimo = 1.4;
+      dica.fim = opts.fim || null;
+      dica.ancora = opts.ancora || null;
+      document.getElementById("dica-texto").innerHTML = EH_TOQUE ? textoToque : textoTeclado;
+      document.getElementById("dica-jit").classList.add("visivel");
+      SFX.playTone(880, "triangle", 0.06, 0.1, 0.01);
+      return true;
+    }
+
+    function fecharDica() {
+      dica.id = null;
+      document.getElementById("dica-jit").classList.remove("visivel");
+    }
+
+    function mostrarBalaoNpc(npc, texto) {
+      balaoNpc.npc = npc;
+      balaoNpc.timer = 3.5 + texto.length * 0.04;
+      document.getElementById("balao-npc-texto").textContent = texto;
+      document.getElementById("balao-npc").style.borderColor = npc.vestColor;
+      document.getElementById("balao-npc").classList.add("visivel");
+      SFX.playTone(520, "square", 0.04, 0.08, 0.01);
+      SFX.playTone(440, "square", 0.04, 0.08, 0.01, 0.06);
+    }
+
+    // Posiciona um balão (DOM) acima de um ponto do mundo, sem sair da tela
+    function posicionarBalao(el, wx, wy, folga = 18) {
+      const stage = document.getElementById("stage");
+      const sw = stage.clientWidth;
+      const sh = stage.clientHeight;
+      const sx = (wx - Math.round(camera.x)) / VIEW_W * sw;
+      const sy = (wy - Math.round(camera.y)) / VIEW_H * sh;
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      const topoLivre = document.querySelector(".hud-top-bar").getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 4;
+      let x = Math.max(4, Math.min(sx - w / 2, sw - w - 4));
+      let y = sy - h - folga;
+      const abaixo = y < topoLivre;
+      if (abaixo) y = sy + folga + 6;
+      el.classList.toggle("abaixo", abaixo);
+      el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      el.style.setProperty("--rabo-x", Math.max(10, Math.min(w - 10, sx - x)) + "px");
+    }
+
+    const K = (t) => `<kbd>${t}</kbd>`;
+
+    function atualizarDicas(dt) {
+      const jogando = estadoJogo === "JOGANDO";
+      const elDica = document.getElementById("dica-jit");
+      const elBalao = document.getElementById("balao-npc");
+
+      // Balão do colega
+      if (balaoNpc.timer > 0) {
+        balaoNpc.timer -= dt;
+        if (balaoNpc.timer <= 0 || !jogando) {
+          balaoNpc.timer = 0;
+          elBalao.classList.remove("visivel");
+        } else {
+          posicionarBalao(elBalao, balaoNpc.npc.x, balaoNpc.npc.y - 10);
+        }
+      }
+
+      if (!jogando || !cronometroIniciado) {
+        if (dica.id && estadoJogo !== "PAUSADO") elDica.classList.remove("visivel");
+        return;
+      }
+      if (dica.id && balaoNpc.timer > 0) fecharDica(); // fala do colega tem prioridade
+      if (dica.id) elDica.classList.add("visivel");
+
+      // Memória do comportamento (para decidir a hora certa de cada dica)
+      if (etapaAtualIndex !== memoria.etapaAnterior) {
+        memoria.etapaAnterior = etapaAtualIndex;
+        memoria.tempoNaEtapa = 0;
+      }
+      memoria.tempoNaEtapa += dt;
+      const andando = keys["ArrowUp"] || keys["ArrowDown"] || keys["ArrowLeft"] || keys["ArrowRight"] || (toque.ativo && vetorToque().mag > TOQUE_ZONA_MORTA);
+      const correndo = keys["ShiftLeft"] || keys["ShiftRight"] || (toque.ativo && vetorToque().mag > TOQUE_CORRER);
+      memoria.andandoSemCorrer = (andando && !correndo && !veiculo.pilotando) ? memoria.andandoSemCorrer + dt : 0;
+
+      // Dica ativa: acompanha o jogador e sai quando a pessoa fez o que foi sugerido
+      if (dica.id) {
+        dica.timer -= dt;
+        dica.minimo -= dt;
+        const feito = dica.fim && dica.minimo <= 0 && dica.fim();
+        if (dica.timer <= 0 || feito) {
+          fecharDica();
+        } else {
+          const a = dica.ancora ? dica.ancora() : { x: player.x, y: player.y };
+          posicionarBalao(elDica, a.x, a.y - 12, 22);
+        }
+        return;
+      }
+
+      const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
+      const empPerto = empAtivas.some(e => Math.hypot(e.x - player.x, e.y - player.y) < 75);
+      const npcPerto = npcs.some(n => Math.hypot(n.x - player.x, n.y - player.y) < 60);
+
+      if (!veiculo.pilotando) {
+        if (faseIndex === 0 && memoria.tempoNaEtapa > 0.3) {
+          tentarDica("andar",
+            `Use as setas ${K("←")}${K("↑")}${K("→")}${K("↓")} para andar.`,
+            "Deslize o dedo em qualquer lugar da tela para andar.",
+            { dur: 9, fim: () => Math.hypot(player.x - memoria.inicioX, player.y - memoria.inicioY) > 40 });
+        }
+        if (etapa === "COLETAR" && memoria.tempoNaEtapa > 4) {
+          tentarDica("seta", "A seta amarela aponta o item mais perto. A ordem é com você.",
+            "A seta amarela aponta o item mais perto. A ordem é com você.", { dur: 5 });
+        }
+        if (perto_doCarrinho() && (faseIndex === 0 || faseIndex === 2)) {
+          tentarDica("carrinho",
+            `${K("C")} pega o carrinho: anda mais rápido e corre mesmo carregado.`,
+            "Toque em 🛒 para empurrar o carrinho: mais rápido, mesmo carregado.",
+            { dur: 7, fim: () => carrinho.pego, ancora: () => ({ x: carrinho.x, y: carrinho.y }) });
+        }
+        if (memoria.andandoSemCorrer > 2.5 && !(volumesColetados > 0 && !carrinho.pego)) {
+          tentarDica("correr", `Segure ${K("SHIFT")} para correr.`, "Deslize mais longe para correr.",
+            { dur: 5, fim: () => correndo });
+        }
+        const z = player.currentZone;
+        if (z && z.tipo === "posicao_wms") {
+          const it = itemDaPosicao(z.dados);
+          if (it && it.coletados < it.qtd) {
+            memoria.volumesAntes = volumesColetados;
+            tentarDica("coletar", `Segure ${K("E")} até encher as caixinhas.`, "Segure o botão amarelo até encher as caixinhas.",
+              { dur: 6, fim: () => volumesColetados > memoria.volumesAntes });
+          }
+        }
+        if (volumesColetados >= 1 && etapa === "COLETAR") {
+          tentarDica("etiqueta", `${K("Q")} mostra a etiqueta com todos os endereços.`,
+            "Toque no objetivo (lá em cima) para ver a etiqueta.", { dur: 5 });
+        }
+        if (etapa === "LEVAR_EMBALAGEM") {
+          tentarDica("bancada", `Tudo separado! Siga a seta até uma bancada e aperte ${K("E")}.`,
+            "Tudo separado! Siga a seta até uma bancada e toque no botão.", { dur: 5 });
+        }
+        if (etapa === "LEVAR_PALLET") {
+          tentarDica("pallet", "Caixa lacrada. Agora o pallet da doca marcada em amarelo.",
+            "Caixa lacrada. Agora o pallet da doca marcada em amarelo.", { dur: 5 });
+        }
+        if (faseIndex === 2 && etapa === "ACHAR_COLETOR") {
+          tentarDica("bip", "Sem seta e sem mapa. Siga o bip e a barra SINAL, no canto de cima.",
+            "Sem seta e sem mapa. Siga o bip e a barra SINAL, no canto de cima.", { dur: 7 });
+          if (npcPerto) {
+            tentarDica("perguntar", `${K("E")} pergunta ao colega. Um deles mente.`,
+              "Toque em PERGUNTAR perto do colega. Um deles mente.", { dur: 6 });
+          }
+        }
+        if (faseIndex === 1 && etapa === "ENTRAR_EMP" && memoria.tempoNaEtapa > 0.5) {
+          tentarDica("subir", `Siga a seta até a empilhadeira laranja e aperte ${K("E")}.`,
+            "Siga a seta até a empilhadeira laranja e toque em SUBIR.", { dur: 6, fim: () => veiculo.pilotando });
+        }
+      } else {
+        tentarDica("dirigir",
+          `${K("↑")} acelera · ${K("↓")} freia e dá ré · ${K("←")}${K("→")} vira`,
+          "Deslize para onde quer ir. Deslizar para trás dela = ré.",
+          { dur: 8, fim: () => Math.abs(veiculo.vel) > 60 });
+        if (etapa === "BUSCAR_PALLET" && estadoAlinhamento().perto) {
+          tentarDica("encaixe", "Pare em cima da marca, com o garfo virado para o rack.",
+            "Pare em cima da marca, com o garfo virado para o rack.",
+            { dur: 6, ancora: () => { const b = posicaoBaiaAlvo(); return { x: b.x, y: b.y - 40 }; } });
+        }
+        if (npcPerto) {
+          tentarDica("buzina", `${K("H")} buzina e o pessoal sai da frente.`, "Toque em 📯 para buzinar.", { dur: 5 });
+        }
+        if (etapa === "LEVAR_PALLET_EMP" && memoria.tempoNaEtapa > 1) {
+          tentarDica("baixar", "Leve até a área amarela da DOCA 1 e pare dentro dela.",
+            "Leve até a área amarela da DOCA 1 e pare dentro dela.", { dur: 6 });
+        }
+      }
+      if (empPerto && dicasVistas.has("andar") && memoria.tempoNaEtapa > 2) {
+        tentarDica("empilhadeira", "Empilhadeira! Ela tem preferência. Encostar custa +5s.",
+          "Empilhadeira! Ela tem preferência. Encostar custa +5s.",
+          { dur: 4, ancora: () => { const e = empAtivas.reduce((m, x) => Math.hypot(x.x - player.x, x.y - player.y) < Math.hypot(m.x - player.x, m.y - player.y) ? x : m); return { x: e.x, y: e.y - 14 }; } });
+      }
+    }
+
+    function resetarDicasDaPartida() {
+      fecharDica();
+      balaoNpc.timer = 0;
+      document.getElementById("balao-npc").classList.remove("visivel");
+      memoria.inicioX = player.x;
+      memoria.inicioY = player.y;
+      memoria.andandoSemCorrer = 0;
+      memoria.tempoNaEtapa = 0;
+      memoria.etapaAnterior = -1;
     }
 
     /* ==========================================================================
@@ -5342,7 +5942,7 @@
       document.getElementById("brief-selo").textContent = b.selo;
       document.getElementById("brief-linhas").innerHTML = b.linhas
         .map(([k, v]) => `<div><b>${k}</b><span>${v}</span></div>`).join("");
-      document.getElementById("brief-controles").textContent = b.controles;
+      document.getElementById("brief-controles").textContent = (EH_TOQUE && b.controlesToque) ? b.controlesToque : b.controles;
       document.getElementById("brief-obs").textContent = b.obs;
       document.getElementById("modal-briefing").style.display = "flex";
       SFX.terminal();
@@ -5444,10 +6044,10 @@
       if (v.batidaCooldown > 0) v.batidaCooldown -= dt;
       if (v.multaCooldown > 0) v.multaCooldown -= dt;
 
-      let frente = keys["KeyW"] || keys["ArrowUp"];
-      let tras = keys["KeyS"] || keys["ArrowDown"];
-      let esq = keys["KeyA"] || keys["ArrowLeft"];
-      let dir = keys["KeyD"] || keys["ArrowRight"];
+      let frente = !!keys["ArrowUp"];
+      let tras = !!keys["ArrowDown"];
+      let esq = !!keys["ArrowLeft"];
+      let dir = !!keys["ArrowRight"];
 
       // Toque: deslize para onde a empilhadeira deve ir. Deslizar para trás dela = ré.
       if (toque.ativo) {
@@ -5840,7 +6440,7 @@
           npc.parado = 0.6;
           if (interactPressedThisFrame && npc.pistaCooldown <= 0) {
             npc.pistaCooldown = 3;
-            falarTexto(pistaDoNpc(i), npc.vestColor);
+            mostrarBalaoNpc(npc, pistaDoNpc(i));
           }
         }
       });
@@ -6091,6 +6691,11 @@
       SFX.menuBlip();
       fecharBriefing();
     });
+    document.getElementById("btn-rever-dicas").addEventListener("click", () => {
+      SFX.menuBlip();
+      reverDicas();
+      document.getElementById("btn-rever-dicas").textContent = "✓ AS DICAS VÃO APARECER DE NOVO";
+    });
     document.getElementById("btn-falha-retry").addEventListener("click", () => {
       SFX.menuBlip();
       reiniciarJogo();
@@ -6150,6 +6755,7 @@
 
       update(dt);
       atualizarBotoesToque();
+      atualizarDicas(dt);
       if (audioCtx) {
         let maisPerto = empAtivas[0];
         let menorD = Infinity;
