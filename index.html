@@ -1202,82 +1202,86 @@
     #hud .hud-fila.pop { transform: scale(1.3); }
     @keyframes piscaFila { 50% { background: #7f1d1d; } }
 
-    .notif-pedido {
-      position: absolute;
-      left: 50%;
-      top: 60px;
-      z-index: 45;
-      transform: translate(-50%, -12px);
+    .pok-estrelas .star-icon { font-size: 22px; }
+
+    /* Seletor de pedido em cima do cupom (só no balcão) */
+    .cupom-seletor {
+      display: none;
+      align-items: stretch;
+      gap: 6px;
+      width: 300px;
+    }
+    .cupom-seletor.visivel { display: flex; }
+    .cup-seta {
+      font-family: inherit;
+      font-size: 10px;
+      width: 34px;
+      background: #c0c4cc;
+      color: #111827;
+      border: 2px solid #000;
+      box-shadow: inset -2px -2px 0 rgba(0,0,0,0.3), inset 2px 2px 0 rgba(255,255,255,0.5);
+      cursor: pointer;
+    }
+    .cup-seta:disabled { visibility: hidden; }
+    .cup-info {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: calc(3px * var(--escala));
-      align-items: flex-start;
-      min-width: min(calc(220px * var(--escala)), 80vw);
-      max-width: 86vw;
-      padding: calc(6px * var(--escala)) calc(9px * var(--escala));
+      gap: 3px;
+      padding: 5px 8px;
       background: #fef08a;
       color: #111827;
-      font-family: inherit;
-      font-size: calc(7px * var(--escala));
-      line-height: 1.6;
-      text-align: left;
+      border: 2px solid #000;
+      font-size: 7px;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .cup-info b { font-weight: normal; font-size: 8px; }
+    .cup-info.atrasado { background: #fecaca; }
+    .cupom-botoes { display: flex; gap: 8px; }
+    #btn-cupom-depois { display: none; }
+    .cupom-seletor.visivel ~ .cupom-botoes #btn-cupom-depois { display: inline-block; }
+
+    /* Dicas viram legenda fixa: não cobrem o jogador nem o caminho */
+    #dica-jit.legenda {
+      position: absolute;
+      left: 50% !important;
+      top: auto !important;
+      bottom: calc(10px * var(--escala));
+      transform: translateX(-50%) !important;
+      max-width: min(calc(300px * var(--escala)), 60%);
+      text-align: center;
+      box-shadow: 2px 2px 0 #000;
+      padding: calc(4px * var(--escala)) calc(8px * var(--escala));
+    }
+    #dica-jit.legenda::after { display: none; }
+
+    .chamado-balcao {
+      position: absolute;
+      left: 50%;
+      bottom: calc(10px * var(--escala));
+      transform: translateX(-50%);
+      z-index: 41;
+      max-width: min(calc(320px * var(--escala)), 64%);
+      padding: calc(5px * var(--escala)) calc(9px * var(--escala));
+      background: #fde047;
+      color: #111827;
       border: 2px solid #111827;
       box-shadow: 3px 3px 0 #000;
-      cursor: pointer;
-      opacity: 0;
+      font-size: calc(8px * var(--escala));
+      line-height: 1.7;
+      text-align: center;
       pointer-events: none;
-      transition: opacity 0.15s, transform 0.15s;
+      display: none;
+      animation: chamadoPulsa 1s ease-in-out infinite;
     }
-    .notif-pedido b { font-weight: normal; background: #111827; color: #fde047; padding: 1px 5px; }
-    .notif-pedido.visivel { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
-
-    .wms-box { max-width: 460px; width: 94vw; }
-    .wms-tela {
-      background: #04130b;
-      border: 2px solid #000;
-      box-shadow: inset 2px 2px 0 #000;
-      padding: 10px;
-      color: #4ade80;
-      font-size: 8px;
-      line-height: 1.6;
-      text-align: left;
-      min-height: 120px;
-    }
-    .wms-cab { display: flex; justify-content: space-between; color: #86efac; border-bottom: 1px dashed #166534; padding-bottom: 6px; margin-bottom: 6px; }
-    .wms-aviso { color: #fde047; margin-bottom: 6px; }
-    .wms-aviso:empty { display: none; }
-    .wms-vazio { color: #4b7a5c; padding: 18px 0; text-align: center; }
-    .wms-pedido {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 3px 10px;
-      width: 100%;
-      margin: 0 0 6px;
-      padding: 8px;
-      background: #052e16;
-      color: #bbf7d0;
-      font-family: inherit;
-      font-size: 8px;
-      line-height: 1.5;
-      text-align: left;
-      border: 1px solid #166534;
-      cursor: pointer;
-    }
-    .wms-pedido:hover, .wms-pedido.sel { background: #14532d; border-color: #4ade80; outline: 2px solid #4ade80; }
-    .wms-pedido:disabled { opacity: 0.45; cursor: not-allowed; outline: none; }
-    .wms-num { color: #fde047; }
-    .wms-cli { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .wms-info { color: #86efac; text-align: right; }
-    .wms-prazo { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
-    .wms-barra { flex: 1; height: 6px; background: #022c22; border: 1px solid #166534; }
-    .wms-barra i { display: block; height: 100%; background: #4ade80; }
-    .wms-pedido.alerta .wms-barra i { background: #facc15; }
-    .wms-pedido.atrasado { border-color: #ef4444; }
-    .wms-pedido.atrasado .wms-barra i { background: #ef4444; }
-    .wms-pedido.atrasado .wms-idade { color: #fca5a5; }
-    .wms-rodape { font-size: 7px; color: #374151; text-align: center; }
-
-    .pok-estrelas .star-icon { font-size: 22px; }
+    .chamado-balcao.visivel { display: block; }
+    .chamado-balcao kbd { font-family: inherit; background: #111827; color: #fff; padding: 0 4px; }
+    html.toque .chamado-balcao { bottom: auto; top: var(--topo-livre, 70px); max-width: 88%; }
+    @keyframes chamadoPulsa { 50% { transform: translateX(-50%) scale(1.04); } }
+    #btn-acao.chamando { animation: botaoChama 0.7s ease-in-out infinite; }
+    @keyframes botaoChama { 50% { transform: scale(1.12); box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.45); } }
+    html.toque #dica-jit.legenda { bottom: auto; top: var(--topo-livre, 70px); max-width: 88%; }
     .pok-stats {
       background: #0f172a;
       color: #cbd5e1;
@@ -1359,8 +1363,8 @@
     <div id="dica-jit" class="balao balao-dica"><span class="balao-tag">DICA</span><span id="dica-texto"></span></div>
     <!-- Fala dos colegas (texto inteiro, perto de quem falou) -->
     <div id="balao-npc" class="balao balao-npc"><span id="balao-npc-texto"></span></div>
-    <!-- Notificação de pedido novo caindo no balcão -->
-    <button type="button" id="notif-pedido" class="notif-pedido"><b>📥 PEDIDO NOVO NO BALCÃO</b><span id="notif-texto"></span></button>
+    <!-- Chamado da missão: fica na tela até o operador pegar o pedido -->
+    <div id="chamado-balcao" class="chamado-balcao"><span class="balao-tag">PEDIDO</span><span id="chamado-texto"></span></div>
     </div>
 
     <!-- MODAL: Menu Inicial Retrô -->
@@ -1395,6 +1399,12 @@
     <!-- MODAL: Etiqueta de separação (impressa pelo terminal WMS) -->
     <div id="modal-order" class="modal-overlay">
       <div class="etiqueta-wrap">
+        <!-- No balcão: qual pedido sai. Com mais de um na fila, ◀ ▶ troca. -->
+        <div id="cupom-seletor" class="cupom-seletor">
+          <button type="button" id="cup-ant" class="cup-seta">◀</button>
+          <div class="cup-info"><b id="cup-titulo">PEDIDO 1 DE 2 NO BALCÃO</b><span id="cup-prazo">ESPERANDO 0:12 · PRAZO 0:50</span></div>
+          <button type="button" id="cup-prox" class="cup-seta">▶</button>
+        </div>
         <div class="impressora">
           <div class="impressora-boca"></div>
           <span class="impressora-led" id="impressora-led"></span>
@@ -1422,9 +1432,10 @@
             <div class="et-obs" id="et-obs">OBS:</div>
           </div>
         </div>
-        <button class="btn" id="btn-close-order">
-          BORA! [E / ENTER]
-        </button>
+        <div class="cupom-botoes">
+          <button class="btn" id="btn-close-order">BORA! [E / ENTER]</button>
+          <button class="btn btn-secondary" id="btn-cupom-depois" type="button">AGORA NÃO [ESC]</button>
+        </div>
       </div>
     </div>
 
@@ -1481,20 +1492,6 @@
         </div>
         <div id="erguer-feedback" style="font-size: 8px; color: #cbd5e1; line-height: 1.6; min-height: 26px;">SEGURE [E] PARA SUBIR. SOLTE NA FAIXA VERDE.</div>
         <button id="btn-erguer-toque" class="btn" type="button">SEGURE PARA ERGUER</button>
-      </div>
-    </div>
-
-    <!-- MODAL: Balcão WMS (caixa de entrada de pedidos) -->
-    <div id="modal-wms" class="modal-overlay">
-      <div data-titulo="E-SHIP WMS · CAIXA DE ENTRADA" class="modal-box janela wms-box">
-        <div class="wms-tela">
-          <div class="wms-cab"><span>PEDIDOS NO BALCÃO</span><span id="wms-relogio">TURNO 00:00</span></div>
-          <div id="wms-aviso" class="wms-aviso"></div>
-          <div id="wms-lista"></div>
-        </div>
-        <div class="wms-rodape so-teclado">↑↓ escolhe · E / ENTER pega o pedido · ESC fecha</div>
-        <div class="wms-rodape so-toque">Toque no pedido para imprimir a etiqueta</div>
-        <button class="btn btn-secondary" id="btn-wms-fechar" type="button">FECHAR [ESC]</button>
       </div>
     </div>
 
@@ -3428,12 +3425,11 @@
         return;
       }
       if (estadoJogo === "BOOT" || estadoJogo === "ERGUER_OK") return;
-      if (estadoJogo === "WMS") {
-        if (e.code === "Escape" || e.code === "KeyQ") { SFX.menuBlip(); fecharWMS(); }
-        else if (e.code === "ArrowUp" || e.code === "KeyW") moverSelecaoWMS(-1);
-        else if (e.code === "ArrowDown" || e.code === "KeyS") moverSelecaoWMS(1);
-        else if (e.code === "Enter" || e.code === "KeyE" || e.code === "Space") { SFX.menuBlip(); aceitarSelecionadoWMS(); }
-        return;
+      // Cupom no balcão: ◀ ▶ troca de pedido, Esc deixa para depois
+      if (estadoJogo === "CARD_PEDIDO" && fila.escolhendo) {
+        if (e.code === "ArrowLeft" || e.code === "KeyA") { trocarPedidoNoBalcao(-1); return; }
+        if (e.code === "ArrowRight" || e.code === "KeyD") { trocarPedidoNoBalcao(1); return; }
+        if (e.code === "Escape" || e.code === "KeyQ") { SFX.menuBlip(); deixarParaDepois(); return; }
       }
       if (estadoJogo === "PEDIDO_OK") {
         if (e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape") { SFX.menuEnter(); fecharPedidoOk(); }
@@ -3500,7 +3496,7 @@
           if (ehVeiculo()) abrirBriefing();
           else if (ehColetor() && !coletor.achado) falar("semColetor", "#ef4444");
           else if (ehFila() && !fila.ativo) {
-            if (player.currentZone && player.currentZone.tipo === "terminal") abrirWMS();
+            if (player.currentZone && player.currentZone.tipo === "terminal") abrirBalcao();
             else falar("semPedido", "#fde047");
           }
           else abrirCardPedido();
@@ -3778,6 +3774,7 @@
     }
 
     function fecharCardPedido() {
+      if (fila.escolhendo) confirmarPedidoDoBalcao();
       pararImpressao();
       document.getElementById("modal-order").style.display = "none";
       estadoJogo = "JOGANDO";
@@ -4317,10 +4314,9 @@
         player.y <= TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 12
       ) {
         player.currentZone = { tipo: "terminal" };
-        if (fila.notifTimer) esconderNotif(); // chegou no balcão: a notificação não precisa cobrir ele
         if (interactPressedThisFrame) {
           if (ehFila()) {
-            abrirWMS();
+            abrirBalcao();
           } else {
             SFX.terminal();
             abrirCardPedido();
@@ -4598,11 +4594,10 @@
       return Math.round(Math.max(esq, Math.min(px, dir)));
     }
 
-    function desenharPainelBitmap(texto, cx, cy, fundo, borda, corTexto) {
-      const esc = 1;
+    function desenharPainelBitmap(texto, cx, cy, fundo, borda, corTexto, esc = 1) {
       const tw = larguraBitmap(texto, esc);
-      const pw = tw + 6;
-      const ph = 9;
+      const pw = tw + 6 * esc;
+      const ph = 9 * esc - (esc - 1) * 2;
       const px = prenderNaTela(cx - pw / 2, pw);
       const py = Math.round(cy);
       ctx.fillStyle = fundo;
@@ -4665,8 +4660,14 @@
       if (!zona) return;
       let texto = "[E] ACAO";
       if (zona.tipo === "terminal") {
-        const n = ehFila() ? pedidosEsperando().length : 0;
-        texto = ehFila() ? (n ? `[E] ${n} PEDIDO${n > 1 ? "S" : ""}` : "[E] BALCAO") : "[E] PEDIDO";
+        if (precisaPegarPedido()) {
+          if (TOQUE_DISPOSITIVO) return; // no celular o botão amarelo já diz PEGAR PEDIDO
+          const pisca = Math.floor(Date.now() / 350) % 2 === 0;
+          desenharPainelBitmap("APERTE E", player.x, player.y + 12, pisca ? "#facc15" : "#fde047", "#000000", "#111827", 2);
+          desenharPainelBitmap("PEGAR PEDIDO", player.x, player.y + 27, "#0b1326", "#facc15", "#fde047");
+          return;
+        }
+        texto = ehFila() ? (fila.ativo ? "[E] VER ETIQUETA" : "[E] BALCAO") : "[E] PEDIDO";
       }
       else if (zona.tipo === "estacao_embalagem") texto = "[E] EMBALAR";
       else if (zona.tipo === "pallet_consolidacao") texto = "[E] DOCA";
@@ -5362,7 +5363,7 @@
           const n = pedidosEsperando().length;
           const acao = EH_TOQUE ? "toque no botão" : "aperte [E]";
           desc = n
-            ? `${n} pedido${n > 1 ? "s" : ""} no balcão WMS. Vá até lá e ${acao}.`
+            ? `Pegue o pedido no balcão WMS: chegue nele e ${acao}.`
             : "Balcão vazio. Aguarde: o próximo pedido já vai cair.";
         }
         if (etapa.id === "COLETAR") {
@@ -5770,8 +5771,9 @@
       etapaAtualIndex = -1;
 
       player.x = 27 * TILE_SIZE + 8;
-      player.y = 6 * TILE_SIZE;
-      player.dir = "DOWN";
+      // Picking: começa colado no balcão WMS, já de frente para o primeiro pedido
+      player.y = ehFila() ? 78 : 6 * TILE_SIZE;
+      player.dir = ehFila() ? "UP" : "DOWN";
       player.invulnerableTimer = 0;
       player.flashWhite = 0;
       player.flashRed = 0;
@@ -5799,7 +5801,7 @@
       resetarRecebimento();
       resetarFila();
       resetarDicasDaPartida();
-      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-wms", "modal-pedido-ok"]
+      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
 
       encaixarCameraNoJogador();
@@ -5998,7 +6000,9 @@
       const buz = document.getElementById("btn-buzina");
       const z = player.currentZone;
       const mostrar = estadoJogo === "JOGANDO" && !!z;
-      const rotulo = mostrar ? (ROTULOS_ACAO[z.tipo] || "AÇÃO") : "";
+      let rotulo = mostrar ? (ROTULOS_ACAO[z.tipo] || "AÇÃO") : "";
+      if (mostrar && z.tipo === "terminal" && ehFila()) rotulo = precisaPegarPedido() ? "PEGAR PEDIDO" : (fila.ativo ? "ETIQUETA" : "BALCÃO");
+      btn.classList.toggle("chamando", mostrar && z.tipo === "terminal" && precisaPegarPedido());
       if (rotulo !== rotuloAcaoAtual) {
         rotuloAcaoAtual = rotulo;
         btn.textContent = rotulo;
@@ -6153,7 +6157,8 @@
        ========================================================================== */
     let dicasVistas = new Set();
     try { dicasVistas = new Set(JSON.parse(localStorage.getItem("pickingpanic_dicas") || "[]")); } catch (e) {}
-    const dica = { id: null, timer: 0, minimo: 0, fim: null, ancora: null };
+    const dica = { id: null, timer: 0, minimo: 0, fim: null, ancora: null, pausa: 0 };
+    const INTERVALO_DICAS = 7; // segundos de jogo limpo entre uma dica e outra
     const balaoNpc = { npc: null, timer: 0 };
     const memoria = { inicioX: 0, inicioY: 0, andandoSemCorrer: 0, tempoNaEtapa: 0, etapaAnterior: -1, volumesAntes: 0 };
 
@@ -6166,7 +6171,7 @@
     }
 
     function tentarDica(id, textoTeclado, textoToque, opts = {}) {
-      if (dica.id || dicasVistas.has(id)) return false;
+      if (dica.id || dica.pausa > 0 || chamadoAtivo || dicasVistas.has(id)) return false;
       dicasVistas.add(id);
       salvarDicas();
       dica.id = id;
@@ -6175,12 +6180,17 @@
       dica.fim = opts.fim || null;
       dica.ancora = opts.ancora || null;
       document.getElementById("dica-texto").innerHTML = EH_TOQUE ? textoToque : textoTeclado;
-      document.getElementById("dica-jit").classList.add("visivel");
-      SFX.playTone(880, "triangle", 0.06, 0.1, 0.01);
+      const el = document.getElementById("dica-jit");
+      el.classList.add("legenda", "visivel");
+      el.style.transform = "";
+      const stage = document.getElementById("stage");
+      const barra = document.querySelector(".hud-top-bar");
+      if (stage && barra) stage.style.setProperty("--topo-livre", (barra.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 6) + "px");
       return true;
     }
 
     function fecharDica() {
+      if (dica.id) dica.pausa = INTERVALO_DICAS;
       dica.id = null;
       document.getElementById("dica-jit").classList.remove("visivel");
     }
@@ -6216,9 +6226,35 @@
 
     const K = (t) => `<kbd>${t}</kbd>`;
 
+    let chamadoAtivo = false;
+    function atualizarChamadoBalcao() {
+      const el = document.getElementById("chamado-balcao");
+      const mostrar = estadoJogo === "JOGANDO" && precisaPegarPedido();
+      chamadoAtivo = mostrar;
+      el.classList.toggle("visivel", mostrar);
+      if (!mostrar) return false;
+      const n = pedidosEsperando().length;
+      const noBalcao = player.currentZone && player.currentZone.tipo === "terminal";
+      const qtd = n > 1 ? `${n} pedidos esperando. ` : "";
+      const txt = EH_TOQUE
+        ? (noBalcao ? `${qtd}Toque no botão PEGAR PEDIDO` : `${qtd}Deslize o dedo até o balcão WMS e toque em PEGAR PEDIDO`)
+        : (noBalcao ? `${qtd}Aperte <kbd>E</kbd> para pegar o pedido`
+          : `${qtd}Ande com <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> até o balcão WMS e aperte <kbd>E</kbd> para pegar o pedido`);
+      const span = document.getElementById("chamado-texto");
+      if (span.innerHTML !== txt) span.innerHTML = txt;
+      const stage = document.getElementById("stage");
+      const barra = document.querySelector(".hud-top-bar");
+      if (stage && barra) stage.style.setProperty("--topo-livre", (barra.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 6) + "px");
+      return true;
+    }
+
     function atualizarDicas(dt) {
       const jogando = estadoJogo === "JOGANDO";
       const elDica = document.getElementById("dica-jit");
+      // O chamado do balcão é a orientação principal: enquanto ele aparece, as dicas esperam
+      if (atualizarChamadoBalcao()) {
+        if (dica.id) { elDica.classList.remove("visivel"); dica.id = null; }
+      }
       const elBalao = document.getElementById("balao-npc");
 
       // Balão do colega
@@ -6237,6 +6273,7 @@
         return;
       }
       if (dica.id && balaoNpc.timer > 0) fecharDica(); // fala do colega tem prioridade
+      if (dica.pausa > 0) dica.pausa -= dt;
       if (dica.id) elDica.classList.add("visivel");
 
       // Memória do comportamento (para decidir a hora certa de cada dica)
@@ -6254,117 +6291,64 @@
         dica.timer -= dt;
         dica.minimo -= dt;
         const feito = dica.fim && dica.minimo <= 0 && dica.fim();
-        if (dica.timer <= 0 || feito) {
-          fecharDica();
-        } else {
-          const a = dica.ancora ? dica.ancora() : { x: player.x, y: player.y };
-          posicionarBalao(elDica, a.x, a.y - 12, 22);
-        }
+        if (dica.timer <= 0 || feito) fecharDica();
         return;
       }
 
       const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
       const empPerto = empAtivas.some(e => Math.hypot(e.x - player.x, e.y - player.y) < 75);
       const npcPerto = npcs.some(n => Math.hypot(n.x - player.x, n.y - player.y) < 60);
-
+      // Só o que o objetivo lá de cima não explica sozinho: controles e "como" fazer.
       if (!veiculo.pilotando) {
         if (faseIndex === 0 && memoria.tempoNaEtapa > 0.3) {
-          tentarDica("andar",
-            `Use as setas ${K("←")}${K("↑")}${K("→")}${K("↓")} para andar.`,
-            "Deslize o dedo em qualquer lugar da tela para andar.",
-            { dur: 9, fim: () => Math.hypot(player.x - memoria.inicioX, player.y - memoria.inicioY) > 40 });
-        }
-        // Balcão WMS: primeiro pedido caindo e fila crescendo
-        if (ehFila() && etapa === "RECEBER" && pedidosEsperando().length > 0 && !dica.id) {
-          const t = TERMINAL_INICIAL;
-          tentarDica("balcao", `Pedido novo no balcão! Vá até o WMS e aperte ${K("E")}.`,
-            "Pedido novo no balcão! Vá até o WMS e toque no botão amarelo.",
-            { dur: 7, fim: () => MISSAO_ATUAL.etapas[etapaAtualIndex]?.id !== "RECEBER", ancora: () => ({ x: t.x + t.w / 2, y: t.y - 16 }) });
-        }
-        if (ehFila() && pedidosEsperando().length >= 1 && fila.ativo) {
-          tentarDica("fila", "Pedidos se acumulam no balcão. Quanto mais demora, maior a fila e mais prazo estoura.",
-            "Pedidos se acumulam no balcão. Quanto mais demora, maior a fila e mais prazo estoura.",
-            { dur: 6, ancora: () => ({ x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y - 16 }) });
-        }
-        if (etapa === "COLETAR" && memoria.tempoNaEtapa > 4) {
-          tentarDica("seta", "A seta amarela aponta o item mais perto. A ordem é com você.",
-            "A seta amarela aponta o item mais perto. A ordem é com você.", { dur: 5 });
-        }
-        if (perto_doCarrinho() && !ehVeiculo()) {
-          tentarDica("carrinho",
-            `${K("C")} pega o carrinho: anda mais rápido e corre mesmo carregado.`,
-            "Toque em 🛒 para empurrar o carrinho: mais rápido, mesmo carregado.",
-            { dur: 7, fim: () => carrinho.pego, ancora: () => ({ x: carrinho.x, y: carrinho.y }) });
+          tentarDica("andar", `${K("←")}${K("↑")}${K("→")}${K("↓")} anda`, "Deslize o dedo para andar",
+            { dur: 6, fim: () => Math.hypot(player.x - memoria.inicioX, player.y - memoria.inicioY) > 40 });
         }
         if (memoria.andandoSemCorrer > 2.5 && !(volumesColetados > 0 && !carrinho.pego)) {
-          tentarDica("correr", `Segure ${K("SHIFT")} para correr.`, "Deslize mais longe para correr.",
-            { dur: 5, fim: () => correndo });
+          tentarDica("correr", `Segure ${K("SHIFT")} para correr`, "Deslize mais longe para correr",
+            { dur: 4, fim: () => correndo });
         }
         const z = player.currentZone;
         if (z && z.tipo === "posicao_wms") {
           const it = itemDaPosicao(z.dados);
           if (it && it.coletados < it.qtd) {
             memoria.volumesAntes = volumesColetados;
-            tentarDica("coletar", `Segure ${K("E")} até encher as caixinhas.`, "Segure o botão amarelo até encher as caixinhas.",
-              { dur: 6, fim: () => volumesColetados > memoria.volumesAntes });
+            tentarDica("coletar", `Segure ${K("E")} até encher as caixinhas`, "Segure o botão amarelo até encher",
+              { dur: 5, fim: () => volumesColetados > memoria.volumesAntes });
           }
         }
-        if (volumesColetados >= 1 && etapa === "COLETAR") {
-          tentarDica("etiqueta", `${K("Q")} mostra a etiqueta com todos os endereços.`,
-            "Toque no objetivo (lá em cima) para ver a etiqueta.", { dur: 5 });
-        }
-        if (etapa === "LEVAR_EMBALAGEM") {
-          tentarDica("bancada", `Tudo separado! Siga a seta até uma bancada e aperte ${K("E")}.`,
-            "Tudo separado! Siga a seta até uma bancada e toque no botão.", { dur: 5 });
-        }
-        if (etapa === "LEVAR_PALLET") {
-          tentarDica("pallet", "Caixa lacrada. Agora o pallet da doca marcada em amarelo.",
-            "Caixa lacrada. Agora o pallet da doca marcada em amarelo.", { dur: 5 });
+        if (perto_doCarrinho() && !ehVeiculo() && dicasVistas.has("coletar")) {
+          tentarDica("carrinho", `${K("C")} carrinho: mais rápido, corre carregado`, "🛒 carrinho: mais rápido, corre carregado",
+            { dur: 4, fim: () => carrinho.pego });
         }
         if (etapa === "ACHAR_COLETOR") {
-          tentarDica("bip", "Sem seta e sem mapa. Siga o bip e a barra SINAL, no canto de cima.",
-            "Sem seta e sem mapa. Siga o bip e a barra SINAL, no canto de cima.", { dur: 7 });
+          tentarDica("bip", "Sem seta: siga o bip e a barra SINAL", "Sem seta: siga o bip e a barra SINAL", { dur: 5 });
           if (npcPerto) {
-            tentarDica("perguntar", `${K("E")} pergunta ao colega. Um deles mente.`,
-              "Toque em PERGUNTAR perto do colega. Um deles mente.", { dur: 6 });
+            tentarDica("perguntar", `${K("E")} pergunta ao colega. Um deles mente`, "PERGUNTAR ao colega. Um deles mente", { dur: 4 });
           }
         }
-        if (ehVeiculo() && etapa === "ENTRAR_EMP" && memoria.tempoNaEtapa > 0.5) {
-          tentarDica("subir", `Siga a seta até a empilhadeira laranja e aperte ${K("E")}.`,
-            "Siga a seta até a empilhadeira laranja e toque em SUBIR.", { dur: 6, fim: () => veiculo.pilotando });
-        }
       } else {
-        tentarDica("dirigir",
-          `${K("↑")} acelera · ${K("↓")} freia e dá ré · ${K("←")}${K("→")} vira`,
-          "Deslize para onde quer ir. Deslizar para trás dela = ré.",
-          { dur: 8, fim: () => Math.abs(veiculo.vel) > 60 });
+        tentarDica("dirigir", `${K("↑")} acelera · ${K("↓")} ré · ${K("←")}${K("→")} vira`,
+          "Deslize para onde quer ir · para trás = ré", { dur: 5, fim: () => Math.abs(veiculo.vel) > 60 });
         if (etapa === "PEGAR_RECEB" && alinhamentoReceb().perto) {
-          tentarDica("receb", "Pare na marca, com o garfo virado para o pallet, e aperte E.",
-            "Pare na marca, com o garfo virado para o pallet, e toque em PEGAR.",
-            { dur: 6, ancora: () => { const p = palletArmazenagemAtual(); return p ? { x: p.x, y: p.y - 20 } : { x: player.x, y: player.y }; } });
+          tentarDica("receb", "Pare na marca, garfo virado pro pallet", "Pare na marca, garfo virado pro pallet", { dur: 4 });
         }
         if ((etapa === "BUSCAR_PALLET" || etapa === "LEVAR_PULMAO") && estadoAlinhamento().perto) {
-          tentarDica("encaixe", "Pare em cima da marca, com o garfo virado para o rack.",
-            "Pare em cima da marca, com o garfo virado para o rack.",
-            { dur: 6, ancora: () => { const b = posicaoBaiaAlvo(); return { x: b.x, y: b.y - 40 }; } });
+          tentarDica("encaixe", "Pare na marca, garfo virado pro rack", "Pare na marca, garfo virado pro rack", { dur: 4 });
         }
         if (npcPerto) {
-          tentarDica("buzina", `${K("H")} buzina e o pessoal sai da frente.`, "Toque em 📯 para buzinar.", { dur: 5 });
-        }
-        if (etapa === "LEVAR_PALLET_EMP" && memoria.tempoNaEtapa > 1) {
-          tentarDica("baixar", "Leve até a área amarela da DOCA 1 e pare dentro dela.",
-            "Leve até a área amarela da DOCA 1 e pare dentro dela.", { dur: 6 });
+          tentarDica("buzina", `${K("H")} buzina`, "📯 buzina", { dur: 3 });
         }
       }
       if (empPerto && dicasVistas.has("andar") && memoria.tempoNaEtapa > 2) {
-        tentarDica("empilhadeira", "Empilhadeira! Ela tem preferência. Encostar custa +5s.",
-          "Empilhadeira! Ela tem preferência. Encostar custa +5s.",
-          { dur: 4, ancora: () => { const e = empAtivas.reduce((m, x) => Math.hypot(x.x - player.x, x.y - player.y) < Math.hypot(m.x - player.x, m.y - player.y) ? x : m); return { x: e.x, y: e.y - 14 }; } });
+        tentarDica("empilhadeira", "Empilhadeira tem preferência: encostar custa +5s",
+          "Empilhadeira tem preferência: encostar custa +5s", { dur: 3 });
       }
     }
 
     function resetarDicasDaPartida() {
       fecharDica();
+      dica.pausa = 1.5;
       balaoNpc.timer = 0;
       document.getElementById("balao-npc").classList.remove("visivel");
       memoria.inicioX = player.x;
@@ -6380,10 +6364,14 @@
        No balcão: abre a caixa de entrada, escolhe um pedido, a etiqueta imprime.
        Entregou: janela de parabéns com feedback e volta pro galpão.
        ========================================================================== */
-    const fila = { pedidos: [], ativo: null, ultimo: null, selecionado: 0, recemAceito: false, wmsTick: 0, notifTimer: null };
+    const fila = { pedidos: [], ativo: null, ultimo: null, selecionado: 0, recemAceito: false, escolhendo: false };
 
     function prazoDe(p) { return p.def.prazo * fatorTempo(); }
     function idadeDe(p) { return Math.max(0, (p.status === "entregue" ? p.entregueEm : tempoDecorrido) - p.chegouEm); }
+    // Momento de ir ao balcão: tem pedido esperando e nenhum na mão
+    function precisaPegarPedido() {
+      return ehFila() && !fila.ativo && !cargaDepositada && pedidosEsperando().length > 0;
+    }
     function pedidosEsperando() { return fila.pedidos.filter(p => p.status === "esperando"); }
     function pedidosRestantes() { return fila.pedidos.filter(p => p.status !== "entregue").length; }
     function pedidosEntregues() { return fila.pedidos.filter(p => p.status === "entregue"); }
@@ -6402,13 +6390,14 @@
       fila.ultimo = null;
       fila.selecionado = 0;
       fila.recemAceito = false;
+      fila.escolhendo = false;
       fila.pedidos = (MISSAO_ATUAL.pedidos || []).map((def, i) => ({
         def, indice: i, status: "futuro", chegouEm: 0, aceitoEm: 0, entregueEm: 0,
         penAntes: 0, atrasoAvisado: false, resultado: null
       }));
       if (ehFila()) limparPedidoAtivo();
       document.documentElement.classList.toggle("com-fila", ehFila());
-      esconderNotif();
+      esconderSeletorCupom();
       atualizarChipFila();
     }
 
@@ -6427,10 +6416,6 @@
           atualizarChipFila();
         }
       });
-      if (estadoJogo === "WMS") {
-        fila.wmsTick -= dt;
-        if (fila.wmsTick <= 0) { fila.wmsTick = 0.2; atualizarTempoWMS(); }
-      }
     }
 
     function atualizarChipFila(pop) {
@@ -6447,161 +6432,116 @@
       }
     }
 
+    // Pedido novo: plim, contador pulando e o balcão piscando. Sem janela por cima do jogo.
     function notificarPedido(p) {
       SFX.notificacao();
       atualizarChipFila(true);
       atualizarHUD();
       const t = TERMINAL_INICIAL;
       JUICE.textoFlutuante(t.x + t.w / 2, t.y - 12, "+1 PEDIDO", "#fde047");
-      const el = document.getElementById("notif-pedido");
-      document.getElementById("notif-texto").textContent =
-        `${p.def.numero} · ${p.def.cliente.toUpperCase()} · ${p.def.quantidadeVolumes} VOL · PRAZO ${mmss(prazoDe(p))}`;
-      // Fica logo abaixo da barra de cima
-      const stage = document.getElementById("stage");
-      const barra = document.querySelector(".hud-top-bar");
-      if (stage && barra) {
-        el.style.top = (barra.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 8) + "px";
-      }
-      el.classList.add("visivel");
-      if (fila.notifTimer) clearTimeout(fila.notifTimer);
-      fila.notifTimer = setTimeout(esconderNotif, 3800);
-      if (!fila.ativo) falar("novoPedido", "#fde047");
+      falar("novoPedido", "#fde047");
     }
 
-    function esconderNotif() {
-      if (fila.notifTimer) clearTimeout(fila.notifTimer);
-      fila.notifTimer = null;
-      const el = document.getElementById("notif-pedido");
-      if (el) el.classList.remove("visivel");
-    }
-
-    // Clicou na notificação ou no contador: no balcão abre a caixa de entrada, longe dele aponta o caminho
+    // Clicou no contador 📥: no balcão já tira o cupom, longe dele só lembra onde é
     function cliqueNaFila() {
       if (estadoJogo !== "JOGANDO" || !ehFila()) return;
-      esconderNotif();
-      if (player.currentZone && player.currentZone.tipo === "terminal") {
-        abrirWMS();
-      } else if (fila.ativo) {
-        falarTexto(`Termine o ${fila.ativo.def.numero} primeiro. Os outros esperam no balcão.`, "#fde047");
-      } else {
-        falarTexto("Os pedidos ficam no balcão WMS. Siga a seta.", "#fde047");
-        JUICE.textoFlutuante(player.x, player.y - 16, "BALCÃO ↑", "#fde047");
-      }
+      if (player.currentZone && player.currentZone.tipo === "terminal") abrirBalcao();
+      else if (fila.ativo) falarTexto(`Termine o ${fila.ativo.def.numero} primeiro. Os outros esperam no balcão.`, "#fde047");
+      else falarTexto("Os pedidos ficam no balcão WMS. Siga a seta.", "#fde047");
     }
 
-    function abrirWMS() {
-      estadoJogo = "WMS";
-      limparInputs();
-      SFX.pararColetaTom();
-      SFX.terminal();
-      esconderNotif();
-      fila.selecionado = 0;
-      montarListaWMS();
-      document.getElementById("modal-wms").style.display = "flex";
+    // Fila do balcão, do mais urgente (menos prazo sobrando) para o menos urgente
+    function listaBalcao() {
+      return pedidosEsperando().sort((a, b) => (prazoDe(a) - idadeDe(a)) - (prazoDe(b) - idadeDe(b)));
     }
 
-    function fecharWMS() {
-      document.getElementById("modal-wms").style.display = "none";
-      if (estadoJogo === "WMS") estadoJogo = "JOGANDO";
-      limparInputs();
-      atualizarHUD();
-    }
-
-    function listaWMS() {
-      return pedidosEsperando().sort((a, b) => a.chegouEm - b.chegouEm);
-    }
-
-    function montarListaWMS() {
-      const lista = document.getElementById("wms-lista");
-      const aviso = document.getElementById("wms-aviso");
-      const itens = listaWMS();
-      lista.innerHTML = "";
-      aviso.textContent = fila.ativo
-        ? `EM ANDAMENTO: ${fila.ativo.def.numero}. TERMINE ANTES DE PEGAR OUTRO.`
-        : "";
-      if (!itens.length) {
-        const futuro = fila.pedidos.some(p => p.status === "futuro");
-        lista.innerHTML = `<div class="wms-vazio">${futuro ? "CAIXA DE ENTRADA VAZIA. O PRÓXIMO PEDIDO JÁ VAI CAIR." : "NENHUM PEDIDO NA FILA."}</div>`;
+    // No balcão: o cupom do pedido mais urgente já sai impresso, numa janela só
+    function abrirBalcao() {
+      if (fila.ativo) { abrirCardPedido(); return; }
+      if (!listaBalcao().length) {
+        JUICE.textoFlutuante(player.x, player.y - 16, "BALCÃO VAZIO", "#94a3b8");
+        falar("esperandoPedido", "#94a3b8");
         return;
       }
-      fila.selecionado = Math.min(fila.selecionado, itens.length - 1);
-      itens.forEach((p, i) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "wms-pedido";
-        b.dataset.indice = String(p.indice);
-        b.disabled = !!fila.ativo;
-        b.innerHTML =
-          `<span class="wms-num">${p.def.numero}</span>` +
-          `<span class="wms-cli">${p.def.cliente.toUpperCase()}</span>` +
-          `<span class="wms-info">${p.def.quantidadeVolumes} VOL · ${p.def.docaSaida}</span>` +
-          `<span class="wms-prazo"><span class="wms-barra"><i></i></span><span class="wms-idade"></span></span>`;
-        b.addEventListener("click", () => {
-          if (estadoJogo !== "WMS" || fila.ativo) return;
-          aceitarPedido(p);
-        });
-        lista.appendChild(b);
-      });
-      atualizarTempoWMS();
+      fila.escolhendo = true;
+      fila.selecionado = 0;
+      fila.ordem = listaBalcao();
+      SFX.terminal();
+      previsualizarPedido();
     }
 
-    function atualizarTempoWMS() {
-      document.getElementById("wms-relogio").textContent = "TURNO " + mmss(tempoDecorrido);
-      const botoes = [...document.querySelectorAll("#wms-lista .wms-pedido")];
-      botoes.forEach((b, i) => {
-        const p = fila.pedidos[Number(b.dataset.indice)];
-        const idade = idadeDe(p);
-        const prazo = prazoDe(p);
-        const atrasado = idade > prazo;
-        b.classList.toggle("sel", i === fila.selecionado && !fila.ativo);
-        b.classList.toggle("atrasado", atrasado);
-        b.classList.toggle("alerta", !atrasado && idade > prazo * 0.6);
-        b.querySelector(".wms-barra i").style.width = Math.min(100, idade / prazo * 100).toFixed(0) + "%";
-        b.querySelector(".wms-idade").textContent = atrasado
-          ? `ATRASADO ${mmss(idade - prazo)}`
-          : `ESPERANDO ${mmss(idade)} / PRAZO ${mmss(prazo)}`;
-      });
-    }
-
-    function moverSelecaoWMS(delta) {
-      const n = listaWMS().length;
-      if (!n || fila.ativo) return;
-      fila.selecionado = (fila.selecionado + delta + n) % n;
-      SFX.menuBlip();
-      atualizarTempoWMS();
-    }
-
-    function aceitarSelecionadoWMS() {
-      const itens = listaWMS();
-      if (fila.ativo || !itens.length) { fecharWMS(); return; }
-      aceitarPedido(itens[fila.selecionado] || itens[0]);
-    }
-
-    function aceitarPedido(p) {
-      p.status = "ativo";
-      p.aceitoEm = tempoDecorrido;
-      p.penAntes = tempoPenalidades;
-      fila.ativo = p;
-      const m = MISSAO_ATUAL;
-      Object.assign(m, {
+    function previsualizarPedido() {
+      const lista = fila.ordem;
+      fila.selecionado = Math.max(0, Math.min(fila.selecionado, lista.length - 1));
+      const p = lista[fila.selecionado];
+      Object.assign(MISSAO_ATUAL, {
         numero: p.def.numero,
         cliente: p.def.cliente,
         docaSaida: p.def.docaSaida,
         itens: p.def.itens.map(it => ({ ...it, coletados: 0 })),
         quantidadeVolumes: p.def.quantidadeVolumes
       });
+      etiquetaObs = "";
+      const idade = idadeDe(p), prazo = prazoDe(p);
+      const atrasado = idade > prazo;
+      document.getElementById("cup-titulo").textContent = lista.length > 1
+        ? `PEDIDO ${fila.selecionado + 1} DE ${lista.length} NO BALCÃO · ◀ ▶ TROCA`
+        : "PEDIDO NO BALCÃO";
+      document.getElementById("cup-prazo").textContent = atrasado
+        ? `ATRASADO HÁ ${mmss(idade - prazo)}`
+        : `ESPERANDO ${mmss(idade)} · PRAZO ${mmss(prazo)}`;
+      document.querySelector("#cupom-seletor .cup-info").classList.toggle("atrasado", atrasado);
+      document.getElementById("cup-ant").disabled = lista.length < 2;
+      document.getElementById("cup-prox").disabled = lista.length < 2;
+      document.getElementById("cupom-seletor").classList.add("visivel");
+      document.getElementById("btn-close-order").textContent = "PEGAR ESTE PEDIDO [E]";
+      abrirCardPedido(true);
+    }
+
+    function trocarPedidoNoBalcao(delta) {
+      const n = fila.ordem ? fila.ordem.length : 0;
+      if (!fila.escolhendo || n < 2) return;
+      fila.selecionado = (fila.selecionado + delta + n) % n;
+      SFX.menuBlip();
+      previsualizarPedido();
+    }
+
+    function esconderSeletorCupom() {
+      document.getElementById("cupom-seletor").classList.remove("visivel");
+      document.getElementById("btn-close-order").textContent = "BORA! [E / ENTER]";
+    }
+
+    // Esc no balcão: o pedido volta para a fila
+    function deixarParaDepois() {
+      fila.escolhendo = false;
+      esconderSeletorCupom();
+      pararImpressao();
+      document.getElementById("modal-order").style.display = "none";
+      limparPedidoAtivo();
+      estadoJogo = "JOGANDO";
+      limparInputs();
+      atualizarHUD();
+    }
+
+    // Confirmou o cupom: o pedido sai da fila e vira a missão
+    function confirmarPedidoDoBalcao() {
+      const p = fila.ordem && fila.ordem[fila.selecionado];
+      fila.escolhendo = false;
+      esconderSeletorCupom();
+      if (!p) return;
+      p.status = "ativo";
+      p.aceitoEm = tempoDecorrido;
+      p.penAntes = tempoPenalidades;
+      fila.ativo = p;
       volumesColetados = 0;
       pacoteEmbalado = false;
       cargaDepositada = false;
       progressoColeta = 0;
-      etiquetaObs = "";
       // A doca do pedido abre a porta (se o caminhão já encostou)
-      const cam = CAMINHOES.find(c => c.docaId === m.docaSaida);
+      const cam = CAMINHOES.find(c => c.docaId === MISSAO_ATUAL.docaSaida);
       if (cam && !cam.chegando) cam.doorClosed = 0;
-      document.getElementById("modal-wms").style.display = "none";
       atualizarChipFila();
       fila.recemAceito = true;
-      abrirCardPedido(true);
     }
 
     // Chamado quando a caixa cai no pallet: fecha as contas do pedido
@@ -6699,6 +6639,22 @@
     function desenharFilaNoBalcao() {
       if (!ehFila()) return;
       const t = TERMINAL_INICIAL;
+      if (precisaPegarPedido()) {
+        // Marcador de missão pulsando na frente do balcão: "é aqui"
+        const cx = t.x + t.w / 2, cy = t.y + t.h + 9;
+        const fase = (Date.now() % 900) / 900;
+        const r = 8 + fase * 10;
+        ctx.globalAlpha = 1 - fase;
+        ctx.strokeStyle = "#facc15";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(Math.round(cx - r), Math.round(cy - r / 2), Math.round(r * 2), Math.round(r));
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = "rgba(250, 204, 21, 0.35)";
+        ctx.fillRect(cx - 10, cy - 4, 20, 8);
+        if (!(player.currentZone && player.currentZone.tipo === "terminal")) {
+          desenharPainelBitmap("PEGUE O PEDIDO AQUI", cx, t.y - 32, "#0b1326", "#facc15", "#fde047");
+        }
+      }
       const esperando = pedidosEsperando();
       const n = esperando.length;
       for (let i = 0; i < Math.min(n, 6); i++) {
@@ -6758,10 +6714,9 @@
       limparTimersVitoria();
       SFX.pararColetaTom();
       calarRadio();
-      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing", "modal-wms", "modal-pedido-ok"]
+      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing", "modal-pedido-ok"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
       document.getElementById("hud").style.display = "none";
-      esconderNotif();
       document.getElementById("modal-start").style.display = "flex";
       estadoJogo = "MENU";
       carregarMelhorTempoInicial();
@@ -7760,15 +7715,16 @@
       initAudio();
       RADIO_MUSICA.alternar();
     });
-    document.getElementById("btn-wms-fechar").addEventListener("click", () => {
+    document.getElementById("btn-cupom-depois").addEventListener("click", () => {
       SFX.menuBlip();
-      fecharWMS();
+      deixarParaDepois();
     });
+    document.getElementById("cup-ant").addEventListener("click", () => trocarPedidoNoBalcao(-1));
+    document.getElementById("cup-prox").addEventListener("click", () => trocarPedidoNoBalcao(1));
     document.getElementById("btn-pok-voltar").addEventListener("click", () => {
       SFX.menuEnter();
       fecharPedidoOk();
     });
-    document.getElementById("notif-pedido").addEventListener("click", cliqueNaFila);
     document.getElementById("hud-fila").addEventListener("click", cliqueNaFila);
     document.getElementById("btn-close-order").addEventListener("click", () => {
       SFX.menuBlip();

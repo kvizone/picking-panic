@@ -40,13 +40,15 @@ Funciona em pé ou deitado: o mapa se ajusta ao formato da tela. Não tem joysti
 
 ## Balcão WMS: como os pedidos chegam
 
-Nas fases de picking, o turno começa no galpão e os pedidos **caem no balcão do WMS** com uma notificação (som, aviso no topo e um contador 📥 no HUD). Quanto mais você demora, mais pedidos se acumulam: os papéis vão empilhando no balcão e cada pedido tem um prazo que começa a contar quando ele cai.
+Nas fases de picking, o turno começa com você colado no balcão do WMS. Os pedidos **caem no balcão** com um "plim", o contador 📥 no HUD e papéis empilhando no balcão. Quanto mais você demora, mais pedidos se acumulam, e cada um tem um prazo que conta desde que caiu.
 
-1. Vá ao balcão e aperte **E**: abre a caixa de entrada com os pedidos, o tempo de espera e o prazo de cada um.
-2. Escolha um pedido (setas + E, clique ou toque): a etiqueta sai da impressora.
+1. Enquanto tiver pedido esperando, um marcador amarelo pulsa na frente do balcão e um aviso fixo diz o que fazer: chegar no balcão e apertar **E** (no celular, o botão **PEGAR PEDIDO**).
+2. O cupom do pedido mais urgente sai impresso na hora, numa janela só. Com mais de um na fila, **◀ ▶** troca de pedido; **Esc** deixa para depois.
 3. Separe, embale e deposite no pallet da doca do pedido.
-4. O caminhão sai e abre a janela de **pedido concluído**, com estrelas, tempo, prazo e penalidades daquele pedido. Depois, volta pro galpão.
-5. Pedido entregue fora do prazo custa +5s. Quando o último pedido do turno sai, aparece o relatório da fase.
+4. O caminhão sai e abre a janela de **pedido concluído** (estrelas, tempo, prazo, penalidades). Depois, volta pro galpão.
+5. Pedido entregue fora do prazo custa +5s. Quando o último pedido sai, aparece o relatório da fase.
+
+As dicas de controle aparecem uma vez, como legenda curta no rodapé (no celular, logo abaixo do topo), sem cobrir o jogador.
 
 ## Fase 1: Pedido #1042
 
