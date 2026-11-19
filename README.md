@@ -22,6 +22,15 @@ Abra o `index.html` no navegador ou jogue pelo GitHub Pages. As 3 fases são jog
 | M | Som |
 | Esc | Pausar |
 
+### No celular
+
+Jogue com a tela deitada (se estiver em pé, o jogo pede para girar). Não tem joystick:
+
+- **Segure o dedo na tela:** o operador vai na direção do dedo. Com o dedo longe, ele corre.
+- **Botão amarelo:** aparece só quando tem algo para fazer ali. Segure para coletar.
+- **Empilhadeira:** segue o dedo. Com o dedo atrás dela, ela dá ré. O botão azul é a buzina.
+- **Toque no tempo** para pausar e **no objetivo** para ver a etiqueta.
+
 ## Fase 1: Pedido #1042
 
 Imprima a etiqueta no terminal, separe 4 volumes em 3 endereços (R01-P04, R03-P07 e R04-P13) na ordem que quiser, embale na bancada e coloque a caixa lacrada no pallet da DOCA 2. Três empilhadeiras circulam pelo galpão, e encostar em qualquer uma custa +5s.
