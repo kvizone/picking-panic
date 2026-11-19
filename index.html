@@ -1180,6 +1180,118 @@
       line-height: 2;
     }
     .tela-essencial p { color: #94a3b8; font-size: 7px; margin-top: 4px; }
+
+    /* ==========================================================================
+       v0.5 · BALCÃO WMS: contador de fila, notificação, caixa de entrada, pedido entregue
+       ========================================================================== */
+    #hud .hud-fila {
+      display: none;
+      background: rgba(30, 41, 59, 0.7);
+      border: 0;
+      border-radius: 2px;
+      color: #94a3b8;
+      font-family: inherit;
+      font-size: calc(8px * var(--escala));
+      padding: calc(3px * var(--escala)) calc(5px * var(--escala));
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    html.com-fila #hud .hud-fila { display: inline-block; }
+    #hud .hud-fila.tem { background: #facc15; color: #111827; }
+    #hud .hud-fila.atrasado { background: #dc2626; color: #ffffff; animation: piscaFila 0.6s steps(2) infinite; }
+    #hud .hud-fila.pop { transform: scale(1.3); }
+    @keyframes piscaFila { 50% { background: #7f1d1d; } }
+
+    .notif-pedido {
+      position: absolute;
+      left: 50%;
+      top: 60px;
+      z-index: 45;
+      transform: translate(-50%, -12px);
+      display: flex;
+      flex-direction: column;
+      gap: calc(3px * var(--escala));
+      align-items: flex-start;
+      min-width: min(calc(220px * var(--escala)), 80vw);
+      max-width: 86vw;
+      padding: calc(6px * var(--escala)) calc(9px * var(--escala));
+      background: #fef08a;
+      color: #111827;
+      font-family: inherit;
+      font-size: calc(7px * var(--escala));
+      line-height: 1.6;
+      text-align: left;
+      border: 2px solid #111827;
+      box-shadow: 3px 3px 0 #000;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .notif-pedido b { font-weight: normal; background: #111827; color: #fde047; padding: 1px 5px; }
+    .notif-pedido.visivel { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+
+    .wms-box { max-width: 460px; width: 94vw; }
+    .wms-tela {
+      background: #04130b;
+      border: 2px solid #000;
+      box-shadow: inset 2px 2px 0 #000;
+      padding: 10px;
+      color: #4ade80;
+      font-size: 8px;
+      line-height: 1.6;
+      text-align: left;
+      min-height: 120px;
+    }
+    .wms-cab { display: flex; justify-content: space-between; color: #86efac; border-bottom: 1px dashed #166534; padding-bottom: 6px; margin-bottom: 6px; }
+    .wms-aviso { color: #fde047; margin-bottom: 6px; }
+    .wms-aviso:empty { display: none; }
+    .wms-vazio { color: #4b7a5c; padding: 18px 0; text-align: center; }
+    .wms-pedido {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 3px 10px;
+      width: 100%;
+      margin: 0 0 6px;
+      padding: 8px;
+      background: #052e16;
+      color: #bbf7d0;
+      font-family: inherit;
+      font-size: 8px;
+      line-height: 1.5;
+      text-align: left;
+      border: 1px solid #166534;
+      cursor: pointer;
+    }
+    .wms-pedido:hover, .wms-pedido.sel { background: #14532d; border-color: #4ade80; outline: 2px solid #4ade80; }
+    .wms-pedido:disabled { opacity: 0.45; cursor: not-allowed; outline: none; }
+    .wms-num { color: #fde047; }
+    .wms-cli { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wms-info { color: #86efac; text-align: right; }
+    .wms-prazo { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+    .wms-barra { flex: 1; height: 6px; background: #022c22; border: 1px solid #166534; }
+    .wms-barra i { display: block; height: 100%; background: #4ade80; }
+    .wms-pedido.alerta .wms-barra i { background: #facc15; }
+    .wms-pedido.atrasado { border-color: #ef4444; }
+    .wms-pedido.atrasado .wms-barra i { background: #ef4444; }
+    .wms-pedido.atrasado .wms-idade { color: #fca5a5; }
+    .wms-rodape { font-size: 7px; color: #374151; text-align: center; }
+
+    .pok-estrelas .star-icon { font-size: 22px; }
+    .pok-stats {
+      background: #0f172a;
+      color: #cbd5e1;
+      border: 2px solid #000;
+      box-shadow: inset 2px 2px 0 #000;
+      padding: 10px;
+      font-size: 8px;
+      line-height: 1.9;
+      text-align: left;
+    }
+    .pok-stats b { font-weight: normal; color: #ffffff; }
+    .pok-stats .ok { color: #34d399; }
+    .pok-stats .ruim { color: #f87171; }
+    .pok-fila { font-size: 8px; color: #1f2937; line-height: 1.6; }
     .tela-essencial kbd {
       font-family: inherit;
       background: #e2e8f0;
@@ -1225,6 +1337,7 @@
         </div>
 
         <div class="hud-right-group">
+          <button type="button" id="hud-fila" class="hud-fila" title="Pedidos esperando no balcão WMS">📥 <span id="hud-fila-n">0</span></button>
           <div class="inventory-container" id="hud-inv-box">
             <span class="inv-label" id="hud-inv-label">CARGA</span>
             <span class="inv-status" id="hud-inv-status">0/4</span>
@@ -1246,6 +1359,8 @@
     <div id="dica-jit" class="balao balao-dica"><span class="balao-tag">DICA</span><span id="dica-texto"></span></div>
     <!-- Fala dos colegas (texto inteiro, perto de quem falou) -->
     <div id="balao-npc" class="balao balao-npc"><span id="balao-npc-texto"></span></div>
+    <!-- Notificação de pedido novo caindo no balcão -->
+    <button type="button" id="notif-pedido" class="notif-pedido"><b>📥 PEDIDO NOVO NO BALCÃO</b><span id="notif-texto"></span></button>
     </div>
 
     <!-- MODAL: Menu Inicial Retrô -->
@@ -1254,7 +1369,7 @@
         <h1 style="margin: 0;">
           <img src="assets/logo-800.png" alt="PICKING PANIC" class="logo-img">
         </h1>
-        <p style="color: #fbbf24; font-size: 8px; margin-top: 4px;">OPERADOR DE ARMAZÉM 1996 · 3 FASES</p>
+        <p style="color: #fbbf24; font-size: 8px; margin-top: 4px;">OPERADOR DE ARMAZÉM 1996 · 6 FASES</p>
 
         <!-- Só o essencial: o resto aparece na hora certa, durante o jogo -->
         <div class="tela-essencial">
@@ -1354,17 +1469,49 @@
     <!-- MODAL: Erguer o garfo (fase 2) -->
     <div id="modal-erguer" class="modal-overlay">
       <div data-titulo="PULMÃO · CONTROLE DO GARFO" class="modal-box janela" style="max-width: 360px; text-align: center;">
-        <h2 style="font-size: 12px; color: #fbbf24;">PULMÃO PUL-02 · NÍVEL 3</h2>
+        <h2 id="erguer-titulo" style="font-size: 11px; color: #92400e;">PULMÃO PUL-02 · NÍVEL 3</h2>
         <div class="erguer-area">
           <div class="erguer-coluna">
-            <div class="erguer-nivel" style="bottom: 25%;"><span>N1</span></div>
-            <div class="erguer-nivel" style="bottom: 50%;"><span>N2</span></div>
-            <div class="erguer-alvo" id="erguer-alvo"><span>N3</span></div>
+            <div class="erguer-nivel" id="erguer-n1" style="bottom: 25%;"><span>N1</span></div>
+            <div class="erguer-nivel" id="erguer-n2" style="bottom: 50%;"><span>N2</span></div>
+            <div class="erguer-nivel" id="erguer-n3" style="bottom: 75%;"><span>N3</span></div>
+            <div class="erguer-alvo" id="erguer-alvo"><span id="erguer-alvo-txt">N3</span></div>
             <div class="erguer-garfo" id="erguer-garfo"></div>
           </div>
         </div>
         <div id="erguer-feedback" style="font-size: 8px; color: #cbd5e1; line-height: 1.6; min-height: 26px;">SEGURE [E] PARA SUBIR. SOLTE NA FAIXA VERDE.</div>
         <button id="btn-erguer-toque" class="btn" type="button">SEGURE PARA ERGUER</button>
+      </div>
+    </div>
+
+    <!-- MODAL: Balcão WMS (caixa de entrada de pedidos) -->
+    <div id="modal-wms" class="modal-overlay">
+      <div data-titulo="E-SHIP WMS · CAIXA DE ENTRADA" class="modal-box janela wms-box">
+        <div class="wms-tela">
+          <div class="wms-cab"><span>PEDIDOS NO BALCÃO</span><span id="wms-relogio">TURNO 00:00</span></div>
+          <div id="wms-aviso" class="wms-aviso"></div>
+          <div id="wms-lista"></div>
+        </div>
+        <div class="wms-rodape so-teclado">↑↓ escolhe · E / ENTER pega o pedido · ESC fecha</div>
+        <div class="wms-rodape so-toque">Toque no pedido para imprimir a etiqueta</div>
+        <button class="btn btn-secondary" id="btn-wms-fechar" type="button">FECHAR [ESC]</button>
+      </div>
+    </div>
+
+    <!-- MODAL: Pedido entregue (parabéns + feedback, depois volta ao galpão) -->
+    <div id="modal-pedido-ok" class="modal-overlay">
+      <div data-titulo="WMS · PEDIDO CONCLUÍDO" class="modal-box janela" style="max-width: 420px; text-align: center;">
+        <p id="pok-sub" style="font-size: 8px;">PEDIDO 1/2 · DOCA 1</p>
+        <h1 id="pok-titulo" style="font-size: 14px; color: #047857;">#1051 ENTREGUE!</h1>
+        <div class="stars-row pok-estrelas">
+          <span class="star-icon" id="pok-star-1">★</span>
+          <span class="star-icon" id="pok-star-2">★</span>
+          <span class="star-icon" id="pok-star-3">★</span>
+        </div>
+        <p id="pok-fala" style="font-size: 8px; line-height: 1.7;"></p>
+        <div class="pok-stats" id="pok-stats"></div>
+        <div class="pok-fila" id="pok-fila"></div>
+        <button class="btn" id="btn-pok-voltar" type="button">VOLTAR AO GALPÃO [ENTER]</button>
       </div>
     </div>
 
@@ -1460,47 +1607,54 @@
     const VEL_CARRINHO_CORRENDO = 12.5;  // carrinho + correr (mesmo carregado)
 
     // As fases são jogadas em sequência: concluiu uma, vai para a próxima até zerar o jogo.
+    // tipo: "picking" (pedidos caem no balcão WMS), "empilhadeira" (desce pallet do pulmão),
+    //       "coletor" (achar o coletor perdido), "armazenagem" (recebimento → pulmão)
+
+    // Etapas de toda fase de picking. {doca} vira a doca do pedido em andamento.
+    const ETAPAS_PICKING = [
+      { id: "RECEBER", titulo: "BALCÃO WMS", descricaoCurta: "Vá ao balcão WMS e aperte [E] para ver os pedidos." },
+      { id: "COLETAR", titulo: "SEPARAR ITENS", descricaoCurta: "Colete os itens da etiqueta. A ordem é com você." },
+      { id: "LEVAR_EMBALAGEM", titulo: "LEVAR À EMBALAGEM", descricaoCurta: "Leve os volumes coletados até uma bancada de embalagem." },
+      { id: "EMBALAR", titulo: "EMBALAR E SELAR", descricaoCurta: "Complete a sequência de comandos para fechar a caixa." },
+      { id: "LEVAR_PALLET", titulo: "CONSOLIDAÇÃO", descricaoCurta: "Deposite a caixa selada no pallet da {doca}." },
+      { id: "EXPEDIR", titulo: "EXPEDIR CARGA", descricaoCurta: "Acompanhe a partida do caminhão da {doca}." }
+    ];
+
     const FASE_1 = {
       fase: 1,
+      tipo: "picking",
       nomeFase: "PEDIDO #1042",
-      resumo: "Separe, embale e expeça. A pé.",
+      resumo: "Pegue o pedido no balcão, separe, embale e expeça.",
       empilhadeirasAtivas: [0, 1, 2],
       id: "pedido_1042",
-      numero: "#1042",
-      titulo: "Pedido #1042",
-      cliente: "Mercado Sul Distribuidora S.A.",
-      docaSaida: "DOCA 2",
-      
-      // Classificação de estrelas em segundos
-      estrelas: {
-        tres: 40,   // Até 40s: 3 estrelas (rota boa, correndo, sem bater)
-        duas: 55    // Até 55s: 2 estrelas
-      },
-
-      // Itens da etiqueta: cada um num endereço diferente. A ordem de coleta é livre.
-      itens: [
-        { rua: "R01", posicao: "P04", nome: "FITA ADESIVA",   qtd: 1 },
-        { rua: "R03", posicao: "P07", nome: "CANECA TÉRMICA", qtd: 2 },
-        { rua: "R04", posicao: "P13", nome: "ETIQUETADORA",   qtd: 1 }
-      ],
+      falaInicio: "inicioFila",
+      // Estrelas pelo tempo total do turno (segundos)
+      estrelas: { tres: 45, duas: 60 },
       tempoColetaPorVolume: 1.0, // segundos segurando [E] por volume
 
-      etapas: [
-        { id: "RECEBER", titulo: "RECEBER PEDIDO", descricaoCurta: "Vá ao terminal e pressione [E] para imprimir a etiqueta." },
-        { id: "COLETAR", titulo: "SEPARAR ITENS", descricaoCurta: "Colete os itens da etiqueta. A ordem é com você." },
-        { id: "LEVAR_EMBALAGEM", titulo: "LEVAR À EMBALAGEM", descricaoCurta: "Leve os volumes coletados até uma bancada de embalagem." },
-        { id: "EMBALAR", titulo: "EMBALAR E SELAR", descricaoCurta: "Complete a sequência de comandos para fechar a caixa." },
-        { id: "LEVAR_PALLET", titulo: "CONSOLIDAÇÃO", descricaoCurta: "Deposite a caixa selada no pallet da DOCA 2." },
-        { id: "EXPEDIR", titulo: "EXPEDIR CARGA", descricaoCurta: "Acompanhe a partida do caminhão da DOCA 2." }
-      ]
+      // Pedidos que caem no balcão. chegada = segundo do turno; prazo = segundos desde que caiu.
+      pedidos: [
+        {
+          numero: "#1042", cliente: "Mercado Sul Distribuidora S.A.", docaSaida: "DOCA 2",
+          chegada: 1, prazo: 50,
+          itens: [
+            { rua: "R01", posicao: "P04", nome: "FITA ADESIVA",   qtd: 1 },
+            { rua: "R03", posicao: "P07", nome: "CANECA TÉRMICA", qtd: 2 },
+            { rua: "R04", posicao: "P13", nome: "ETIQUETADORA",   qtd: 1 }
+          ]
+        }
+      ],
+      etapas: ETAPAS_PICKING
     };
 
     const FASE_2 = {
       fase: 2,
+      tipo: "empilhadeira",
       nomeFase: "PALLET NO ALTO",
       resumo: "Pegue a empilhadeira e desça um pallet do pulmão.",
       empilhadeirasAtivas: [0, 1],
       id: "pallet_no_alto",
+      falaInicio: "inicioFase2",
       numero: "#OS-207",
       titulo: "Ordem de serviço #207",
       cliente: "Reabastecimento interno",
@@ -1534,10 +1688,12 @@
 
     const FASE_3 = {
       fase: 3,
+      tipo: "coletor",
       nomeFase: "CADÊ O COLETOR?",
       resumo: "Sem coletor não tem WMS. Ache pelo bip.",
       empilhadeirasAtivas: [0, 1, 2],
       id: "cade_o_coletor",
+      falaInicio: "inicioFase3",
       numero: "#1043",
       titulo: "Pedido #1043",
       cliente: "Papelaria Ponto Final Ltda.",
@@ -1572,15 +1728,140 @@
       ]
     };
 
-    const FASES = [FASE_1, FASE_2, FASE_3];
+    const FASE_4 = {
+      fase: 4,
+      tipo: "picking",
+      nomeFase: "FILA NO BALCÃO",
+      resumo: "Dois pedidos, um balcão, zero paciência.",
+      empilhadeirasAtivas: [0, 1, 2],
+      id: "fila_no_balcao",
+      falaInicio: "inicioFila",
+      estrelas: { tres: 90, duas: 115 },
+      tempoColetaPorVolume: 1.0,
+      pedidos: [
+        {
+          numero: "#1051", cliente: "Bazar do Seu Zé Ltda.", docaSaida: "DOCA 1",
+          chegada: 1, prazo: 50,
+          itens: [
+            { rua: "R02", posicao: "P03", nome: "FITA DUPLA FACE", qtd: 1 },
+            { rua: "R04", posicao: "P16", nome: "ESTILETE",        qtd: 2 }
+          ]
+        },
+        {
+          numero: "#1052", cliente: "Escritório Café Forte", docaSaida: "DOCA 2",
+          chegada: 22, prazo: 60,
+          itens: [
+            { rua: "R01", posicao: "P11", nome: "MOUSE SEM FIO",  qtd: 1 },
+            { rua: "R03", posicao: "P18", nome: "PILHAS AA (CX)", qtd: 1 },
+            { rua: "R03", posicao: "P05", nome: "POST-IT",        qtd: 1 }
+          ]
+        }
+      ],
+      etapas: ETAPAS_PICKING
+    };
+
+    const FASE_5 = {
+      fase: 5,
+      tipo: "armazenagem",
+      nomeFase: "CHEGOU CARGA",
+      resumo: "Descarregue o caminhão e guarde os pallets no pulmão.",
+      empilhadeirasAtivas: [0, 1],
+      id: "chegou_carga",
+      falaInicio: "inicioFase5",
+      numero: "#REC-318",
+      titulo: "Recebimento #318",
+      cliente: "Fornecedor Embala Tudo",
+      docaSaida: "DOCA 2",
+      estrelas: { tres: 75, duas: 100 },
+      itens: [],
+      // Pallets que chegaram no caminhão. Cada um tem endereço e nível no pulmão.
+      palletsRecebimento: [
+        { nome: "FITAS",  baia: "PUL-01", nivel: 2 },
+        { nome: "CAIXAS", baia: "PUL-03", nivel: 3 }
+      ],
+      briefing: {
+        titulo: "ORDEM DE ARMAZENAGEM #318",
+        selo: "RECEBIMENTO",
+        linhas: [
+          ["SITUAÇÃO", "O caminhão do fornecedor encostou na DOCA 2."],
+          ["MISSÃO", "Tirar 2 pallets do recebimento e guardar no pulmão."],
+          ["ENDEREÇOS", "Pallet 1: PUL-01, nível 2. Pallet 2: PUL-03, nível 3."],
+          ["VEÍCULO", "Empilhadeira 04. A mesma de sempre, com o mesmo barulho."]
+        ],
+        controles: "↑ acelera · ↓ freia e dá ré · ← → vira · E pega/guarda · H buzina",
+        controlesToque: "Deslize para onde quer ir · para trás = ré · botão amarelo pega/guarda · 📯 buzina",
+        obs: "OBS: O MOTORISTA QUER IR EMBORA. ELE SEMPRE QUER."
+      },
+      etapas: [
+        { id: "ENTRAR_EMP", titulo: "ASSUMIR O VOLANTE", descricaoCurta: "Vá até a Empilhadeira 04 e aperte [E] para subir." },
+        { id: "PEGAR_RECEB", titulo: "PEGAR NO RECEBIMENTO", descricaoCurta: "Vá ao recebimento da DOCA 2 e encaixe o garfo no pallet {n}." },
+        { id: "LEVAR_PULMAO", titulo: "LEVAR AO PULMÃO", descricaoCurta: "Leve o pallet até o {baia} e pare de frente para o rack." },
+        { id: "GUARDAR", titulo: "GUARDAR NO RACK", descricaoCurta: "Segure [E] e solte com o garfo no NÍVEL {nivel}." },
+        { id: "EXPEDIR", titulo: "LIBERAR O CAMINHÃO", descricaoCurta: "Caminhão vazio. Acompanhe a saída da DOCA 2." }
+      ]
+    };
+
+    const FASE_6 = {
+      fase: 6,
+      tipo: "picking",
+      nomeFase: "BLACK FRIDAY",
+      resumo: "Três pedidos caindo sem parar. Boa sorte.",
+      empilhadeirasAtivas: [0, 1, 2],
+      id: "black_friday",
+      falaInicio: "inicioBlackFriday",
+      estrelas: { tres: 130, duas: 170 },
+      tempoColetaPorVolume: 1.0,
+      pedidos: [
+        {
+          numero: "#1077", cliente: "Loja Tudo Pela Metade", docaSaida: "DOCA 2",
+          chegada: 1, prazo: 45,
+          itens: [
+            { rua: "R01", posicao: "P07", nome: "RING LIGHT", qtd: 1 },
+            { rua: "R04", posicao: "P09", nome: "CABO USB",   qtd: 2 }
+          ]
+        },
+        {
+          numero: "#1078", cliente: "Sr. Cliente Apressado", docaSaida: "DOCA 1",
+          chegada: 18, prazo: 55,
+          itens: [
+            { rua: "R02", posicao: "P14", nome: "FONE BLUETOOTH", qtd: 1 },
+            { rua: "R03", posicao: "P12", nome: "CAPINHA",        qtd: 1 }
+          ]
+        },
+        {
+          numero: "#1079", cliente: "Mega Ofertas Já", docaSaida: "DOCA 2",
+          chegada: 36, prazo: 70,
+          itens: [
+            { rua: "R04", posicao: "P02", nome: "CAIXA DE SOM", qtd: 1 },
+            { rua: "R01", posicao: "P19", nome: "CARREGADOR",   qtd: 1 },
+            { rua: "R02", posicao: "P06", nome: "PELÍCULA",     qtd: 1 }
+          ]
+        }
+      ],
+      etapas: ETAPAS_PICKING
+    };
+
+    const FASES = [FASE_1, FASE_2, FASE_3, FASE_4, FASE_5, FASE_6];
+    const somaVolumes = (itens) => itens.reduce((s, it) => s + it.qtd, 0);
     FASES.forEach(f => {
+      if (f.pedidos) {
+        // Fases de picking: o pedido em andamento é copiado para cá quando o operador aceita
+        f.pedidos.forEach(p => { p.quantidadeVolumes = somaVolumes(p.itens); });
+        Object.assign(f, { numero: "", cliente: "", docaSaida: null, itens: [], quantidadeVolumes: 0 });
+        return;
+      }
       // Total de volumes do pedido (soma das quantidades dos itens)
-      f.quantidadeVolumes = f.itens.reduce((s, it) => s + it.qtd, 0);
+      f.quantidadeVolumes = somaVolumes(f.itens);
       f.itens.forEach(it => { it.coletados = 0; });
     });
 
     // Fase em jogo. Todo o código lê a missão daqui.
     let MISSAO_ATUAL = FASE_1;
+    const tipoFase = () => MISSAO_ATUAL.tipo;
+    const ehFila = () => !!MISSAO_ATUAL.pedidos;
+    const ehVeiculo = () => MISSAO_ATUAL.tipo === "empilhadeira" || MISSAO_ATUAL.tipo === "armazenagem";
+    const ehArmazenagem = () => MISSAO_ATUAL.tipo === "armazenagem";
+    const ehColetor = () => MISSAO_ATUAL.tipo === "coletor";
 
     /* ==========================================================================
        1b. TEXTOS DO JOGO (EDITÁVEL)
@@ -1705,7 +1986,7 @@
         "Chega mais perto e endireita. O pallet não vem até você."
       ],
       passouPonto: [
-        "Passou do nível 3. O pallet balançou e uma caixa pulou fora.",
+        "Passou do nível. O pallet balançou e uma caixa pulou fora.",
         "Subiu demais. Lá se foi uma caixa. E três segundos."
       ],
       palletPego: [
@@ -1772,6 +2053,79 @@
       falha: [
         "Não foi dessa vez. O coletor perdoa. Talvez.",
         "Turno perdido. Café e tenta de novo."
+      ],
+
+      // ---------- Balcão WMS: pedidos caindo ----------
+      inicioFila: [
+        "Turno aberto. Os pedidos caem no balcão WMS. Fica de olho.",
+        "Balcão ligado. Daqui a pouco começa a chover pedido.",
+        "O WMS acordou. E ele acorda com fome."
+      ],
+      inicioBlackFriday: [
+        "Black Friday. Metade do preço, o dobro de pedido.",
+        "Hoje o balcão não dorme. Nem você.",
+        "Promoção no site, adrenalina no galpão."
+      ],
+      novoPedido: [
+        "Plim! Pedido novo no balcão.",
+        "Caiu mais um. Eles se reproduzem.",
+        "Pedido novo. O cliente acha que você tem quatro braços.",
+        "O balcão apitou. Não é elogio."
+      ],
+      pedidoAtrasado: [
+        "O {n} passou do prazo. O cliente já tá digitando a reclamação.",
+        "{n} atrasado. O rastreio dele virou novela.",
+        "Prazo do {n} estourou. Segue que ainda dá pra entregar."
+      ],
+      semPedido: [
+        "Sem pedido na mão. O balcão WMS tá ali, piscando.",
+        "Pra separar, primeiro tem que ter pedido. Balcão!"
+      ],
+      voltaBalcao: [
+        "Tem pedido esperando no balcão. Ele não vai se separar sozinho.",
+        "Próximo! O balcão tá chamando."
+      ],
+      esperandoPedido: [
+        "Balcão vazio. Aproveita e respira.",
+        "Nenhum pedido agora. Não se acostuma."
+      ],
+      pedidoOk3: [
+        "Saiu voando. O cliente nem terminou de pagar.",
+        "Prazo? Que prazo? Foi antes.",
+        "Esse pedido foi mais rápido que o frete grátis."
+      ],
+      pedidoOk2: [
+        "No prazo. O cliente vai receber e nem lembrar de você. Sucesso.",
+        "Entregue certinho. Sem emoção, do jeito bom.",
+        "Dentro do prazo. O WMS deu um joinha."
+      ],
+      pedidoOk1: [
+        "Atrasou, mas foi. O cliente vai reclamar no prazo dele.",
+        "Chegou. Atrasado, mas com fita bonita.",
+        "Saiu. O SAC já tá preparando o café."
+      ],
+
+      // ---------- Fase 5: recebimento e armazenagem ----------
+      inicioFase5: [
+        "Caminhão encostou. O motorista já tá olhando o relógio.",
+        "Chegou carga. Pallet no chão não paga aluguel, mas atrapalha.",
+        "Recebimento aberto. Bora esvaziar esse baú."
+      ],
+      desalinhadoReceb: [
+        "Encaixa o garfo no pallet. De frente, com carinho.",
+        "Quase. O garfo precisa entrar no pallet, não fazer carinho nele."
+      ],
+      pegouReceb: [
+        "Pallet no garfo. Agora o pulmão te espera.",
+        "Pegou. Devagar que esse aí é pesado."
+      ],
+      palletGuardado: [
+        "Guardado! Falta um. O motorista suspirou.",
+        "Um no lugar. O inventário sorriu de leve."
+      ],
+      tudoGuardado: [
+        "Tudo guardado. O caminhão pode ir embora em paz.",
+        "Baú vazio, pulmão cheio. Equilíbrio."
       ]
     };
 
@@ -1931,6 +2285,13 @@
         for (let i = 0; i < 4; i++) {
           this.playTone(180 + i * 20, "sawtooth", 0.03, 0.12, 0.01, 0.2 + i * 0.05);
         }
+      },
+
+      // Pedido novo caindo no balcão: "plim-plim" de sistema
+      notificacao() {
+        this.playTone(1318.5, "square", 0.07, 0.14, 0.005, 0);
+        this.playTone(1760, "square", 0.09, 0.14, 0.005, 0.08);
+        this.playTone(2637, "triangle", 0.12, 0.08, 0.005, 0.17);
       },
 
       passo(alternado, correndo) {
@@ -3067,6 +3428,17 @@
         return;
       }
       if (estadoJogo === "BOOT" || estadoJogo === "ERGUER_OK") return;
+      if (estadoJogo === "WMS") {
+        if (e.code === "Escape" || e.code === "KeyQ") { SFX.menuBlip(); fecharWMS(); }
+        else if (e.code === "ArrowUp" || e.code === "KeyW") moverSelecaoWMS(-1);
+        else if (e.code === "ArrowDown" || e.code === "KeyS") moverSelecaoWMS(1);
+        else if (e.code === "Enter" || e.code === "KeyE" || e.code === "Space") { SFX.menuBlip(); aceitarSelecionadoWMS(); }
+        return;
+      }
+      if (estadoJogo === "PEDIDO_OK") {
+        if (e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape") { SFX.menuEnter(); fecharPedidoOk(); }
+        return;
+      }
       if (estadoJogo === "FALHOU") {
         if (e.code === "Enter") { SFX.menuBlip(); reiniciarJogo(); }
         else if (e.code === "Escape") voltarAoMenu();
@@ -3125,8 +3497,12 @@
       if (e.code === "KeyQ") {
         if (estadoJogo === "JOGANDO") {
           SFX.menuBlip();
-          if (faseIndex === 1) abrirBriefing();
-          else if (faseIndex === 2 && !coletor.achado) falar("semColetor", "#ef4444");
+          if (ehVeiculo()) abrirBriefing();
+          else if (ehColetor() && !coletor.achado) falar("semColetor", "#ef4444");
+          else if (ehFila() && !fila.ativo) {
+            if (player.currentZone && player.currentZone.tipo === "terminal") abrirWMS();
+            else falar("semPedido", "#fde047");
+          }
           else abrirCardPedido();
         } else if (estadoJogo === "CARD_PEDIDO") {
           fecharCardPedido();
@@ -3299,9 +3675,13 @@
       document.getElementById("hud").style.display = "flex";
       atualizarHUD();
       encaixarCameraNoJogador();
-      if (faseIndex === 0) {
-        SFX.terminal();
-        abrirCardPedido();
+      if (ehFila()) {
+        // Turno de picking: começa no galpão; os pedidos caem no balcão
+        estadoJogo = "JOGANDO";
+        limparInputs();
+        cronometroIniciado = true;
+        JUICE.textoFlutuante(player.x, player.y - 14, "TURNO ABERTO!", "#38bdf8");
+        falar(MISSAO_ATUAL.falaInicio || "inicioFila", "#38bdf8");
       } else {
         abrirBriefing();
       }
@@ -3332,7 +3712,7 @@
       document.getElementById("et-volumes").textContent = String(m.quantidadeVolumes);
       document.getElementById("et-doca").textContent = m.docaSaida;
       document.getElementById("et-codigo").textContent = "*" + m.numero.replace("#", "") + "-" + m.docaSaida.replace(" ", "") + "*";
-      document.getElementById("et-barcode").innerHTML = codigoDeBarras(m.id);
+      document.getElementById("et-barcode").innerHTML = codigoDeBarras(m.id + m.numero);
       if (!etiquetaObs) etiquetaObs = sortearTexto("obsEtiqueta");
       document.getElementById("et-obs").textContent = etiquetaObs;
       atualizarItensEtiqueta();
@@ -3402,7 +3782,13 @@
       document.getElementById("modal-order").style.display = "none";
       estadoJogo = "JOGANDO";
       limparInputs();
-      if (!cronometroIniciado) {
+      if (fila.recemAceito) {
+        // Pegou o pedido no balcão: bora separar
+        fila.recemAceito = false;
+        irParaEtapa("COLETAR");
+        JUICE.textoFlutuante(player.x, player.y - 14, MISSAO_ATUAL.numero + "!", "#38bdf8");
+        falar("inicioTurno", "#38bdf8");
+      } else if (!cronometroIniciado) {
         cronometroIniciado = true;
         irParaEtapa("COLETAR");
         JUICE.textoFlutuante(player.x, player.y - 14, "INICIAR!", "#38bdf8");
@@ -3489,6 +3875,16 @@
           return { x: veiculo.x, y: veiculo.y };
         case "BUSCAR_PALLET":
         case "ERGUER": {
+          const b = posicaoBaiaAlvo();
+          return { x: b.x, y: b.y - 6 };
+        }
+        // Armazenagem
+        case "PEGAR_RECEB": {
+          const p = palletArmazenagemAtual();
+          return p ? { x: p.x - 30, y: p.y } : null;
+        }
+        case "LEVAR_PULMAO":
+        case "GUARDAR": {
           const b = posicaoBaiaAlvo();
           return { x: b.x, y: b.y - 6 };
         }
@@ -3583,7 +3979,7 @@
     let stepSoundTimer = 0;
 
     function update(dt) {
-      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU") {
+      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU" || estadoJogo === "PEDIDO_OK") {
         return;
       }
 
@@ -3645,7 +4041,8 @@
 
       // Fases 2 e 3: garfo subindo e bateria do coletor
       if (estadoJogo === "ERGUER") atualizarErguer(dt);
-      if (faseIndex === 2 && estadoJogo === "JOGANDO") atualizarFase3(dt);
+      if (ehColetor() && estadoJogo === "JOGANDO") atualizarFase3(dt);
+      atualizarFila(dt);
       if (estadoJogo === "FALHOU") return;
 
       // 1. Movimento do Jogador
@@ -3860,7 +4257,16 @@
         }
       });
 
-      // 4. Caminhão da doca
+      // 4. Caminhão da doca (e caminhões voltando vazios depois de um pedido)
+      CAMINHOES.forEach(c => {
+        if (!c.chegando) return;
+        c.departOffset = Math.max(0, c.departOffset - dt * 150);
+        if (c.departOffset === 0) {
+          c.chegando = false;
+          if (c.docaId === MISSAO_ATUAL.docaSaida) c.doorClosed = 0;
+          SFX.caminhaoPorta();
+        }
+      });
       const camAlvo = CAMINHOES.find(c => c.docaId === MISSAO_ATUAL.docaSaida);
       if (camAlvo && camAlvo.departing) {
         if (camAlvo.doorClosed < 1) {
@@ -3879,14 +4285,17 @@
             JUICE.marcarPneu(frente - 10, camAlvo.y + camAlvo.h - 4);
           }
           if (camAlvo.departOffset > 380 && estadoJogo !== "VITORIA") {
-            finalizarMissaoComVitoria();
+            // Ainda tem pedido no turno: parabéns do pedido e volta ao galpão
+            if (ehFila() && pedidosRestantes() > 0) abrirPedidoOk();
+            else finalizarMissaoComVitoria();
           }
         }
       }
 
       if (estadoJogo === "JOGANDO") {
-        if (faseIndex === 1) tratarZonasFase2();
-        else if (faseIndex === 2 && !coletor.achado) tratarZonasFase3();
+        if (tipoFase() === "empilhadeira") tratarZonasFase2();
+        else if (ehArmazenagem()) tratarZonasFase5();
+        else if (ehColetor() && !coletor.achado) tratarZonasFase3();
         else tratarZonasEInteracao(dt);
       }
 
@@ -3908,9 +4317,14 @@
         player.y <= TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 12
       ) {
         player.currentZone = { tipo: "terminal" };
+        if (fila.notifTimer) esconderNotif(); // chegou no balcão: a notificação não precisa cobrir ele
         if (interactPressedThisFrame) {
-          SFX.terminal();
-          abrirCardPedido();
+          if (ehFila()) {
+            abrirWMS();
+          } else {
+            SFX.terminal();
+            abrirCardPedido();
+          }
           return;
         }
       }
@@ -4044,6 +4458,7 @@
 
     // Fecha a missão: para o cronômetro, mostra a doca e manda o caminhão embora
     function iniciarExpedicaoFinal(falaEvento, textoFlutuante) {
+      if (ehFila()) registrarEntregaPedido();
       cargaDepositada = true;
       cronometroIniciado = false;
       tempoFinalRegistrado = tempoDecorrido + tempoPenalidades;
@@ -4071,6 +4486,7 @@
         if (timerPartidaCaminhao) clearTimeout(timerPartidaCaminhao);
         timerPartidaCaminhao = setTimeout(() => {
           timerPartidaCaminhao = null;
+          cam.chegando = false;
           cam.departing = true;
         }, 500);
       }
@@ -4200,7 +4616,7 @@
 
     function desenharPainelDeAcao() {
       if (estadoJogo !== "JOGANDO") return;
-      if (faseIndex === 1 || (faseIndex === 2 && !coletor.achado)) {
+      if (ehVeiculo() || (ehColetor() && !coletor.achado)) {
         desenharPainelFases();
         return;
       }
@@ -4248,7 +4664,10 @@
 
       if (!zona) return;
       let texto = "[E] ACAO";
-      if (zona.tipo === "terminal") texto = "[E] PEDIDO";
+      if (zona.tipo === "terminal") {
+        const n = ehFila() ? pedidosEsperando().length : 0;
+        texto = ehFila() ? (n ? `[E] ${n} PEDIDO${n > 1 ? "S" : ""}` : "[E] BALCAO") : "[E] PEDIDO";
+      }
       else if (zona.tipo === "estacao_embalagem") texto = "[E] EMBALAR";
       else if (zona.tipo === "pallet_consolidacao") texto = "[E] DOCA";
       else if (zona.tipo === "posicao_wms") {
@@ -4445,6 +4864,7 @@
       ctx.fillStyle = "#10b981";
       ctx.fillRect(TERMINAL_INICIAL.x + 8, TERMINAL_INICIAL.y + 4, 16, 10);
       desenharBitmap("WMS", TERMINAL_INICIAL.x + TERMINAL_INICIAL.w / 2, TERMINAL_INICIAL.y - 8, "#ffffff", 1, "center");
+      desenharFilaNoBalcao();
 
       // 6. Bancadas
       ESTACOES_EMBALAGEM.forEach(est => {
@@ -4838,7 +5258,7 @@
       minimapCtx.fillStyle = "#0f172a";
       minimapCtx.fillRect(0, 0, mw, mh);
 
-      if (faseIndex === 2 && !coletor.achado) {
+      if (ehColetor() && !coletor.achado) {
         // Sem coletor, sem WMS: só chuvisco
         for (let i = 0; i < 260; i++) {
           const v = Math.floor(Math.random() * 120) + 30;
@@ -4855,9 +5275,9 @@
         return;
       }
 
-      if (faseIndex === 1) {
+      if (ehVeiculo()) {
         minimapCtx.fillStyle = "#facc15";
-        const z = ZONA_ENTREGA_F2;
+        const z = ehArmazenagem() ? ZONA_RECEB : ZONA_ENTREGA_F2;
         minimapCtx.fillRect(z.x * sx, z.y * sy, z.w * sx, z.h * sy);
         minimapCtx.fillStyle = "#3b82f6";
         minimapCtx.fillRect(PULMAO.x * sx, PULMAO.y * sy, PULMAO.baiaW * 3 * sx, PULMAO.h * sy);
@@ -4920,8 +5340,31 @@
     function atualizarHUD() {
       const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex];
       if (etapa) {
-        document.getElementById("hud-obj-step").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ETAPA ${etapaAtualIndex + 1}/${MISSAO_ATUAL.etapas.length}: ${etapa.titulo}`;
-        let desc = etapa.descricaoCurta;
+        let prefixo = `FASE ${faseIndex + 1}/${FASES.length}`;
+        if (ehFila()) {
+          const total = fila.pedidos.length;
+          const atual = pedidosEntregues().length + (cargaDepositada ? 0 : 1);
+          prefixo += ` · PEDIDO ${Math.max(1, Math.min(total, atual))}/${total} · ${etapa.titulo}`;
+        } else if (ehArmazenagem()) {
+          const total = recebimento.pallets.length;
+          prefixo += ` · PALLET ${Math.min(total, palletsGuardados() + 1)}/${total} · ${etapa.titulo}`;
+        } else {
+          prefixo += ` · ETAPA ${etapaAtualIndex + 1}/${MISSAO_ATUAL.etapas.length}: ${etapa.titulo}`;
+        }
+        document.getElementById("hud-obj-step").textContent = prefixo;
+        const pa = ehArmazenagem() ? palletArmazenagemAtual() : null;
+        let desc = etapa.descricaoCurta
+          .replace("{doca}", MISSAO_ATUAL.docaSaida || "doca")
+          .replace("{n}", pa ? "P" + pa.n : "")
+          .replace("{baia}", pa ? pa.baia : "")
+          .replace("{nivel}", pa ? String(pa.nivel) : "");
+        if (etapa.id === "RECEBER" && ehFila()) {
+          const n = pedidosEsperando().length;
+          const acao = EH_TOQUE ? "toque no botão" : "aperte [E]";
+          desc = n
+            ? `${n} pedido${n > 1 ? "s" : ""} no balcão WMS. Vá até lá e ${acao}.`
+            : "Balcão vazio. Aguarde: o próximo pedido já vai cair.";
+        }
         if (etapa.id === "COLETAR") {
           const falta = itensPendentes().map(it => `${it.rua}-${it.posicao}`);
           desc = falta.length ? `Faltam: ${falta.join(" · ")}  [Q] etiqueta` : "Tudo separado!";
@@ -4934,7 +5377,7 @@
       const invLabel = document.getElementById("hud-inv-label");
       invLabel.textContent = "CARGA";
 
-      if (faseIndex === 2 && !coletor.achado) {
+      if (ehColetor() && !coletor.achado) {
         // Barra de sinal do coletor (o bip em forma visual)
         const sinal = sinalDoColetor().forca;
         const barras = Math.max(0, Math.min(5, Math.round(sinal * 5 + 0.2)));
@@ -4944,9 +5387,16 @@
         inv.style.color = barras >= 4 ? "#34d399" : (barras >= 2 ? "#fbbf24" : "#ef4444");
         return;
       }
-      if (faseIndex === 1 && !cargaDepositada) {
+      if (ehVeiculo() && !cargaDepositada) {
+        if (ehArmazenagem()) invLabel.textContent = `GUARDADOS ${palletsGuardados()}/${recebimento.pallets.length}`;
         inv.textContent = veiculo.comPallet ? "PALLET" : (veiculo.pilotando ? "GARFO VAZIO" : "A PÉ");
         inv.style.color = veiculo.comPallet ? "#fbbf24" : "#94a3b8";
+        return;
+      }
+      if (ehFila() && !fila.ativo && !cargaDepositada) {
+        invLabel.textContent = carrinho.pego ? "🛒 CARRINHO" : "CARGA";
+        inv.textContent = "SEM PEDIDO";
+        inv.style.color = "#64748b";
         return;
       }
 
@@ -4971,6 +5421,15 @@
       const tempoFinal = tempoFinalRegistrado;
 
       document.getElementById("res-truck-info").textContent = `Caminhão da ${MISSAO_ATUAL.docaSaida} despachado com sucesso!`;
+      if (ehFila()) {
+        const ent = pedidosEntregues();
+        const noPrazo = ent.filter(p => p.resultado && !p.resultado.atrasou).length;
+        document.getElementById("res-truck-info").textContent = ent.length > 1
+          ? `${ent.length} pedidos expedidos · ${noPrazo} no prazo${noPrazo < ent.length ? ` · ${ent.length - noPrazo} atrasado(s)` : " ✓"}`
+          : `Pedido ${ent[0] ? ent[0].def.numero : ""} expedido ${noPrazo ? "no prazo ✓" : "com atraso"}.`;
+      } else if (ehArmazenagem()) {
+        document.getElementById("res-truck-info").textContent = `${palletsGuardados()} pallets no pulmão. Caminhão liberado!`;
+      }
 
       // Cálculo de estrelas
       let estrelas = 1;
@@ -5000,13 +5459,14 @@
         campEl.style.display = "block";
         campEl.innerHTML =
           FASES.map((f, i) => `FASE ${i + 1} · ${f.nomeFase}: ${formatarTempo(campanha.tempos[i])} ${"★".repeat(campanha.estrelas[i])}`).join("<br>") +
-          `<br><span style="color:#fbbf24">TOTAL: ${formatarTempo(total)} · ${totalEstrelas}/9 ★</span>`;
+          `<br><span style="color:#fbbf24">TOTAL: ${formatarTempo(total)} · ${totalEstrelas}/${FASES.length * 3} ★</span>`;
         try {
           const melhor = parseFloat(localStorage.getItem("pickingpanic_campanha") || "Infinity");
           if (total < melhor) localStorage.setItem("pickingpanic_campanha", String(total));
         } catch (e) {}
       } else {
-        tituloEl.textContent = faseIndex === 1 ? "PALLET ENTREGUE!" : "EXPEDIÇÃO CONCLUÍDA!";
+        tituloEl.textContent = { empilhadeira: "PALLET ENTREGUE!", armazenagem: "CARGA GUARDADA!" }[tipoFase()] ||
+          (ehFila() && fila.pedidos.length > 1 ? "TURNO CONCLUÍDO!" : "EXPEDIÇÃO CONCLUÍDA!");
         tituloEl.style.color = "#047857";
         campEl.style.display = "none";
       }
@@ -5336,14 +5796,17 @@
       resetarVeiculo();
       resetarColetor();
       resetarCarrinho();
+      resetarRecebimento();
+      resetarFila();
       resetarDicasDaPartida();
-      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha"]
+      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-wms", "modal-pedido-ok"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
 
       encaixarCameraNoJogador();
 
       CAMINHOES.forEach(c => {
         c.departing = false;
+        c.chegando = false;
         // A doca da missão começa com a porta aberta, esperando a carga
         c.doorClosed = (c.docaId === MISSAO_ATUAL.docaSaida) ? 0 : 1;
         c.departOffset = 0;
@@ -5522,10 +5985,11 @@
 
     // Rótulo do botão de ação conforme o que está por perto
     const ROTULOS_ACAO = {
-      terminal: "PEDIDO", posicao_wms: "COLETAR", estacao_embalagem: "EMBALAR",
+      terminal: "BALCÃO", posicao_wms: "COLETAR", estacao_embalagem: "EMBALAR",
       pallet_consolidacao: "DEPOSITAR", veiculo: "SUBIR", pulmao_ok: "ERGUER",
       pulmao_alinhar: "ENCAIXE", zona_ok: "BAIXAR", zona_devagar: "PARE",
-      zona_fora: "ENTRE", coletor: "PEGAR", npc: "PERGUNTAR"
+      zona_fora: "ENTRE", coletor: "PEGAR", npc: "PERGUNTAR",
+      receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR"
     };
     let rotuloAcaoAtual = "";
     function atualizarBotoesToque() {
@@ -5582,7 +6046,7 @@
       carrinho.pego = false;
       carrinho.fx = 0;
       carrinho.fy = 1;
-      carrinho.ativo = faseIndex !== 1; // na fase 2 o veículo é a empilhadeira
+      carrinho.ativo = !ehVeiculo(); // nas fases de empilhadeira o veículo é ela
     }
 
     function posicaoCarrinho(px = player.x, py = player.y) {
@@ -5810,11 +6274,23 @@
             "Deslize o dedo em qualquer lugar da tela para andar.",
             { dur: 9, fim: () => Math.hypot(player.x - memoria.inicioX, player.y - memoria.inicioY) > 40 });
         }
+        // Balcão WMS: primeiro pedido caindo e fila crescendo
+        if (ehFila() && etapa === "RECEBER" && pedidosEsperando().length > 0 && !dica.id) {
+          const t = TERMINAL_INICIAL;
+          tentarDica("balcao", `Pedido novo no balcão! Vá até o WMS e aperte ${K("E")}.`,
+            "Pedido novo no balcão! Vá até o WMS e toque no botão amarelo.",
+            { dur: 7, fim: () => MISSAO_ATUAL.etapas[etapaAtualIndex]?.id !== "RECEBER", ancora: () => ({ x: t.x + t.w / 2, y: t.y - 16 }) });
+        }
+        if (ehFila() && pedidosEsperando().length >= 1 && fila.ativo) {
+          tentarDica("fila", "Pedidos se acumulam no balcão. Quanto mais demora, maior a fila e mais prazo estoura.",
+            "Pedidos se acumulam no balcão. Quanto mais demora, maior a fila e mais prazo estoura.",
+            { dur: 6, ancora: () => ({ x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y - 16 }) });
+        }
         if (etapa === "COLETAR" && memoria.tempoNaEtapa > 4) {
           tentarDica("seta", "A seta amarela aponta o item mais perto. A ordem é com você.",
             "A seta amarela aponta o item mais perto. A ordem é com você.", { dur: 5 });
         }
-        if (perto_doCarrinho() && (faseIndex === 0 || faseIndex === 2)) {
+        if (perto_doCarrinho() && !ehVeiculo()) {
           tentarDica("carrinho",
             `${K("C")} pega o carrinho: anda mais rápido e corre mesmo carregado.`,
             "Toque em 🛒 para empurrar o carrinho: mais rápido, mesmo carregado.",
@@ -5845,7 +6321,7 @@
           tentarDica("pallet", "Caixa lacrada. Agora o pallet da doca marcada em amarelo.",
             "Caixa lacrada. Agora o pallet da doca marcada em amarelo.", { dur: 5 });
         }
-        if (faseIndex === 2 && etapa === "ACHAR_COLETOR") {
+        if (etapa === "ACHAR_COLETOR") {
           tentarDica("bip", "Sem seta e sem mapa. Siga o bip e a barra SINAL, no canto de cima.",
             "Sem seta e sem mapa. Siga o bip e a barra SINAL, no canto de cima.", { dur: 7 });
           if (npcPerto) {
@@ -5853,7 +6329,7 @@
               "Toque em PERGUNTAR perto do colega. Um deles mente.", { dur: 6 });
           }
         }
-        if (faseIndex === 1 && etapa === "ENTRAR_EMP" && memoria.tempoNaEtapa > 0.5) {
+        if (ehVeiculo() && etapa === "ENTRAR_EMP" && memoria.tempoNaEtapa > 0.5) {
           tentarDica("subir", `Siga a seta até a empilhadeira laranja e aperte ${K("E")}.`,
             "Siga a seta até a empilhadeira laranja e toque em SUBIR.", { dur: 6, fim: () => veiculo.pilotando });
         }
@@ -5862,7 +6338,12 @@
           `${K("↑")} acelera · ${K("↓")} freia e dá ré · ${K("←")}${K("→")} vira`,
           "Deslize para onde quer ir. Deslizar para trás dela = ré.",
           { dur: 8, fim: () => Math.abs(veiculo.vel) > 60 });
-        if (etapa === "BUSCAR_PALLET" && estadoAlinhamento().perto) {
+        if (etapa === "PEGAR_RECEB" && alinhamentoReceb().perto) {
+          tentarDica("receb", "Pare na marca, com o garfo virado para o pallet, e aperte E.",
+            "Pare na marca, com o garfo virado para o pallet, e toque em PEGAR.",
+            { dur: 6, ancora: () => { const p = palletArmazenagemAtual(); return p ? { x: p.x, y: p.y - 20 } : { x: player.x, y: player.y }; } });
+        }
+        if ((etapa === "BUSCAR_PALLET" || etapa === "LEVAR_PULMAO") && estadoAlinhamento().perto) {
           tentarDica("encaixe", "Pare em cima da marca, com o garfo virado para o rack.",
             "Pare em cima da marca, com o garfo virado para o rack.",
             { dur: 6, ancora: () => { const b = posicaoBaiaAlvo(); return { x: b.x, y: b.y - 40 }; } });
@@ -5891,6 +6372,358 @@
       memoria.andandoSemCorrer = 0;
       memoria.tempoNaEtapa = 0;
       memoria.etapaAnterior = -1;
+    }
+
+    /* ==========================================================================
+       16a4. BALCÃO WMS: PEDIDOS CAINDO NA FILA (estilo missão de GTA)
+       Os pedidos caem no balcão em horários do turno. Quem demora vê a fila crescer.
+       No balcão: abre a caixa de entrada, escolhe um pedido, a etiqueta imprime.
+       Entregou: janela de parabéns com feedback e volta pro galpão.
+       ========================================================================== */
+    const fila = { pedidos: [], ativo: null, ultimo: null, selecionado: 0, recemAceito: false, wmsTick: 0, notifTimer: null };
+
+    function prazoDe(p) { return p.def.prazo * fatorTempo(); }
+    function idadeDe(p) { return Math.max(0, (p.status === "entregue" ? p.entregueEm : tempoDecorrido) - p.chegouEm); }
+    function pedidosEsperando() { return fila.pedidos.filter(p => p.status === "esperando"); }
+    function pedidosRestantes() { return fila.pedidos.filter(p => p.status !== "entregue").length; }
+    function pedidosEntregues() { return fila.pedidos.filter(p => p.status === "entregue"); }
+    function estaAtrasado(p) { return (p.status === "esperando" || p.status === "ativo") && idadeDe(p) > prazoDe(p); }
+    function mmss(seg) {
+      const t = Math.max(0, Math.floor(seg));
+      return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+    }
+
+    function limparPedidoAtivo() {
+      Object.assign(MISSAO_ATUAL, { numero: "", cliente: "", docaSaida: null, itens: [], quantidadeVolumes: 0 });
+    }
+
+    function resetarFila() {
+      fila.ativo = null;
+      fila.ultimo = null;
+      fila.selecionado = 0;
+      fila.recemAceito = false;
+      fila.pedidos = (MISSAO_ATUAL.pedidos || []).map((def, i) => ({
+        def, indice: i, status: "futuro", chegouEm: 0, aceitoEm: 0, entregueEm: 0,
+        penAntes: 0, atrasoAvisado: false, resultado: null
+      }));
+      if (ehFila()) limparPedidoAtivo();
+      document.documentElement.classList.toggle("com-fila", ehFila());
+      esconderNotif();
+      atualizarChipFila();
+    }
+
+    function atualizarFila(dt) {
+      if (!ehFila() || !cronometroIniciado) return;
+      fila.pedidos.forEach(p => {
+        if (p.status === "futuro" && tempoDecorrido >= p.def.chegada * fatorTempo()) {
+          p.status = "esperando";
+          p.chegouEm = tempoDecorrido;
+          notificarPedido(p);
+        }
+        if (!p.atrasoAvisado && estaAtrasado(p)) {
+          p.atrasoAvisado = true;
+          SFX.estrelaPerdida();
+          falarTexto(sortearTexto("pedidoAtrasado").replace("{n}", p.def.numero), "#ef4444");
+          atualizarChipFila();
+        }
+      });
+      if (estadoJogo === "WMS") {
+        fila.wmsTick -= dt;
+        if (fila.wmsTick <= 0) { fila.wmsTick = 0.2; atualizarTempoWMS(); }
+      }
+    }
+
+    function atualizarChipFila(pop) {
+      const chip = document.getElementById("hud-fila");
+      if (!chip) return;
+      const n = pedidosEsperando().length;
+      document.getElementById("hud-fila-n").textContent = String(n);
+      chip.classList.toggle("tem", n > 0);
+      chip.classList.toggle("atrasado", pedidosEsperando().some(estaAtrasado));
+      chip.title = n ? `${n} pedido(s) esperando no balcão WMS` : "Nenhum pedido esperando";
+      if (pop) {
+        chip.classList.add("pop");
+        setTimeout(() => chip.classList.remove("pop"), 160);
+      }
+    }
+
+    function notificarPedido(p) {
+      SFX.notificacao();
+      atualizarChipFila(true);
+      atualizarHUD();
+      const t = TERMINAL_INICIAL;
+      JUICE.textoFlutuante(t.x + t.w / 2, t.y - 12, "+1 PEDIDO", "#fde047");
+      const el = document.getElementById("notif-pedido");
+      document.getElementById("notif-texto").textContent =
+        `${p.def.numero} · ${p.def.cliente.toUpperCase()} · ${p.def.quantidadeVolumes} VOL · PRAZO ${mmss(prazoDe(p))}`;
+      // Fica logo abaixo da barra de cima
+      const stage = document.getElementById("stage");
+      const barra = document.querySelector(".hud-top-bar");
+      if (stage && barra) {
+        el.style.top = (barra.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 8) + "px";
+      }
+      el.classList.add("visivel");
+      if (fila.notifTimer) clearTimeout(fila.notifTimer);
+      fila.notifTimer = setTimeout(esconderNotif, 3800);
+      if (!fila.ativo) falar("novoPedido", "#fde047");
+    }
+
+    function esconderNotif() {
+      if (fila.notifTimer) clearTimeout(fila.notifTimer);
+      fila.notifTimer = null;
+      const el = document.getElementById("notif-pedido");
+      if (el) el.classList.remove("visivel");
+    }
+
+    // Clicou na notificação ou no contador: no balcão abre a caixa de entrada, longe dele aponta o caminho
+    function cliqueNaFila() {
+      if (estadoJogo !== "JOGANDO" || !ehFila()) return;
+      esconderNotif();
+      if (player.currentZone && player.currentZone.tipo === "terminal") {
+        abrirWMS();
+      } else if (fila.ativo) {
+        falarTexto(`Termine o ${fila.ativo.def.numero} primeiro. Os outros esperam no balcão.`, "#fde047");
+      } else {
+        falarTexto("Os pedidos ficam no balcão WMS. Siga a seta.", "#fde047");
+        JUICE.textoFlutuante(player.x, player.y - 16, "BALCÃO ↑", "#fde047");
+      }
+    }
+
+    function abrirWMS() {
+      estadoJogo = "WMS";
+      limparInputs();
+      SFX.pararColetaTom();
+      SFX.terminal();
+      esconderNotif();
+      fila.selecionado = 0;
+      montarListaWMS();
+      document.getElementById("modal-wms").style.display = "flex";
+    }
+
+    function fecharWMS() {
+      document.getElementById("modal-wms").style.display = "none";
+      if (estadoJogo === "WMS") estadoJogo = "JOGANDO";
+      limparInputs();
+      atualizarHUD();
+    }
+
+    function listaWMS() {
+      return pedidosEsperando().sort((a, b) => a.chegouEm - b.chegouEm);
+    }
+
+    function montarListaWMS() {
+      const lista = document.getElementById("wms-lista");
+      const aviso = document.getElementById("wms-aviso");
+      const itens = listaWMS();
+      lista.innerHTML = "";
+      aviso.textContent = fila.ativo
+        ? `EM ANDAMENTO: ${fila.ativo.def.numero}. TERMINE ANTES DE PEGAR OUTRO.`
+        : "";
+      if (!itens.length) {
+        const futuro = fila.pedidos.some(p => p.status === "futuro");
+        lista.innerHTML = `<div class="wms-vazio">${futuro ? "CAIXA DE ENTRADA VAZIA. O PRÓXIMO PEDIDO JÁ VAI CAIR." : "NENHUM PEDIDO NA FILA."}</div>`;
+        return;
+      }
+      fila.selecionado = Math.min(fila.selecionado, itens.length - 1);
+      itens.forEach((p, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "wms-pedido";
+        b.dataset.indice = String(p.indice);
+        b.disabled = !!fila.ativo;
+        b.innerHTML =
+          `<span class="wms-num">${p.def.numero}</span>` +
+          `<span class="wms-cli">${p.def.cliente.toUpperCase()}</span>` +
+          `<span class="wms-info">${p.def.quantidadeVolumes} VOL · ${p.def.docaSaida}</span>` +
+          `<span class="wms-prazo"><span class="wms-barra"><i></i></span><span class="wms-idade"></span></span>`;
+        b.addEventListener("click", () => {
+          if (estadoJogo !== "WMS" || fila.ativo) return;
+          aceitarPedido(p);
+        });
+        lista.appendChild(b);
+      });
+      atualizarTempoWMS();
+    }
+
+    function atualizarTempoWMS() {
+      document.getElementById("wms-relogio").textContent = "TURNO " + mmss(tempoDecorrido);
+      const botoes = [...document.querySelectorAll("#wms-lista .wms-pedido")];
+      botoes.forEach((b, i) => {
+        const p = fila.pedidos[Number(b.dataset.indice)];
+        const idade = idadeDe(p);
+        const prazo = prazoDe(p);
+        const atrasado = idade > prazo;
+        b.classList.toggle("sel", i === fila.selecionado && !fila.ativo);
+        b.classList.toggle("atrasado", atrasado);
+        b.classList.toggle("alerta", !atrasado && idade > prazo * 0.6);
+        b.querySelector(".wms-barra i").style.width = Math.min(100, idade / prazo * 100).toFixed(0) + "%";
+        b.querySelector(".wms-idade").textContent = atrasado
+          ? `ATRASADO ${mmss(idade - prazo)}`
+          : `ESPERANDO ${mmss(idade)} / PRAZO ${mmss(prazo)}`;
+      });
+    }
+
+    function moverSelecaoWMS(delta) {
+      const n = listaWMS().length;
+      if (!n || fila.ativo) return;
+      fila.selecionado = (fila.selecionado + delta + n) % n;
+      SFX.menuBlip();
+      atualizarTempoWMS();
+    }
+
+    function aceitarSelecionadoWMS() {
+      const itens = listaWMS();
+      if (fila.ativo || !itens.length) { fecharWMS(); return; }
+      aceitarPedido(itens[fila.selecionado] || itens[0]);
+    }
+
+    function aceitarPedido(p) {
+      p.status = "ativo";
+      p.aceitoEm = tempoDecorrido;
+      p.penAntes = tempoPenalidades;
+      fila.ativo = p;
+      const m = MISSAO_ATUAL;
+      Object.assign(m, {
+        numero: p.def.numero,
+        cliente: p.def.cliente,
+        docaSaida: p.def.docaSaida,
+        itens: p.def.itens.map(it => ({ ...it, coletados: 0 })),
+        quantidadeVolumes: p.def.quantidadeVolumes
+      });
+      volumesColetados = 0;
+      pacoteEmbalado = false;
+      cargaDepositada = false;
+      progressoColeta = 0;
+      etiquetaObs = "";
+      // A doca do pedido abre a porta (se o caminhão já encostou)
+      const cam = CAMINHOES.find(c => c.docaId === m.docaSaida);
+      if (cam && !cam.chegando) cam.doorClosed = 0;
+      document.getElementById("modal-wms").style.display = "none";
+      atualizarChipFila();
+      fila.recemAceito = true;
+      abrirCardPedido(true);
+    }
+
+    // Chamado quando a caixa cai no pallet: fecha as contas do pedido
+    function registrarEntregaPedido() {
+      const p = fila.ativo;
+      if (!p) return;
+      p.entregueEm = tempoDecorrido;
+      const idade = idadeDe(p);
+      const prazo = prazoDe(p);
+      const atrasou = idade > prazo;
+      if (atrasou) adicionarPenalidade(5, "ATRASOU");
+      p.resultado = {
+        idade, prazo, atrasou,
+        pen: tempoPenalidades - p.penAntes,
+        estrelas: atrasou ? 1 : (idade <= prazo * 0.75 ? 3 : 2)
+      };
+      p.status = "entregue";
+      fila.ativo = null;
+      fila.ultimo = p;
+      atualizarChipFila();
+    }
+
+    function abrirPedidoOk() {
+      const p = fila.ultimo;
+      if (!p) return;
+      const r = p.resultado;
+      estadoJogo = "PEDIDO_OK";
+      limparInputs();
+      calarRadio();
+      const total = fila.pedidos.length;
+      document.getElementById("pok-sub").textContent = `PEDIDO ${pedidosEntregues().length}/${total} · ${p.def.cliente.toUpperCase()} · ${p.def.docaSaida}`;
+      const titulo = document.getElementById("pok-titulo");
+      titulo.textContent = r.atrasou ? `${p.def.numero} SAIU (ATRASADO)` : `${p.def.numero} ENTREGUE!`;
+      titulo.style.color = r.atrasou ? "#b45309" : "#047857";
+      document.getElementById("pok-fala").textContent = sortearTexto("pedidoOk" + r.estrelas);
+      document.getElementById("pok-stats").innerHTML =
+        `<div>TEMPO DO PEDIDO: <b>${mmss(r.idade)}</b> <span style="color:#64748b">(desde que caiu no balcão)</span></div>` +
+        `<div>PRAZO: <b>${mmss(r.prazo)}</b> · ${r.atrasou ? '<span class="ruim">ATRASOU · +5s</span>' : '<span class="ok">NO PRAZO ✓</span>'}</div>` +
+        `<div>PENALIDADES NESSE PEDIDO: <span class="${r.pen > 0 ? "ruim" : "ok"}">+${r.pen.toFixed(0)}s</span></div>` +
+        `<div>TURNO ATÉ AGORA: <b>${formatarTempo(tempoDecorrido + tempoPenalidades)}</b></div>`;
+      const esperando = pedidosEsperando();
+      const atrasados = esperando.filter(estaAtrasado).length;
+      document.getElementById("pok-fila").textContent = esperando.length
+        ? `📥 ${esperando.length} pedido(s) esperando no balcão${atrasados ? ` · ${atrasados} já atrasado(s)` : ""}. Corre!`
+        : `Balcão vazio por enquanto. Falta(m) ${pedidosRestantes()} pedido(s) no turno.`;
+      for (let s = 1; s <= 3; s++) {
+        const el = document.getElementById("pok-star-" + s);
+        el.classList.remove("active", "bounce");
+        if (s <= r.estrelas) {
+          setTimeout(() => {
+            if (estadoJogo !== "PEDIDO_OK") return;
+            el.classList.add("active", "bounce");
+            SFX.estrelaDing(s);
+          }, 200 + s * 220);
+        }
+      }
+      SFX.minigameSucesso();
+      document.getElementById("modal-pedido-ok").style.display = "flex";
+    }
+
+    // Volta ao galpão: o caminhão que saiu volta vazio e o balcão segue recebendo
+    function fecharPedidoOk() {
+      if (estadoJogo !== "PEDIDO_OK") return;
+      document.getElementById("modal-pedido-ok").style.display = "none";
+      const doca = fila.ultimo ? fila.ultimo.def.docaSaida : null;
+      const cam = CAMINHOES.find(c => c.docaId === doca);
+      if (cam) {
+        cam.departing = false;
+        cam.departOffset = 260;
+        cam.chegando = true;
+        cam.doorClosed = 1;
+      }
+      const pallet = PALLETS_CONSOLIDACAO.find(pl => pl.id === doca);
+      if (pallet) pallet.boxes = pallet.boxesIniciais;
+      volumesColetados = 0;
+      pacoteEmbalado = false;
+      cargaDepositada = false;
+      progressoColeta = 0;
+      etiquetaObs = "";
+      limparPedidoAtivo();
+      etapaAtualIndex = -1;
+      irParaEtapa("RECEBER");
+      camera.targetX = null;
+      camera.targetY = null;
+      camera.panSpeed = 0.15;
+      cronometroIniciado = true;
+      estadoJogo = "JOGANDO";
+      limparInputs();
+      atualizarChipFila();
+      atualizarHUD();
+      falar(pedidosEsperando().length ? "voltaBalcao" : "esperandoPedido", "#fde047");
+    }
+
+    // Balcão no mapa: papéis empilhando conforme a fila cresce e um selo com o número
+    function desenharFilaNoBalcao() {
+      if (!ehFila()) return;
+      const t = TERMINAL_INICIAL;
+      const esperando = pedidosEsperando();
+      const n = esperando.length;
+      for (let i = 0; i < Math.min(n, 6); i++) {
+        const px = t.x + 29 + (i % 2);
+        const py = t.y + 18 - i * 3;
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(px - 1, py - 1, 14, 10);
+        ctx.fillStyle = i === n - 1 ? "#fef9c3" : "#f8fafc";
+        ctx.fillRect(px, py, 12, 8);
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillRect(px + 2, py + 2, 8, 1);
+        ctx.fillRect(px + 2, py + 5, 6, 1);
+      }
+      if (n > 0) {
+        const atrasado = esperando.some(estaAtrasado);
+        const pulo = Math.round(Math.abs(Math.sin(Date.now() / 160)) * 3);
+        const bx = t.x + t.w - 6;
+        const by = t.y - 20 - pulo;
+        const pisca = Math.floor(Date.now() / 250) % 2 === 0;
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(bx - 1, by - 1, 13, 11);
+        ctx.fillStyle = atrasado ? (pisca ? "#ef4444" : "#7f1d1d") : "#facc15";
+        ctx.fillRect(bx, by, 11, 9);
+        desenharBitmap(String(Math.min(n, 9)), bx + 6, by + 2, atrasado ? "#ffffff" : "#111827", 1, "center");
+      }
     }
 
     /* ==========================================================================
@@ -5925,9 +6758,10 @@
       limparTimersVitoria();
       SFX.pararColetaTom();
       calarRadio();
-      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing"]
+      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing", "modal-wms", "modal-pedido-ok"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
       document.getElementById("hud").style.display = "none";
+      esconderNotif();
       document.getElementById("modal-start").style.display = "flex";
       estadoJogo = "MENU";
       carregarMelhorTempoInicial();
@@ -5955,7 +6789,7 @@
       if (!cronometroIniciado) {
         cronometroIniciado = true;
         JUICE.textoFlutuante(player.x, player.y - 14, "INICIAR!", "#38bdf8");
-        falar(faseIndex === 1 ? "inicioFase2" : "inicioFase3", "#38bdf8");
+        falar(MISSAO_ATUAL.falaInicio || "inicioTurno", "#38bdf8");
       }
       atualizarHUD();
     }
@@ -5988,6 +6822,11 @@
     let erguendo = false;
     let garfoTickTimer = 0;
     const GARFO_ALVO = { min: 0.66, max: 0.82, estouro: 0.94 };
+    // Faixa certa do garfo em cada nível do pulmão (0 = chão, 1 = topo)
+    const NIVEIS_GARFO = {
+      2: { min: 0.41, max: 0.57, estouro: 0.70 },
+      3: { min: 0.66, max: 0.82, estouro: 0.94 }
+    };
 
     function resetarVeiculo() {
       Object.assign(veiculo, {
@@ -6200,8 +7039,24 @@
       });
     }
 
+    // Baia do pulmão que importa agora: na fase 2 é fixa, na armazenagem depende do pallet
+    function baiaAlvoAtual() {
+      if (ehArmazenagem()) {
+        const p = palletArmazenagemAtual();
+        return p ? p.baia : null;
+      }
+      return MISSAO_ATUAL.enderecoPulmao;
+    }
+    function nivelAlvoAtual() {
+      if (ehArmazenagem()) {
+        const p = palletArmazenagemAtual();
+        return p ? p.nivel : 3;
+      }
+      return MISSAO_ATUAL.nivelPulmao || 3;
+    }
+
     function posicaoBaiaAlvo() {
-      const idx = PULMAO.baias.indexOf(MISSAO_ATUAL.enderecoPulmao);
+      const idx = Math.max(0, PULMAO.baias.indexOf(baiaAlvoAtual()));
       return { x: PULMAO.x + idx * PULMAO.baiaW + PULMAO.baiaW / 2, y: PULMAO.y };
     }
 
@@ -6215,7 +7070,7 @@
       if (dAng < -Math.PI) dAng += Math.PI * 2;
       const alinhado = perto &&
         Math.abs(tip.x - baia.x) < 14 &&
-        tip.y > baia.y - 16 &&
+        tip.y > baia.y - (veiculo.comPallet ? 24 : 16) &&
         Math.abs(dAng) < 0.45 &&
         Math.abs(veiculo.vel) < 30;
       return { perto, alinhado };
@@ -6284,7 +7139,14 @@
       veiculo.vel = veiculo.vx = veiculo.vy = 0;
       garfoNivel = 0;
       erguendo = false;
-      irParaEtapa("ERGUER");
+      const guardar = ehArmazenagem();
+      irParaEtapa(guardar ? "GUARDAR" : "ERGUER");
+      const nivel = nivelAlvoAtual();
+      Object.assign(GARFO_ALVO, NIVEIS_GARFO[nivel] || NIVEIS_GARFO[3]);
+      document.getElementById("erguer-titulo").textContent =
+        `PULMÃO ${baiaAlvoAtual()} · NÍVEL ${nivel}` + (guardar ? " · GUARDAR" : "");
+      document.getElementById("erguer-alvo-txt").textContent = "N" + nivel;
+      [1, 2, 3].forEach(n => { document.getElementById("erguer-n" + n).style.display = n === nivel ? "none" : ""; });
       const alvo = document.getElementById("erguer-alvo");
       alvo.style.bottom = (GARFO_ALVO.min * 100) + "%";
       alvo.style.height = ((GARFO_ALVO.max - GARFO_ALVO.min) * 100) + "%";
@@ -6323,6 +7185,17 @@
       erguendo = false;
       if (garfoNivel >= GARFO_ALVO.min && garfoNivel <= GARFO_ALVO.max) {
         SFX.garfoOk();
+        if (ehArmazenagem()) {
+          document.getElementById("erguer-feedback").textContent = "✓ PALLET GUARDADO!";
+          estadoJogo = "ERGUER_OK";
+          setTimeout(() => {
+            if (estadoJogo !== "ERGUER_OK") return;
+            document.getElementById("modal-erguer").style.display = "none";
+            estadoJogo = "JOGANDO";
+            guardarPalletNoRack();
+          }, 450);
+          return;
+        }
         document.getElementById("erguer-feedback").textContent = "✓ PALLET NOS GARFOS!";
         estadoJogo = "ERGUER_OK";
         setTimeout(() => {
@@ -6339,6 +7212,172 @@
         }, 450);
       } else if (garfoNivel < GARFO_ALVO.min) {
         document.getElementById("erguer-feedback").textContent = "AINDA BAIXO. SEGURE [E] DE NOVO.";
+      }
+    }
+
+
+    /* ==========================================================================
+       16c2. FASE DE ARMAZENAGEM: RECEBIMENTO → PULMÃO
+       Os pallets chegam no chão, na frente da DOCA 2. Encaixa o garfo (de frente
+       para a doca), leva até a baia do endereço e sobe até o nível certo.
+       ========================================================================== */
+    const ZONA_RECEB = { x: 840, y: 350, w: 80, h: 88 };
+    const recebimento = { pallets: [], vazias: new Set() };
+
+    function resetarRecebimento() {
+      const defs = MISSAO_ATUAL.palletsRecebimento || [];
+      recebimento.pallets = defs.map((d, i) => ({ ...d, n: i + 1, x: 898, y: 374 + i * 42, pego: false, guardado: false }));
+      recebimento.vazias = new Set(defs.map(d => d.baia));
+    }
+    function palletArmazenagemAtual() { return recebimento.pallets.find(p => !p.guardado) || null; }
+    function palletsGuardados() { return recebimento.pallets.filter(p => p.guardado).length; }
+
+    // Garfo encaixado no pallet do chão: de frente para a doca (θ ≈ 90°), parado e no ponto
+    function alinhamentoReceb() {
+      const p = palletArmazenagemAtual();
+      if (!p || p.pego) return { perto: false, alinhado: false };
+      const pc = pontoLocalVeiculo(0, 30);
+      const perto = Math.hypot(veiculo.x - p.x, veiculo.y - p.y) < 80;
+      let dAng = (veiculo.theta - Math.PI / 2) % (Math.PI * 2);
+      dAng = Math.atan2(Math.sin(dAng), Math.cos(dAng));
+      const alinhado = perto &&
+        Math.abs(pc.x - p.x) < 12 &&
+        Math.abs(pc.y - p.y) < 10 &&
+        Math.abs(dAng) < 0.5 &&
+        Math.abs(veiculo.vel) < 30;
+      return { perto, alinhado };
+    }
+
+    function pegarPalletReceb() {
+      const p = palletArmazenagemAtual();
+      if (!p) return;
+      p.pego = true;
+      veiculo.comPallet = true;
+      veiculo.vel = -20;
+      SFX.garfoOk();
+      JUICE.particulas(p.x, p.y, "poeira", 8);
+      JUICE.textoFlutuante(p.x, p.y - 16, "NO GARFO!", "#34d399");
+      falar("pegouReceb", "#34d399");
+      irParaEtapa("LEVAR_PULMAO");
+      atualizarHUD();
+    }
+
+    function guardarPalletNoRack() {
+      const p = palletArmazenagemAtual();
+      if (!p) return;
+      p.guardado = true;
+      recebimento.vazias.delete(p.baia);
+      veiculo.comPallet = false;
+      veiculo.vel = -20;
+      const b = posicaoBaiaAlvo();
+      JUICE.particulas(b.x, b.y + 10, "poeira", 10);
+      if (!palletArmazenagemAtual()) {
+        iniciarExpedicaoFinal("tudoGuardado", "ARMAZENADO!");
+        return;
+      }
+      JUICE.textoFlutuante(player.x, player.y - 16, "GUARDADO!", "#34d399");
+      falar("palletGuardado", "#34d399");
+      irParaEtapa("PEGAR_RECEB");
+      atualizarHUD();
+    }
+
+    function tratarZonasFase5() {
+      player.currentZone = null;
+      const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
+      if (!veiculo.pilotando) {
+        if (Math.hypot(player.x - veiculo.x, player.y - veiculo.y) < 40) {
+          player.currentZone = { tipo: "veiculo" };
+          if (interactPressedThisFrame) {
+            veiculo.pilotando = true;
+            veiculo.vx = veiculo.vy = veiculo.vel = 0;
+            SFX.terminal();
+            falar("subiuEmpilhadeira", "#fbbf24");
+            irParaEtapa("PEGAR_RECEB");
+          }
+        }
+        return;
+      }
+      if (etapa === "PEGAR_RECEB") {
+        const a = alinhamentoReceb();
+        if (a.perto) {
+          player.currentZone = { tipo: a.alinhado ? "receb_ok" : "receb_alinhar" };
+          if (interactPressedThisFrame) {
+            if (a.alinhado) pegarPalletReceb();
+            else falar("desalinhadoReceb", "#ef4444");
+          }
+        }
+      } else if (etapa === "LEVAR_PULMAO") {
+        const a = estadoAlinhamento();
+        if (a.perto) {
+          player.currentZone = { tipo: a.alinhado ? "pulmao_guardar" : "pulmao_alinhar" };
+          if (interactPressedThisFrame) {
+            if (a.alinhado) abrirErguer();
+            else falar("desalinhado", "#ef4444");
+          }
+        }
+      }
+    }
+
+    function desenharPalletChao(x, y, corFilme) {
+      const px = Math.round(x - 11), py = Math.round(y - 11);
+      ctx.fillStyle = "#451a03";
+      ctx.fillRect(px, py, 22, 22);
+      ctx.fillStyle = "#92400e";
+      for (let r = 2; r < 22; r += 6) ctx.fillRect(px + r, py + 1, 3, 20);
+      ctx.fillStyle = corFilme;
+      ctx.fillRect(px + 3, py + 3, 16, 16);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+      ctx.fillRect(px + 4, py + 4, 3, 14);
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(px + 3, py + 10, 16, 2);
+    }
+
+    function desenharRecebimento() {
+      const z = ZONA_RECEB;
+      const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
+      const ativa = etapa === "PEGAR_RECEB";
+      const pisca = Math.floor(Date.now() / 250) % 2 === 0;
+      ctx.fillStyle = ativa ? "rgba(250, 204, 21, 0.12)" : "rgba(148, 163, 184, 0.08)";
+      ctx.fillRect(z.x, z.y, z.w, z.h);
+      ctx.fillStyle = ativa ? (pisca ? "#facc15" : "#ca8a04") : "#64748b";
+      for (let x = z.x; x < z.x + z.w; x += 8) {
+        ctx.fillRect(x, z.y, 4, 2);
+        ctx.fillRect(x, z.y + z.h - 2, 4, 2);
+      }
+      for (let y = z.y; y < z.y + z.h; y += 8) {
+        ctx.fillRect(z.x, y, 2, 4);
+        ctx.fillRect(z.x + z.w - 2, y, 2, 4);
+      }
+      desenharBitmap("RECEBIMENTO", z.x + z.w / 2, z.y + z.h - 9, ativa ? "#facc15" : "#94a3b8", 1, "center");
+      const atual = palletArmazenagemAtual();
+      recebimento.pallets.forEach(p => {
+        if (p.pego) return;
+        desenharPalletChao(p.x, p.y, p.n === 1 ? "#60a5fa" : "#4ade80");
+        desenharBitmap("P" + p.n, p.x, p.y - 18, p === atual ? "#facc15" : "#e2e8f0", 1, "center");
+      });
+      // Marca de encaixe: onde a empilhadeira para, com o garfo virado para o pallet
+      if (ativa && veiculo.pilotando && atual && !atual.pego) {
+        const a = alinhamentoReceb();
+        if (!a.perto) return;
+        const cor = a.alinhado ? "#34d399" : (pisca ? "#facc15" : "#ca8a04");
+        const cx = atual.x - 30;
+        const x0 = cx - 18, x1 = cx + 12;
+        const y0 = atual.y - 13, y1 = atual.y + 13;
+        ctx.fillStyle = a.alinhado ? "rgba(52, 211, 153, 0.18)" : "rgba(250, 204, 21, 0.10)";
+        ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+        ctx.fillStyle = cor;
+        for (let x = x0; x < x1; x += 6) {
+          ctx.fillRect(x, y0, 3, 2);
+          ctx.fillRect(x, y1 - 2, 3, 2);
+        }
+        for (let y = y0; y < y1; y += 6) ctx.fillRect(x0, y, 2, 3);
+        // Setinha apontando para o pallet
+        const sx = cx;
+        ctx.fillRect(sx - 6, atual.y - 1, 8, 2);
+        ctx.fillRect(sx + 2, atual.y - 4, 2, 8);
+        ctx.fillRect(sx + 4, atual.y - 3, 2, 6);
+        ctx.fillRect(sx + 6, atual.y - 2, 2, 4);
+        ctx.fillRect(sx + 8, atual.y - 1, 2, 2);
       }
     }
 
@@ -6544,14 +7583,16 @@
     function desenharPulmao() {
       PULMAO.baias.forEach((nome, i) => {
         const bx = PULMAO.x + i * PULMAO.baiaW;
-        const alvo = faseIndex === 1 && nome === MISSAO_ATUAL.enderecoPulmao;
+        const alvoNome = ehVeiculo() ? baiaAlvoAtual() : null;
+        const alvo = nome === alvoNome;
         ctx.fillStyle = "#1d4ed8";
         ctx.fillRect(bx, PULMAO.y, PULMAO.baiaW, PULMAO.h);
         ctx.fillStyle = "#ea580c";
         ctx.fillRect(bx, PULMAO.y, PULMAO.baiaW, 3);
         ctx.fillStyle = "#172554";
         ctx.fillRect(bx, PULMAO.y, 2, PULMAO.h);
-        const vazio = alvo && pulmaoPego;
+        // Fase 2: a baia esvazia quando o pallet sai. Armazenagem: começa vazia até guardar.
+        const vazio = ehArmazenagem() ? recebimento.vazias.has(nome) : (alvo && pulmaoPego);
         if (!vazio) {
           ctx.fillStyle = "#78350f";
           ctx.fillRect(bx + 8, PULMAO.y + 8, PULMAO.baiaW - 16, PULMAO.h - 12);
@@ -6563,11 +7604,14 @@
         ctx.fillStyle = "#0f172a";
         ctx.fillRect(bx + 4, PULMAO.y - 9, PULMAO.baiaW - 8, 8);
         desenharBitmap(nome, bx + PULMAO.baiaW / 2, PULMAO.y - 8, alvo ? "#facc15" : "#f8fafc", 1, "center");
-        if (alvo && !pulmaoPego) {
+        const destacar = ehArmazenagem() ? (alvo && veiculo.comPallet) : (alvo && !pulmaoPego);
+        if (destacar) {
           ctx.strokeStyle = (Math.floor(Date.now() / 180) % 2 === 0) ? "#facc15" : "#fef08a";
           ctx.lineWidth = 2;
           ctx.strokeRect(bx, PULMAO.y, PULMAO.baiaW, PULMAO.h);
-          desenharBitmap("N3", bx + PULMAO.baiaW / 2, PULMAO.y + 26, "#facc15", 1, "center");
+          desenharBitmap("N" + nivelAlvoAtual(), bx + PULMAO.baiaW / 2, PULMAO.y + 26, "#facc15", 1, "center");
+        } else if (ehArmazenagem() && vazio) {
+          desenharBitmap("VAZIO", bx + PULMAO.baiaW / 2, PULMAO.y + 18, "#93c5fd", 1, "center");
         }
       });
     }
@@ -6575,7 +7619,9 @@
     // Marca no chão mostrando onde a empilhadeira deve parar, de frente para a baia
     function desenharMarcaEncaixe() {
       const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
-      if (faseIndex !== 1 || etapa !== "BUSCAR_PALLET" || !veiculo.pilotando) return;
+      const naEtapa = (tipoFase() === "empilhadeira" && etapa === "BUSCAR_PALLET") ||
+        (ehArmazenagem() && etapa === "LEVAR_PULMAO");
+      if (!naEtapa || !veiculo.pilotando) return;
       const b = posicaoBaiaAlvo();
       const a = estadoAlinhamento();
       const cor = a.alinhado ? "#34d399" : ((Math.floor(Date.now() / 300) % 2 === 0) ? "#facc15" : "#ca8a04");
@@ -6601,7 +7647,8 @@
     function desenharCenarioFases() {
       desenharPulmao();
       desenharMarcaEncaixe();
-      if (faseIndex === 1) {
+      if (ehArmazenagem()) desenharRecebimento();
+      if (tipoFase() === "empilhadeira") {
         const z = ZONA_ENTREGA_F2;
         const pisca = Math.floor(Date.now() / 250) % 2 === 0;
         ctx.fillStyle = "rgba(250, 204, 21, 0.14)";
@@ -6625,6 +7672,8 @@
           ctx.fillStyle = "#facc15";
           ctx.fillRect(Math.round(p.x - 9), Math.round(p.y - 1), 18, 2);
         }
+      }
+      if (ehVeiculo()) {
         // Empilhadeira do jogador
         const spr = spriteVeiculo(veiculo.theta, veiculo.comPallet);
         const ox = Math.round(veiculo.x), oy = Math.round(veiculo.y);
@@ -6633,7 +7682,7 @@
         ctx.fillRect(ox - 2, oy - 2, 4, 4);
         if (!veiculo.pilotando) desenharBitmap("04", ox, oy - 26, "#fbbf24", 1, "center");
       }
-      if (faseIndex === 2 && !coletor.achado) {
+      if (ehColetor() && !coletor.achado) {
         // O coletor só aparece quando você está bem perto (ele está escondido)
         const d = Math.hypot(coletor.x - player.x, coletor.y - player.y);
         if (d < 60) {
@@ -6661,6 +7710,9 @@
         zona_devagar: ["PARE PARA BAIXAR", "#422006", "#facc15", "#fef08a"],
         zona_fora: ["ENTRE NA AREA", "#422006", "#facc15", "#fef08a"],
         coletor: ["[E] PEGAR O COLETOR", "#052e16", "#34d399", "#bbf7d0"],
+        receb_ok: ["[E] PEGAR PALLET", "#052e16", "#34d399", "#bbf7d0"],
+        receb_alinhar: ["ENCAIXE NA MARCA", "#422006", "#facc15", "#fef08a"],
+        pulmao_guardar: ["[E] GUARDAR", "#052e16", "#34d399", "#bbf7d0"],
         npc: ["[E] PERGUNTAR", "#0b1326", "#ffffff", "#fbbf24"]
       };
       const t = textos[z.tipo];
@@ -6708,6 +7760,16 @@
       initAudio();
       RADIO_MUSICA.alternar();
     });
+    document.getElementById("btn-wms-fechar").addEventListener("click", () => {
+      SFX.menuBlip();
+      fecharWMS();
+    });
+    document.getElementById("btn-pok-voltar").addEventListener("click", () => {
+      SFX.menuEnter();
+      fecharPedidoOk();
+    });
+    document.getElementById("notif-pedido").addEventListener("click", cliqueNaFila);
+    document.getElementById("hud-fila").addEventListener("click", cliqueNaFila);
     document.getElementById("btn-close-order").addEventListener("click", () => {
       SFX.menuBlip();
       fecharCardPedido();

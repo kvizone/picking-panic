@@ -5,26 +5,26 @@
 # Picking Panic 📦⏱️
 
 Jogo 2D de vista aérea, no estilo do GTA 1, ambientado num galpão de logística.
-Você é um operador correndo contra o relógio para separar, embalar e expedir um pedido antes do caminhão sair.
+Você é um operador correndo contra o relógio: pedidos caem no balcão do WMS, você separa, embala e expede antes do caminhão sair. E ainda tem empilhadeira, coletor perdido e Black Friday.
 
 ## Como jogar
 
-Abra o `index.html` no navegador ou jogue pelo GitHub Pages. As 3 fases são jogadas em sequência: terminou uma, vai para a próxima, até zerar o jogo. No final aparece o tempo total da campanha.
+Abra o `index.html` no navegador ou jogue pelo GitHub Pages. As 6 fases são jogadas em sequência: terminou uma, vai para a próxima, até zerar o jogo. No final aparece o tempo total da campanha.
 
 | Tecla | Ação |
 |---|---|
-| Setas | Andar (ou dirigir, na fase 2) |
+| Setas | Andar (ou dirigir, nas fases de empilhadeira) |
 | Shift | Correr |
-| E | Interagir / segurar para coletar ou erguer o garfo |
+| E | Interagir / abrir o balcão WMS / segurar para coletar ou erguer o garfo |
 | C | Pegar ou soltar o carrinho de picking |
-| Q | Ver a etiqueta (fase 2: ordem de serviço) |
+| Q | Ver a etiqueta (empilhadeira: ordem de serviço) |
 | H | Buzina (dirigindo) |
 | R / M | Rádio caipira / som |
 | Esc | Pausar |
 
 Não precisa decorar: as dicas aparecem na hora certa, na primeira vez que cada coisa surge. Para vê-las de novo, use **Pausa → Mostrar dicas de novo**.
 
-**Carrinho de picking:** fica perto do terminal nas fases 1 e 3. Com ele você anda mais rápido e corre mesmo carregado, mas ele é mais largo e também leva batida de empilhadeira.
+**Carrinho de picking:** fica perto do balcão nas fases a pé. Com ele você anda mais rápido e corre mesmo carregado, mas ele é mais largo e também leva batida de empilhadeira.
 
 ### No celular
 
@@ -38,9 +38,19 @@ Funciona em pé ou deitado: o mapa se ajusta ao formato da tela. Não tem joysti
 - **Garfo:** segure em qualquer lugar da tela (ou no botão) e solte na faixa verde.
 - **Tempo:** no celular, as estrelas e a bateria do coletor têm 35% a mais de tempo, e o recorde fica separado do recorde do computador.
 
+## Balcão WMS: como os pedidos chegam
+
+Nas fases de picking, o turno começa no galpão e os pedidos **caem no balcão do WMS** com uma notificação (som, aviso no topo e um contador 📥 no HUD). Quanto mais você demora, mais pedidos se acumulam: os papéis vão empilhando no balcão e cada pedido tem um prazo que começa a contar quando ele cai.
+
+1. Vá ao balcão e aperte **E**: abre a caixa de entrada com os pedidos, o tempo de espera e o prazo de cada um.
+2. Escolha um pedido (setas + E, clique ou toque): a etiqueta sai da impressora.
+3. Separe, embale e deposite no pallet da doca do pedido.
+4. O caminhão sai e abre a janela de **pedido concluído**, com estrelas, tempo, prazo e penalidades daquele pedido. Depois, volta pro galpão.
+5. Pedido entregue fora do prazo custa +5s. Quando o último pedido do turno sai, aparece o relatório da fase.
+
 ## Fase 1: Pedido #1042
 
-Imprima a etiqueta no terminal, separe 4 volumes em 3 endereços (R01-P04, R03-P07 e R04-P13) na ordem que quiser, embale na bancada e coloque a caixa lacrada no pallet da DOCA 2. Três empilhadeiras circulam pelo galpão, e encostar em qualquer uma custa +5s.
+Pegue o pedido no balcão, separe 4 volumes em 3 endereços (R01-P04, R03-P07 e R04-P13) na ordem que quiser, embale na bancada e coloque a caixa lacrada no pallet da DOCA 2. Três empilhadeiras circulam pelo galpão, e encostar em qualquer uma custa +5s.
 
 ## Fase 2: Pallet no Alto
 
@@ -49,6 +59,18 @@ Suba na Empilhadeira 04, dirija até o pulmão PUL-02, alinhe os garfos de frent
 ## Fase 3: Cadê o Coletor?
 
 O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais alto e mais de um lado conforme você chega perto, ou acompanhe a barra de SINAL no HUD. Os colegas dão pistas com E, mas um deles mente. Se a bateria acabar, a fase recomeça. Achou o coletor? O WMS religa, a etiqueta imprime e ainda tem um pedido de 2 itens para fechar.
+
+## Fase 4: Fila no Balcão
+
+Dois pedidos no turno: o segundo cai enquanto você ainda está no primeiro. Docas diferentes, prazos diferentes.
+
+## Fase 5: Chegou Carga
+
+O caminhão do fornecedor encostou na DOCA 2. Suba na empilhadeira, encaixe o garfo em cada pallet da área de recebimento (de frente para a doca, em cima da marca) e guarde no pulmão: o P1 vai no PUL-01, nível 2, e o P2 no PUL-03, nível 3. Guardou os dois, o caminhão vazio vai embora.
+
+## Fase 6: Black Friday
+
+Três pedidos caindo em sequência, com prazos apertados. Se demorar, a fila cresce e os prazos estouram. Escolha a ordem pela caixa de entrada.
 
 ## Rádio
 
@@ -62,4 +84,4 @@ A missão e o mapa ficam como dados no topo do script, para facilitar a criaçã
 
 ## Status
 
-🚧 Protótipo em desenvolvimento: versão 0.3 com 3 fases em sequência. Próximas fases no [ROADMAP](ROADMAP.md).
+🚧 Protótipo em desenvolvimento: versão 0.5 com 6 fases em sequência e pedidos caindo no balcão WMS. Próximas fases no [ROADMAP](ROADMAP.md).

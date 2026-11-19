@@ -7,6 +7,11 @@
 | 1 | Pedido #1042 | Picking a pé, embalagem e consolidação | ✅ v0.2 jogável |
 | 2 | Pallet no Alto | Dirigir a empilhadeira | ✅ v0.3 jogável |
 | 3 | Cadê o Coletor? | Exploração sem GPS, guiada pelo som | ✅ v0.3 jogável |
+| 4 | Fila no Balcão | 2 pedidos caindo no balcão WMS, com prazo | ✅ v0.5 jogável |
+| 5 | Chegou Carga | Recebimento → pulmão com a empilhadeira, 2 níveis | ✅ v0.5 jogável |
+| 6 | Black Friday | 3 pedidos, fila crescendo, prazos apertados | ✅ v0.5 jogável |
+
+> v0.5: os pedidos agora caem no balcão do WMS com notificação e se acumulam com o tempo (estilo missão de GTA). Cada pedido entregue abre uma janela de parabéns com feedback e volta ao jogo. Ideias para depois: pegar 2 pedidos de uma vez (picking em onda), pedido cancelado no meio do caminho, conferência no recebimento.
 
 > v0.3: as 3 fases estão no jogo, em sequência (sem tela de seleção). Ficou de fora: zoom da câmera ao dirigir e caixas caídas virando obstáculo na fase 2.
 
