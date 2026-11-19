@@ -867,7 +867,7 @@
       justify-content: center;
       gap: 8px;
     }
-    html.toque #packing-touch { display: flex !important; }
+    #packing-touch button:hover { background: #334155; }
     #packing-touch button {
       width: 56px;
       height: 56px;
@@ -1091,13 +1091,13 @@
       <div class="modal-box" style="text-align: center; position: relative;">
         <div id="tape-banner"></div>
         <h2 style="font-size: 12px; color: #38bdf8;">ESTAÇÃO DE EMBALAGEM</h2>
-        <p style="color: #94a3b8; font-size: 8px; margin-top: 4px;">Pressione a sequência para selar e etiquetar:</p>
+        <p style="color: #94a3b8; font-size: 8px; margin-top: 4px; line-height: 1.6;" id="packing-instrucao">Pressione a sequência para selar e etiquetar:</p>
 
         <div class="sequence-box-wrapper" id="packing-sequence-container">
           <!-- Teclas dinâmicas -->
         </div>
 
-        <div id="packing-touch" class="so-toque">
+        <div id="packing-touch">
           <button type="button" data-tecla="KeyA">←</button>
           <button type="button" data-tecla="KeyW">↑</button>
           <button type="button" data-tecla="KeyS">↓</button>
@@ -1138,7 +1138,7 @@
           </div>
         </div>
         <div id="erguer-feedback" style="font-size: 8px; color: #cbd5e1; line-height: 1.6; min-height: 26px;">SEGURE [E] PARA SUBIR. SOLTE NA FAIXA VERDE.</div>
-        <button id="btn-erguer-toque" class="btn so-toque" type="button">SEGURE PARA ERGUER</button>
+        <button id="btn-erguer-toque" class="btn" type="button">SEGURE PARA ERGUER</button>
       </div>
     </div>
 
@@ -2544,6 +2544,16 @@
     let VIEW_H = 270;
     const TOQUE_DISPOSITIVO = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || ("ontouchstart" in window);
 
+    // No celular o controle é mais lento: estrelas e bateria ganham 35% a mais de tempo,
+    // e o recorde do celular fica separado do recorde do computador.
+    const FATOR_TEMPO_CELULAR = 1.35;
+    function fatorTempo() { return TOQUE_DISPOSITIVO ? FATOR_TEMPO_CELULAR : 1; }
+    function limitesEstrelas() {
+      return { tres: MISSAO_ATUAL.estrelas.tres * fatorTempo(), duas: MISSAO_ATUAL.estrelas.duas * fatorTempo() };
+    }
+    function bateriaMaxima() { return (MISSAO_ATUAL.bateriaSegundos || 70) * fatorTempo(); }
+    function chaveRecorde() { return "pickingpanic_recorde_" + MISSAO_ATUAL.id + (TOQUE_DISPOSITIVO ? "_celular" : ""); }
+
     const RUAS_CONFIG = [
       { id: "R01", corridorX: 4  * TILE_SIZE, rackLeftX: 3  * TILE_SIZE, rackRightX: 7  * TILE_SIZE },
       { id: "R02", corridorX: 9  * TILE_SIZE, rackLeftX: 8  * TILE_SIZE, rackRightX: 12 * TILE_SIZE },
@@ -3359,8 +3369,8 @@
 
         // Pressão do tempo (tique-taque 10s antes do limite das estrelas)
         const tempoTotal = tempoDecorrido + tempoPenalidades;
-        const lim3 = MISSAO_ATUAL.estrelas.tres;
-        const lim2 = MISSAO_ATUAL.estrelas.duas;
+        const lim3 = limitesEstrelas().tres;
+        const lim2 = limitesEstrelas().duas;
 
         if (!aviso3EstrelasPerdida) {
           if (tempoTotal >= lim3 - 10 && tempoTotal < lim3) {
@@ -4673,7 +4683,7 @@
         // Barra de sinal do coletor (o bip em forma visual)
         const sinal = sinalDoColetor().forca;
         const barras = Math.max(0, Math.min(5, Math.round(sinal * 5 + 0.2)));
-        const bat = Math.max(0, Math.round(coletor.bateria / (MISSAO_ATUAL.bateriaSegundos || 70) * 100));
+        const bat = Math.max(0, Math.round(coletor.bateria / bateriaMaxima() * 100));
         invLabel.textContent = `SINAL · BAT ${bat}%`;
         inv.textContent = "▮".repeat(barras) + "▯".repeat(5 - barras);
         inv.style.color = barras >= 4 ? "#34d399" : (barras >= 2 ? "#fbbf24" : "#ef4444");
@@ -4708,8 +4718,9 @@
 
       // Cálculo de estrelas
       let estrelas = 1;
-      if (tempoFinal <= MISSAO_ATUAL.estrelas.tres) estrelas = 3;
-      else if (tempoFinal <= MISSAO_ATUAL.estrelas.duas) estrelas = 2;
+      const lim = limitesEstrelas();
+      if (tempoFinal <= lim.tres) estrelas = 3;
+      else if (tempoFinal <= lim.duas) estrelas = 2;
       document.getElementById("result-rating-text").textContent = sortearTexto("vitoria" + estrelas);
       calarRadio();
 
@@ -4717,7 +4728,8 @@
       campanha.tempos[faseIndex] = tempoFinal;
       campanha.estrelas[faseIndex] = estrelas;
       const ultimaFase = faseIndex + 1 >= FASES.length;
-      document.getElementById("res-fase").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ${MISSAO_ATUAL.nomeFase}`;
+      document.getElementById("res-fase").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ${MISSAO_ATUAL.nomeFase}` +
+        (TOQUE_DISPOSITIVO ? ` · CELULAR (3★ ATÉ ${Math.round(lim.tres)}s)` : "");
       document.getElementById("btn-next-phase").textContent = ultimaFase ? "MENU [ENTER]" : "PRÓXIMA FASE [ENTER]";
       // Na última fase o botão principal já leva ao menu
       document.getElementById("btn-back-menu").style.display = ultimaFase ? "none" : "";
@@ -4744,7 +4756,7 @@
       }
 
       // Persistência de recorde
-      const storageKey = "pickingpanic_recorde_" + MISSAO_ATUAL.id;
+      const storageKey = chaveRecorde();
       let recorde = null;
       let isNewRecord = false;
       try {
@@ -4986,7 +4998,7 @@
 
     function carregarMelhorTempoInicial() {
       try {
-        const storageKey = "pickingpanic_recorde_" + MISSAO_ATUAL.id;
+        const storageKey = chaveRecorde();
         const saved = localStorage.getItem(storageKey);
         if (saved) {
           const t = parseFloat(saved);
@@ -5193,7 +5205,53 @@
     ligarBotaoTecla(document.getElementById("btn-acao"), "KeyE");
     ligarBotaoTecla(document.getElementById("btn-buzina"), "KeyH");
     ligarBotaoTecla(document.getElementById("btn-erguer-toque"), "KeyE");
+    (function segurarParaErguer() {
+      const area = document.getElementById("modal-erguer");
+      let id = null;
+      area.addEventListener("pointerdown", (e) => {
+        if (estadoJogo !== "ERGUER" || e.target.closest("#btn-erguer-toque")) return;
+        id = e.pointerId;
+        e.preventDefault();
+        simularTecla("keydown", "KeyE");
+      });
+      const soltar = (e) => {
+        if (id === null || e.pointerId !== id) return;
+        id = null;
+        simularTecla("keyup", "KeyE");
+      };
+      area.addEventListener("pointerup", soltar);
+      area.addEventListener("pointercancel", soltar);
+    })();
     document.querySelectorAll("#packing-touch [data-tecla]").forEach(b => ligarBotaoTecla(b, b.dataset.tecla));
+
+    // Embalagem no celular: deslizar na direção da seta, ou tocar para o E
+    if (EH_TOQUE) {
+      document.getElementById("packing-instrucao").textContent =
+        "Deslize o dedo na direção de cada seta (toque = E) ou use os botões:";
+    }
+    (function gestosEmbalagem() {
+      const area = document.getElementById("modal-packing");
+      let ini = null;
+      area.addEventListener("pointerdown", (e) => {
+        if (estadoJogo !== "MINIGAME" || e.target.closest("#packing-touch")) return;
+        ini = { x: e.clientX, y: e.clientY, id: e.pointerId };
+        e.preventDefault();
+      });
+      area.addEventListener("pointerup", (e) => {
+        if (!ini || e.pointerId !== ini.id) return;
+        const dx = e.clientX - ini.x;
+        const dy = e.clientY - ini.y;
+        ini = null;
+        if (estadoJogo !== "MINIGAME") return;
+        let code = "KeyE"; // toque curto = E
+        if (Math.hypot(dx, dy) > 28) {
+          code = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "KeyD" : "KeyA") : (dy > 0 ? "KeyS" : "KeyW");
+        }
+        simularTecla("keydown", code);
+        simularTecla("keyup", code);
+      });
+      area.addEventListener("pointercancel", () => { ini = null; });
+    })();
 
     // Toques no HUD: cronômetro pausa, objetivo abre a etiqueta
     document.getElementById("hud-timer-box").addEventListener("click", () => {
@@ -5689,7 +5747,7 @@
       coletor.x = spot.x;
       coletor.y = spot.y;
       coletor.achado = false;
-      coletor.bateria = MISSAO_ATUAL.bateriaSegundos || 70;
+      coletor.bateria = bateriaMaxima();
       coletor.bipTimer = 1;
       coletor.avisouBateria = false;
       coletor.hudTimer = 0;
@@ -5728,7 +5786,7 @@
     function atualizarFase3(dt) {
       if (coletor.achado || !cronometroIniciado) return;
       coletor.bateria -= dt;
-      const pct = Math.max(0, coletor.bateria / (MISSAO_ATUAL.bateriaSegundos || 70));
+      const pct = Math.max(0, coletor.bateria / bateriaMaxima());
       if (!coletor.avisouBateria && pct < 0.25) {
         coletor.avisouBateria = true;
         falar("bateriaBaixa", "#ef4444");

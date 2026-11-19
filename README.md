@@ -30,6 +30,9 @@ Funciona em pé ou deitado: o mapa se ajusta ao formato da tela. Não tem joysti
 - **Botão amarelo:** aparece só quando tem algo para fazer ali. Segure para coletar.
 - **Empilhadeira:** deslize para onde ela deve ir. Deslizando para trás dela, ela dá ré. O botão azul é a buzina.
 - **Toque no tempo** para pausar e **no objetivo** para ver a etiqueta.
+- **Embalagem:** deslize o dedo na direção de cada seta e toque para o E, ou use os botões.
+- **Garfo:** segure em qualquer lugar da tela (ou no botão) e solte na faixa verde.
+- **Tempo:** no celular, as estrelas e a bateria do coletor têm 35% a mais de tempo, e o recorde fica separado do recorde do computador.
 
 ## Fase 1: Pedido #1042
 
