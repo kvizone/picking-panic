@@ -64,7 +64,7 @@ O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais
 
 ## Fase 4: Fila no Balcão
 
-Dois pedidos no turno: o segundo cai enquanto você ainda está no primeiro. Docas diferentes, prazos diferentes.
+A partir daqui, **cai um pedido aleatório no balcão a cada minuto** (se o balcão estiver vazio e você sem pedido, o próximo cai na hora). Os pedidos são sorteados: itens, endereços, doca e cliente mudam a cada partida. Além de separação, pode cair uma **ordem de armazenagem**: pegar o pallet que chegou no recebimento e guardar no pulmão com a empilhadeira. Você escolhe a ordem no cupom (◀ ▶). A fase fecha quando você entrega 3 pedidos.
 
 ## Fase 5: Chegou Carga
 
@@ -72,7 +72,7 @@ O caminhão do fornecedor encostou na DOCA 2. Suba na empilhadeira, encaixe o ga
 
 ## Fase 6: Black Friday
 
-Três pedidos caindo em sequência, com prazos apertados. Se demorar, a fila cresce e os prazos estouram. Escolha a ordem pela caixa de entrada.
+Começa com 2 pedidos na fila e continua caindo um por minuto, com separação e armazenagem misturadas. Fecha com 5 entregas.
 
 ## Rádio
 
