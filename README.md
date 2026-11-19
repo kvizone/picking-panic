@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo-800.png" alt="Picking Panic" width="600">
+</p>
+
 # Picking Panic 📦⏱️
 
 Jogo 2D de vista aérea, no estilo do GTA 1, ambientado num galpão de logística.
