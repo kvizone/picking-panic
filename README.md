@@ -22,7 +22,7 @@ Abra o `index.html` no navegador ou jogue pelo GitHub Pages. As 6 fases são jog
 | R / M | Rádio caipira / som |
 | Esc | Pausar |
 
-Não precisa decorar: as dicas aparecem na hora certa, na primeira vez que cada coisa surge. Para vê-las de novo, use **Pausa → Mostrar dicas de novo**.
+Não precisa decorar: as dicas aparecem na hora certa, na primeira vez que cada coisa surge.
 
 **Carrinho de picking:** fica perto do balcão nas fases a pé. Com ele você anda mais rápido e corre mesmo carregado, mas ele é mais largo e também leva batida de empilhadeira.
 

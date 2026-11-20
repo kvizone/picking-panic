@@ -1603,7 +1603,6 @@
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <button class="btn" id="btn-resume-game">RETOMAR [ESC]</button>
           <button class="btn btn-secondary" id="btn-restart-game">REINICIAR MISSÃO</button>
-          <button class="btn btn-secondary" id="btn-rever-dicas">MOSTRAR DICAS DE NOVO</button>
         </div>
       </div>
     </div>
@@ -6970,10 +6969,6 @@
     function salvarDicas() {
       try { localStorage.setItem("pickingpanic_dicas", JSON.stringify([...dicasVistas])); } catch (e) {}
     }
-    function reverDicas() {
-      dicasVistas = new Set();
-      salvarDicas();
-    }
 
     function tentarDica(id, textoTeclado, textoToque, opts = {}) {
       if (dica.id || dica.pausa > 0 || chamadoAtivo || dicasVistas.has(id)) return false;
@@ -8998,11 +8993,6 @@
     document.getElementById("btn-close-briefing").addEventListener("click", () => {
       SFX.menuBlip();
       fecharBriefing();
-    });
-    document.getElementById("btn-rever-dicas").addEventListener("click", () => {
-      SFX.menuBlip();
-      reverDicas();
-      document.getElementById("btn-rever-dicas").textContent = "✓ AS DICAS VÃO APARECER DE NOVO";
     });
     document.getElementById("btn-falha-retry").addEventListener("click", () => {
       SFX.menuBlip();
