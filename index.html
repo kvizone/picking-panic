@@ -1692,6 +1692,19 @@
 
   <script>
     /* ==========================================================================
+       0. RÁDIOS (EDITÁVEL)
+       Estações ao vivo. [R] passa por elas na ordem e, depois da última, desliga.
+       Para adicionar outra: { nome, url (áudio direto do stream, mp3 ou aac), aoLigar }.
+       ========================================================================== */
+    const RADIOS = [
+      {
+        nome: "89 FM A Rádio Rock",
+        url: "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac",
+        aoLigar: "Rádio ligada na 89 FM. Rock no galpão, o pallet agora é palco."
+      }
+    ];
+
+    /* ==========================================================================
        1. CONSTANTES E CONFIGURAÇÃO DA MISSÃO (EDITÁVEL)
        ========================================================================== */
     const TILE_SIZE = 16; // 16x16 pixels por tile
@@ -2748,17 +2761,11 @@
        satura um pouco e soma chiado. Se não permitir, toca direto, mais baixo.
        ========================================================================== */
     const RADIO_MUSICA = {
-      // Estações do rádio. [R] passa por elas na ordem e, depois da última, desliga.
-      estacoes: [
-        {
-          nome: "89 FM A Rádio Rock",
-          url: "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac",
-          aoLigar: "Rádio ligada na 89 FM. Rock no galpão, o pallet agora é palco."
-        }
-      ],
+      // Estações: lista RADIOS, no começo do script
+      estacoes: RADIOS,
       estacaoAtual: 0,
       get url() { return this.estacoes[this.estacaoAtual].url; },
-      volume: 0.55,          // volume da música com efeito AM
+      volume: 0.3,           // abaixo dos efeitos do jogo (com efeito AM)
       volumeSemEfeito: 0.3,  // volume se a rádio não permitir o efeito
       ligada: true,
       audio: null,

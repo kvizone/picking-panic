@@ -91,7 +91,7 @@ Começa com 2 pedidos na fila, um novo por minuto e uma urgência a cada minuto.
 ## Rádio
 
 - **Rádio do galpão:** comenta o que acontece durante o turno. As falas ficam no objeto `TEXTOS`, no topo do script.
-- **Rádio de fundo:** a 89 FM A Rádio Rock ao vivo. O [R] liga e desliga. As estações ficam em `RADIO_MUSICA.estacoes`; se tiver mais de uma, o [R] passa por elas antes de desligar. Se a emissora liberar, o som passa por um filtro de rádio AM; se não, toca sem filtro.
+- **Rádio de fundo:** a 89 FM A Rádio Rock ao vivo. O [R] liga e desliga. As estações ficam na lista `RADIOS`, no começo do script; se tiver mais de uma, o [R] passa por elas antes de desligar. Se a emissora liberar, o som passa por um filtro de rádio AM; se não, toca sem filtro.
 
 ## Tecnologia
 
