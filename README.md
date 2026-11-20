@@ -62,17 +62,31 @@ Suba na Empilhadeira 04, dirija até o pulmão PUL-02, alinhe os garfos de frent
 
 O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais alto e mais de um lado conforme você chega perto, ou acompanhe a barra de SINAL no HUD. Os colegas dão pistas com E, mas um deles mente. Se a bateria acabar, a fase recomeça. Achou o coletor? O WMS religa, a etiqueta imprime e ainda tem um pedido de 2 itens para fechar.
 
+## Dois tipos de tarefa (fases 4 e 6)
+
+**Pedidos** caem no balcão WMS a cada minuto: pega o cupom, separa, embala e expede. A fase fecha quando você entrega a meta.
+
+**Urgências** estouram de tempos em tempos e param tudo, no estilo sabotagem do Among Us: alarme, borda vermelha e contagem regressiva. Se o tempo zerar, perde a fase.
+
+| Urgência | O que fazer | Tempo (fase 4 / 6) |
+|---|---|---|
+| 🔥 Incêndio | Pegue o extintor no armário vermelho da parede e segure E perto do pallet até apagar | 30s / 26s |
+| 📟 Coletor perdido | Sem coletor, sem WMS: siga o bip e a barra SINAL, pergunte aos colegas | 60s / 55s |
+| 🚚 Descarga urgente | Suba na empilhadeira, pegue o pallet no recebimento e guarde na posição sorteada da rua (R0X-PYY), no nível pedido | 120s / 100s |
+
+O extintor e a empilhadeira ficam sempre no mapa, mas só funcionam na urgência deles. Os pedidos não param: enquanto você resolve a urgência, o prazo deles continua correndo.
+
 ## Fase 4: Fila no Balcão
 
-A partir daqui, **cai um pedido aleatório no balcão a cada minuto** (se o balcão estiver vazio e você sem pedido, o próximo cai na hora). Os pedidos são sorteados: itens, endereços, doca e cliente mudam a cada partida. Além de separação, pode cair uma **ordem de armazenagem**: pegar o pallet que chegou no recebimento e guardar no pulmão com a empilhadeira. Você escolhe a ordem no cupom (◀ ▶). A fase fecha quando você entrega 3 pedidos.
+Pedidos aleatórios a cada minuto (itens, endereços, doca e cliente mudam a cada partida) e a primeira urgência aos 35 segundos, depois uma a cada 75. Fecha com 3 entregas.
 
 ## Fase 5: Chegou Carga
 
-O caminhão do fornecedor encostou na DOCA 2. Suba na empilhadeira, encaixe o garfo em cada pallet da área de recebimento (de frente para a doca, em cima da marca) e guarde no pulmão: o P1 vai no PUL-01, nível 2, e o P2 no PUL-03, nível 3. Guardou os dois, o caminhão vazio vai embora.
+O caminhão do fornecedor encostou na DOCA 2. Suba na empilhadeira, encaixe o garfo em cada pallet do recebimento e guarde no pulmão (P1 no PUL-01 nível 2, P2 no PUL-03 nível 3).
 
 ## Fase 6: Black Friday
 
-Começa com 2 pedidos na fila e continua caindo um por minuto, com separação e armazenagem misturadas. Fecha com 5 entregas.
+Começa com 2 pedidos na fila, um novo por minuto e uma urgência a cada minuto. Fecha com 5 entregas.
 
 ## Rádio
 

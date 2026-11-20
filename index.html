@@ -1323,6 +1323,41 @@
     #stamp-new-record.stamped { background: #b91c1c; }
     .erguer-nivel span { color: #374151; }
     .erguer-alvo span { color: #064e3b; }
+
+    /* v0.8 · URGÊNCIAS: aviso vermelho com contagem e borda pulsando */
+    .emergencia-banner {
+      position: absolute;
+      left: 50%;
+      top: 60px;
+      transform: translateX(-50%);
+      z-index: 46;
+      min-width: min(calc(260px * var(--escala)), 86%);
+      max-width: 92%;
+      padding: calc(5px * var(--escala)) calc(9px * var(--escala));
+      background: #7f1d1d;
+      color: #ffffff;
+      border: 2px solid #111827;
+      box-shadow: 3px 3px 0 #000;
+      font-size: calc(9px * var(--escala));
+      display: none;
+      pointer-events: none;
+    }
+    .emergencia-banner.visivel { display: block; }
+    .emerg-linha { display: flex; justify-content: space-between; gap: calc(10px * var(--escala)); align-items: baseline; }
+    #emergencia-tempo { font-size: calc(12px * var(--escala)); color: #fde047; }
+    #emergencia-tempo.critico { color: #ffffff; animation: piscaFila 0.5s steps(2) infinite; }
+    .emerg-trilho { margin-top: calc(4px * var(--escala)); height: calc(4px * var(--escala)); background: #450a0a; }
+    .emerg-trilho i { display: block; height: 100%; background: #fde047; }
+    html.emergencia #stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 29;
+      box-shadow: inset 0 0 0 4px rgba(239, 68, 68, 0.9), inset 0 0 60px rgba(239, 68, 68, 0.35);
+      animation: bordaUrgencia 0.9s ease-in-out infinite;
+    }
+    @keyframes bordaUrgencia { 50% { box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.5), inset 0 0 30px rgba(239, 68, 68, 0.15); } }
 </style>
 </head>
 <body>
@@ -1383,6 +1418,10 @@
     <!-- Fala dos colegas (texto inteiro, perto de quem falou) -->
     <div id="balao-npc" class="balao balao-npc"><span id="balao-npc-texto"></span></div>
     <!-- Chamado da missão: fica na tela até o operador pegar o pedido -->
+    <div id="emergencia-banner" class="emergencia-banner">
+      <div class="emerg-linha"><span id="emergencia-titulo">🔥 INCÊNDIO</span><span id="emergencia-tempo">0:30</span></div>
+      <div class="emerg-trilho"><i id="emergencia-barra"></i></div>
+    </div>
     <div id="chamado-balcao" class="chamado-balcao"><span class="balao-tag">PEDIDO</span><span id="chamado-texto"></span></div>
     </div>
 
@@ -1539,7 +1578,7 @@
     <!-- MODAL: Falha (fase 3, bateria) -->
     <div id="modal-falha" class="modal-overlay">
       <div data-titulo="ERRO DO SISTEMA" class="modal-box janela" style="max-width: 420px; text-align: center;">
-        <h1 style="font-size: 14px; color: #991b1b;">BATERIA ACABOU</h1>
+        <h1 id="falha-titulo" style="font-size: 14px; color: #991b1b;">BATERIA ACABOU</h1>
         <p id="falha-texto" style="font-size: 8px; color: #cbd5e1; line-height: 1.8;"></p>
         <div style="display: flex; gap: 10px;">
           <button class="btn" id="btn-falha-retry" style="flex: 1;">TENTAR DE NOVO [ENTER]</button>
@@ -1768,10 +1807,13 @@
       empilhadeirasAtivas: [0, 1, 2],
       id: "fila_no_balcao",
       falaInicio: "inicioFila",
-      estrelas: { tres: 165, duas: 215 },
+      estrelas: { tres: 200, duas: 260 },
       tempoColetaPorVolume: 1.0,
       // Começa com um pedido; depois cai um aleatório a cada minuto. Fecha ao entregar a meta.
-      geracao: { intervalo: 60, meta: 3, armazenagem: true, numeroInicial: 1100 },
+      geracao: { intervalo: 60, meta: 3, armazenagem: false, numeroInicial: 1100 },
+      // Urgências: a primeira cai aos 35s, depois uma a cada 75s. Tempos para resolver cada uma.
+      urgencias: { primeira: 35, intervalo: 75, tempos: { incendio: 30, coletor: 60, descarga: 120 } },
+      bateriaSegundos: 60,
       pedidos: [
         {
           numero: "#1051", cliente: "Bazar do Seu Zé Ltda.", docaSaida: "DOCA 1",
@@ -1834,9 +1876,11 @@
       empilhadeirasAtivas: [0, 1, 2],
       id: "black_friday",
       falaInicio: "inicioBlackFriday",
-      estrelas: { tres: 260, duas: 330 },
+      estrelas: { tres: 310, duas: 390 },
       tempoColetaPorVolume: 1.0,
-      geracao: { intervalo: 60, meta: 5, armazenagem: true, numeroInicial: 1200 },
+      geracao: { intervalo: 60, meta: 5, armazenagem: false, numeroInicial: 1200 },
+      urgencias: { primeira: 25, intervalo: 60, tempos: { incendio: 26, coletor: 55, descarga: 100 } },
+      bateriaSegundos: 55,
       pedidos: [
         {
           numero: "#1077", cliente: "Loja Tudo Pela Metade", docaSaida: "DOCA 2",
@@ -2119,6 +2163,11 @@
       armazOk2: ["Guardado no prazo. O pulmão respira.", "No lugar certo, no nível certo. Bonito."],
       armazOk1: ["Guardou, mas o recebimento ficou entupido um tempo.", "Atrasou, mas tá no rack. Segue."],
 
+      // ---------- Urgências ----------
+      fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
+      descargaAtrasou: ["A descarga travou a doca e o fornecedor foi embora.", "O pallet ficou no recebimento e a doca parou."],
+      urgenciaResolvida: ["Resolvido. Pode voltar pro pedido.", "Crise controlada. Bora que o balcão não para.", "Apagou o incêndio, literalmente ou não."],
+
       // ---------- Fase 5: recebimento e armazenagem ----------
       inicioFase5: [
         "Caminhão encostou. O motorista já tá olhando o relógio.",
@@ -2299,6 +2348,12 @@
         for (let i = 0; i < 4; i++) {
           this.playTone(180 + i * 20, "sawtooth", 0.03, 0.12, 0.01, 0.2 + i * 0.05);
         }
+      },
+
+      // Sirene de urgência: duas notas alternadas
+      alarme() {
+        this.playTone(880, "square", 0.16, 0.09, 0.01, 0);
+        this.playTone(660, "square", 0.16, 0.09, 0.01, 0.18);
       },
 
       // Pedido novo caindo no balcão: "plim-plim" de sistema
@@ -3514,7 +3569,7 @@
         if (estadoJogo === "JOGANDO") {
           SFX.menuBlip();
           if (ehVeiculo()) abrirBriefing();
-          else if (ehColetor() && !coletor.achado) falar("semColetor", "#ef4444");
+          else if (coletorSumido()) falar("semColetor", "#ef4444");
           else if (ehFila() && !fila.ativo) {
             if (player.currentZone && player.currentZone.tipo === "terminal") abrirBalcao();
             else falar("semPedido", "#fde047");
@@ -3854,6 +3909,7 @@
     }
 
     function obterAlvoAtual() {
+      if (emerg.ativa) return alvoUrgencia();
       const etapaId = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
       switch (etapaId) {
         case "RECEBER":
@@ -4062,8 +4118,9 @@
 
       // Fases 2 e 3: garfo subindo e bateria do coletor
       if (estadoJogo === "ERGUER") atualizarErguer(dt);
-      if (ehColetor() && estadoJogo === "JOGANDO") atualizarFase3(dt);
+      if (coletorSumido() && estadoJogo === "JOGANDO") atualizarFase3(dt);
       atualizarFila(dt);
+      atualizarEmergencias(dt);
       if (estadoJogo === "FALHOU") return;
 
       // 1. Movimento do Jogador
@@ -4314,9 +4371,10 @@
       }
 
       if (estadoJogo === "JOGANDO") {
-        if (tipoFase() === "empilhadeira") tratarZonasFase2();
+        if (tratarZonasEmergencia(dt)) { /* extintor, fogo ou empilhadeira da urgência */ }
+        else if (tipoFase() === "empilhadeira") tratarZonasFase2();
         else if (modoArmaz()) tratarZonasFase5();
-        else if (ehColetor() && !coletor.achado) tratarZonasFase3();
+        else if (coletorSumido()) tratarZonasFase3();
         else tratarZonasEInteracao(dt);
       }
 
@@ -4661,10 +4719,11 @@
 
     function desenharPainelDeAcao() {
       if (estadoJogo !== "JOGANDO") return;
-      if (ehVeiculo() || armazNaFila() || (ehColetor() && !coletor.achado)) {
+      if (ehVeiculo() || armazNaFila() || coletorSumido() || veiculo.pilotando) {
         desenharPainelFases();
         return;
       }
+      if (desenharPainelFases()) return; // extintor, fogo, empilhadeira da urgência
       const zona = player.currentZone;
       const itemAqui = (zona && zona.tipo === "posicao_wms") ? itemDaPosicao(zona.dados) : null;
       const naAlvo = !!(itemAqui && itemAqui.coletados < itemAqui.qtd);
@@ -4843,6 +4902,11 @@
         desenharBitmap(p.label, p.x + p.w / 2, p.y + p.h + 3, corPallet, 1, "center");
       });
 
+      // 7b. Urgências: fogo, extintor na parede e posição da descarga
+      desenharFogo();
+      desenharExtintorFixo();
+      desenharAlvoDescarga();
+
       // 8. Docas e caminhões
       CAMINHOES.forEach(cam => desenharDocaECaminhaoArte(cam));
 
@@ -4871,6 +4935,7 @@
         );
       }
 
+      desenharExtintorNaMao();
       JUICE.renderCaixasDaBaia(ctx);
       desenharPainelDeAcao();
 
@@ -6004,7 +6069,7 @@
       minimapCtx.fillStyle = "#0f172a";
       minimapCtx.fillRect(0, 0, mw, mh);
 
-      if (ehColetor() && !coletor.achado) {
+      if (coletorSumido()) {
         // Sem coletor, sem WMS: só chuvisco
         for (let i = 0; i < 260; i++) {
           const v = Math.floor(Math.random() * 120) + 30;
@@ -6021,9 +6086,9 @@
         return;
       }
 
-      if (ehVeiculo() || armazNaFila()) {
+      if (ehVeiculo() || armazNaFila() || descargaAtiva()) {
         minimapCtx.fillStyle = "#facc15";
-        const z = modoArmaz() ? ZONA_RECEB : ZONA_ENTREGA_F2;
+        const z = (modoArmaz() || descargaAtiva()) ? ZONA_RECEB : ZONA_ENTREGA_F2;
         minimapCtx.fillRect(z.x * sx, z.y * sy, z.w * sx, z.h * sy);
         minimapCtx.fillStyle = "#3b82f6";
         minimapCtx.fillRect(PULMAO.x * sx, PULMAO.y * sy, PULMAO.baiaW * 3 * sx, PULMAO.h * sy);
@@ -6117,13 +6182,18 @@
         }
         document.getElementById("hud-obj-desc").textContent = desc;
       }
+      if (emerg.ativa) {
+        const info = URGENCIA_INFO[emerg.ativa.tipo];
+        document.getElementById("hud-obj-step").textContent = `FASE ${faseIndex + 1}/${FASES.length} · URGÊNCIA · ${info.nome}`;
+        document.getElementById("hud-obj-desc").textContent = textoUrgencia();
+      }
       if (document.getElementById("modal-order").style.display === "flex") atualizarItensEtiqueta();
 
       const inv = document.getElementById("hud-inv-status");
       const invLabel = document.getElementById("hud-inv-label");
       invLabel.textContent = "CARGA";
 
-      if (ehColetor() && !coletor.achado) {
+      if (coletorSumido()) {
         // Barra de sinal do coletor (o bip em forma visual)
         const sinal = sinalDoColetor().forca;
         const barras = Math.max(0, Math.min(5, Math.round(sinal * 5 + 0.2)));
@@ -6133,7 +6203,7 @@
         inv.style.color = barras >= 4 ? "#34d399" : (barras >= 2 ? "#fbbf24" : "#ef4444");
         return;
       }
-      if ((ehVeiculo() || armazNaFila()) && !cargaDepositada) {
+      if ((ehVeiculo() || armazNaFila() || veiculo.pilotando) && !cargaDepositada) {
         if (ehArmazenagem()) invLabel.textContent = `GUARDADOS ${palletsGuardados()}/${recebimento.pallets.length}`;
         inv.textContent = veiculo.comPallet ? "PALLET" : (veiculo.pilotando ? "GARFO VAZIO" : "A PÉ");
         inv.style.color = veiculo.comPallet ? "#fbbf24" : "#94a3b8";
@@ -6546,6 +6616,7 @@
       resetarCarrinho();
       resetarRecebimento();
       resetarFila();
+      resetarEmergencias();
       resetarDicasDaPartida();
       ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
@@ -6737,7 +6808,8 @@
       pallet_consolidacao: "DEPOSITAR", veiculo: "SUBIR", pulmao_ok: "ERGUER",
       pulmao_alinhar: "ENCAIXE", zona_ok: "BAIXAR", zona_devagar: "PARE",
       zona_fora: "ENTRE", coletor: "PEGAR", npc: "PERGUNTAR",
-      receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR"
+      receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
+      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE"
     };
     let rotuloAcaoAtual = "";
     function atualizarBotoesToque() {
@@ -6962,7 +7034,7 @@
     let chamadoAtivo = false;
     function atualizarChamadoBalcao() {
       const el = document.getElementById("chamado-balcao");
-      const mostrar = estadoJogo === "JOGANDO" && precisaPegarPedido();
+      const mostrar = estadoJogo === "JOGANDO" && precisaPegarPedido() && !emerg.ativa;
       chamadoAtivo = mostrar;
       el.classList.toggle("visivel", mostrar);
       if (!mostrar) return false;
@@ -7499,6 +7571,414 @@
     }
 
     /* ==========================================================================
+       16e. URGÊNCIAS DO GALPÃO (estilo sabotagem do Among Us)
+       Nas fases de turno, a cada Y segundos estoura um problema: incêndio, coletor
+       perdido ou descarga urgente. Para tudo, resolve antes do tempo acabar ou perde.
+       O extintor e a empilhadeira ficam sempre no mapa, mas só servem na urgência deles.
+       ========================================================================== */
+    const EXTINTOR_POS = { x: 668, y: 30 }; // armário vermelho na parede, perto da consolidação
+    const emerg = { ativa: null, proxima: Infinity, ordem: [], ultimo: null, alarme: 0, hud: 0, extintorNaMao: false, spray: false };
+
+    const URGENCIA_INFO = {
+      incendio: { icone: "🔥", nome: "INCÊNDIO", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" },
+      coletor: { icone: "📟", nome: "COLETOR PERDIDO", falha: "bateriaAcabou", tituloFalha: "BATERIA ACABOU" },
+      descarga: { icone: "🚚", nome: "DESCARGA URGENTE", falha: "descargaAtrasou", tituloFalha: "A DOCA TRAVOU" }
+    };
+
+    const descargaAtiva = () => !!emerg.ativa && emerg.ativa.tipo === "descarga";
+    const incendioAtivo = () => !!emerg.ativa && emerg.ativa.tipo === "incendio";
+    function coletorSumido() {
+      if (ehColetor()) return !coletor.achado;
+      return !!emerg.ativa && emerg.ativa.tipo === "coletor" && !coletor.achado;
+    }
+
+    function resetarEmergencias() {
+      emerg.ativa = null;
+      emerg.ordem = [];
+      emerg.ultimo = null;
+      emerg.extintorNaMao = false;
+      emerg.spray = false;
+      const u = MISSAO_ATUAL.urgencias;
+      emerg.proxima = u ? u.primeira * fatorTempo() : Infinity;
+      document.documentElement.classList.remove("emergencia");
+      const b = document.getElementById("emergencia-banner");
+      if (b) b.classList.remove("visivel");
+    }
+
+    function sortearOrdemUrgencias() {
+      const tipos = ["incendio", "coletor", "descarga"];
+      for (let i = tipos.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tipos[i], tipos[j]] = [tipos[j], tipos[i]];
+      }
+      if (tipos[0] === emerg.ultimo) tipos.push(tipos.shift()); // não repete a anterior
+      return tipos;
+    }
+
+    function iniciarEmergencia() {
+      const u = MISSAO_ATUAL.urgencias;
+      if (!emerg.ordem.length) emerg.ordem = sortearOrdemUrgencias();
+      const tipo = emerg.ordem.shift();
+      emerg.ultimo = tipo;
+      const limite = u.tempos[tipo] * fatorTempo();
+      const a = { tipo, limite, restante: limite };
+      if (tipo === "incendio") {
+        const p = sortear(PALLETS_CONSOLIDACAO);
+        Object.assign(a, { pallet: p, x: p.x + p.w / 2, y: p.y + p.h / 2, fogo: 1 });
+      } else if (tipo === "coletor") {
+        // Some num esconderijo longe de onde o operador está
+        let tentativas = 0;
+        do { resetarColetor(); tentativas++; } while (Math.hypot(coletor.x - player.x, coletor.y - player.y) < 220 && tentativas < 20);
+        coletor.bateria = limite;
+        a.restante = limite;
+      } else {
+        // Posição livre nas ruas (que não seja item do pedido em andamento), sorteada a cada vez
+        const livres = posicoesWMS.filter(pos => !itemDaPosicao(pos));
+        const pos = sortear(livres);
+        const nivel = Math.random() < 0.5 ? 2 : 3;
+        Object.assign(a, { pos, nivel, etapa: "EMPILHADEIRA" });
+        recebimento.pallets = [{ nome: sortear(CARGAS), baia: pos.idCompleto, nivel, n: 1, x: 898, y: 374, pego: false, guardado: false }];
+        recebimento.vazias = new Set();
+      }
+      emerg.ativa = a;
+      emerg.alarme = 0;
+      document.documentElement.classList.add("emergencia");
+      SFX.pararColetaTom();
+      SFX.alarme();
+      JUICE.shake(5, 0.35);
+      const texto = {
+        incendio: `Fogo no pallet ${a.pallet ? a.pallet.label : ""}! Pegue o extintor.`,
+        coletor: "O coletor sumiu! Sem ele, sem WMS. Siga o bip.",
+        descarga: `Descarga urgente: leve o pallet até a ${a.pos ? a.pos.idCompleto : ""}.`
+      }[tipo];
+      falarTexto(texto, "#ef4444");
+      atualizarBannerEmergencia();
+      atualizarHUD();
+    }
+
+    function concluirEmergencia() {
+      const a = emerg.ativa;
+      if (!a) return;
+      const u = MISSAO_ATUAL.urgencias;
+      emerg.ativa = null;
+      emerg.extintorNaMao = false;
+      emerg.spray = false;
+      emerg.proxima = tempoDecorrido + (u ? u.intervalo * fatorTempo() : Infinity);
+      document.documentElement.classList.remove("emergencia");
+      document.getElementById("emergencia-banner").classList.remove("visivel");
+      SFX.minigameSucesso();
+      JUICE.textoFlutuante(player.x, player.y - 18, "RESOLVIDO!", "#34d399");
+      JUICE.particulas(player.x, player.y, "confete", 14);
+      falar("urgenciaResolvida", "#34d399");
+      atualizarHUD();
+    }
+
+    function atualizarEmergencias(dt) {
+      const u = MISSAO_ATUAL.urgencias;
+      if (!u || !cronometroIniciado) return;
+      const a = emerg.ativa;
+      if (!a) {
+        if (estadoJogo === "JOGANDO" && !filaConcluida() && !cargaDepositada && tempoDecorrido >= emerg.proxima) iniciarEmergencia();
+        return;
+      }
+      if (a.tipo === "coletor") a.restante = coletor.bateria; // a bateria é o relógio
+      else a.restante -= dt;
+      // Fogo: o extintor baixa; sem jato, ele volta a crescer devagar
+      if (a.tipo === "incendio") {
+        if (emerg.spray) a.fogo -= dt / 2.2;
+        else a.fogo = Math.min(1, a.fogo + dt * 0.05);
+        emerg.spray = false;
+        if (a.fogo <= 0) { apagarFogo(); return; }
+      }
+      emerg.alarme -= dt;
+      if (emerg.alarme <= 0) {
+        emerg.alarme = a.restante < a.limite * 0.3 ? 0.55 : 1.1;
+        SFX.alarme();
+      }
+      if (a.restante <= 0) {
+        const info = URGENCIA_INFO[a.tipo];
+        emerg.ativa = null;
+        document.documentElement.classList.remove("emergencia");
+        document.getElementById("emergencia-banner").classList.remove("visivel");
+        if (veiculo.pilotando && !ehVeiculo()) veiculo.pilotando = false;
+        falharFase(info.falha, info.tituloFalha);
+        return;
+      }
+      emerg.hud -= dt;
+      if (emerg.hud <= 0) {
+        emerg.hud = 0.1;
+        atualizarBannerEmergencia();
+      }
+    }
+
+    function atualizarBannerEmergencia() {
+      const a = emerg.ativa;
+      const b = document.getElementById("emergencia-banner");
+      if (!a) { b.classList.remove("visivel"); return; }
+      const info = URGENCIA_INFO[a.tipo];
+      const onde = a.tipo === "incendio" ? ` · PALLET ${a.pallet.label}` : a.tipo === "descarga" ? ` · ${a.pos.idCompleto} N${a.nivel}` : "";
+      document.getElementById("emergencia-titulo").textContent = `${info.icone} ${info.nome}${onde}`;
+      const t = Math.max(0, a.restante);
+      const rel = document.getElementById("emergencia-tempo");
+      rel.textContent = `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+      rel.classList.toggle("critico", t < a.limite * 0.3);
+      document.getElementById("emergencia-barra").style.width = Math.max(0, t / a.limite * 100).toFixed(1) + "%";
+      const stage = document.getElementById("stage");
+      const barra = document.querySelector(".hud-top-bar");
+      if (stage && barra) b.style.top = (barra.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 6) + "px";
+      b.classList.add("visivel");
+    }
+
+    // O que fazer agora na urgência (vai pro objetivo do HUD)
+    function textoUrgencia() {
+      const a = emerg.ativa;
+      const E = EH_TOQUE ? "o botão" : "[E]";
+      if (a.tipo === "incendio") {
+        return emerg.extintorNaMao
+          ? `Chegue perto do fogo e segure ${E} para apagar.`
+          : `Pegue o extintor na parede (armário vermelho) ${E}.`;
+      }
+      if (a.tipo === "coletor") return "Siga o bip e a barra SINAL. Colegas ajudam [E].";
+      if (!veiculo.pilotando) return `Suba na empilhadeira ${E}.`;
+      if (a.etapa === "PEGAR") return `Encaixe o garfo no pallet do recebimento ${E}.`;
+      if (a.etapa === "LEVAR") return `Leve até a ${a.pos.idCompleto}: pare no corredor, ao lado da posição ${E}.`;
+      return `Segure ${E}, solte no NÍVEL ${a.nivel}.`;
+    }
+
+    function alvoUrgencia() {
+      const a = emerg.ativa;
+      if (a.tipo === "coletor") return null; // sem coletor, sem seta
+      if (a.tipo === "incendio") return emerg.extintorNaMao ? { x: a.x, y: a.y } : { x: EXTINTOR_POS.x, y: EXTINTOR_POS.y + 16 };
+      if (!veiculo.pilotando) return { x: veiculo.x, y: veiculo.y };
+      if (a.etapa === "PEGAR") { const p = palletArmazenagemAtual(); return p ? { x: p.x - 30, y: p.y } : null; }
+      const rua = RUAS_CONFIG.find(r => r.id === a.pos.rua);
+      return { x: rua.corridorX + 24, y: a.pos.zoneY + a.pos.zoneH / 2 };
+    }
+
+    // Empilhadeira na posição da rua: dentro do corredor, na altura da posição, devagar
+    function alinhamentoRua() {
+      const a = emerg.ativa;
+      const rua = RUAS_CONFIG.find(r => r.id === a.pos.rua);
+      const cx = rua.corridorX + 24, cy = a.pos.zoneY + a.pos.zoneH / 2;
+      const perto = Math.hypot(veiculo.x - cx, veiculo.y - cy) < 80;
+      const alinhado = perto &&
+        veiculo.x > rua.corridorX + 4 && veiculo.x < rua.corridorX + 44 &&
+        Math.abs(veiculo.y - cy) < a.pos.zoneH / 2 + 6 &&
+        Math.abs(veiculo.vel) < 30;
+      return { perto, alinhado };
+    }
+
+    function apagarFogo() {
+      const a = emerg.ativa;
+      JUICE.particulas(a.x, a.y, "poeira", 22);
+      JUICE.textoFlutuante(a.x, a.y - 20, "APAGADO!", "#e0f2fe");
+      concluirEmergencia();
+    }
+
+    function concluirDescarga() {
+      veiculo.pilotando = false;
+      veiculo.comPallet = false;
+      veiculo.vel = veiculo.vx = veiculo.vy = 0;
+      const saidas = [[-30, 0], [30, 0], [0, -34], [0, 34], [-30, -30], [30, 30]];
+      for (const [dx, dy] of saidas) {
+        if (!checkCollision(veiculo.x + dx, veiculo.y + dy, player.radius + 1)) {
+          player.x = veiculo.x + dx;
+          player.y = veiculo.y + dy;
+          break;
+        }
+      }
+      recebimento.pallets = [];
+      recebimento.vazias = new Set();
+      concluirEmergencia();
+    }
+
+    // Zonas das urgências e dos equipamentos fixos (extintor e empilhadeira).
+    // Devolve true quando cuidou da interação deste quadro.
+    function tratarZonasEmergencia(dt) {
+      if (!MISSAO_ATUAL.urgencias) return false;
+      const a = emerg.ativa;
+      if (veiculo.pilotando) { tratarDescarga(); return true; }
+      player.currentZone = null;
+      // Empilhadeira estacionada: só liga na descarga urgente
+      if (Math.hypot(player.x - veiculo.x, player.y - veiculo.y) < 40) {
+        if (descargaAtiva()) {
+          player.currentZone = { tipo: "veiculo" };
+          if (interactPressedThisFrame) {
+            veiculo.pilotando = true;
+            veiculo.vx = veiculo.vy = veiculo.vel = 0;
+            carrinho.pego = false;
+            SFX.terminal();
+            falar("subiuEmpilhadeira", "#fbbf24");
+            a.etapa = "PEGAR";
+            atualizarHUD();
+          }
+          return true;
+        }
+        if (interactPressedThisFrame) {
+          falarTexto("Empilhadeira só para descarga urgente.", "#94a3b8");
+          return true;
+        }
+      }
+      // Armário do extintor: só abre com fogo
+      if (!emerg.extintorNaMao && Math.hypot(player.x - EXTINTOR_POS.x, player.y - (EXTINTOR_POS.y + 18)) < 26) {
+        if (incendioAtivo()) {
+          player.currentZone = { tipo: "extintor" };
+          if (interactPressedThisFrame) {
+            emerg.extintorNaMao = true;
+            SFX.terminal();
+            JUICE.textoFlutuante(player.x, player.y - 16, "EXTINTOR!", "#ef4444");
+            atualizarHUD();
+          }
+          return true;
+        }
+        if (interactPressedThisFrame) {
+          falarTexto("Extintor só em caso de incêndio.", "#94a3b8");
+          return true;
+        }
+      }
+      // Jato no fogo: segurar E perto do pallet
+      if (incendioAtivo() && emerg.extintorNaMao && Math.hypot(player.x - a.x, player.y - a.y) < 46) {
+        player.currentZone = { tipo: "fogo" };
+        if (keys["KeyE"]) {
+          emerg.spray = true;
+          if (Math.random() < 0.5) JUICE.particulas(a.x + (Math.random() - 0.5) * 16, a.y + (Math.random() - 0.5) * 16, "poeira", 1);
+          if (Math.random() < 0.15) SFX.playTone(180 + Math.random() * 80, "sawtooth", 0.05, 0.03, 0.005);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    function tratarDescarga() {
+      const a = emerg.ativa;
+      player.currentZone = null;
+      if (!descargaAtiva()) return;
+      if (a.etapa === "PEGAR") {
+        const al = alinhamentoReceb();
+        if (al.perto) {
+          player.currentZone = { tipo: al.alinhado ? "receb_ok" : "receb_alinhar" };
+          if (interactPressedThisFrame) {
+            if (al.alinhado) {
+              const p = palletArmazenagemAtual();
+              p.pego = true;
+              veiculo.comPallet = true;
+              veiculo.vel = -20;
+              SFX.garfoOk();
+              JUICE.textoFlutuante(p.x, p.y - 16, "NO GARFO!", "#34d399");
+              a.etapa = "LEVAR";
+              atualizarHUD();
+            } else falar("desalinhadoReceb", "#ef4444");
+          }
+        }
+      } else if (a.etapa === "LEVAR") {
+        const al = alinhamentoRua();
+        if (al.perto) {
+          player.currentZone = { tipo: al.alinhado ? "rua_ok" : "rua_alinhar" };
+          if (interactPressedThisFrame) {
+            if (al.alinhado) { a.etapa = "GUARDAR"; abrirErguer(); }
+            else falarTexto("Pare no corredor, ao lado da posição.", "#ef4444");
+          }
+        }
+      }
+    }
+
+    /* ---------- Desenho: extintor, fogo, posição da descarga ---------- */
+    function desenharExtintorFixo() {
+      if (!MISSAO_ATUAL.urgencias) return;
+      const x = EXTINTOR_POS.x, y = EXTINTOR_POS.y;
+      const fogo = incendioAtivo();
+      // Armário vermelho com porta de vidro, preso na parede
+      ret(ctx, x - 7, y - 10, 15, 20, ARTE.contorno);
+      ret(ctx, x - 6, y - 9, 13, 18, "#b91c1c");
+      ret(ctx, x - 6, y - 9, 13, 1, "#ef4444");
+      ret(ctx, x - 4, y - 7, 9, 14, emerg.extintorNaMao ? "#3f1d1d" : "#fecaca");
+      if (!emerg.extintorNaMao) {
+        ret(ctx, x - 2, y - 6, 5, 12, ARTE.contorno);
+        ret(ctx, x - 1, y - 5, 3, 10, "#dc2626");
+        ret(ctx, x - 1, y - 5, 1, 9, "#f87171");
+        ret(ctx, x - 1, y - 7, 3, 2, "#1f2937");
+      }
+      ret(ctx, x - 5, y + 10, 13, 3, ARTE.sombra);
+      const pertoDoArmario = Math.hypot(player.x - x, player.y - (y + 18)) < 40;
+      if (fogo && !emerg.extintorNaMao) {
+        const pisca = Math.floor(Date.now() / 250) % 2 === 0;
+        ctx.strokeStyle = pisca ? "#facc15" : "#ef4444";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - 9, y - 12, 19, 24);
+        if (!pertoDoArmario) desenharPainelBitmap("EXTINTOR", x, y + 16, "#7f1d1d", "#fecaca", "#ffffff");
+      }
+    }
+
+    function desenharExtintorNaMao() {
+      if (!emerg.extintorNaMao || veiculo.pilotando) return;
+      const x = Math.round(player.x + 5), y = Math.round(player.y - 4);
+      ret(ctx, x, y, 4, 9, ARTE.contorno);
+      ret(ctx, x + 1, y + 1, 2, 7, "#dc2626");
+      ret(ctx, x + 1, y + 1, 1, 6, "#f87171");
+      const a = emerg.ativa;
+      if (a && a.tipo === "incendio" && keys["KeyE"] && Math.hypot(player.x - a.x, player.y - a.y) < 46) {
+        // Jato de pó: pontinhos brancos do bico até o fogo
+        for (let i = 0; i < 14; i++) {
+          const t = ((Date.now() / 60 + i * 7) % 14) / 14;
+          const jx = x + 2 + (a.x - x) * t + (Math.random() - 0.5) * 6 * t;
+          const jy = y + 2 + (a.y - y) * t + (Math.random() - 0.5) * 6 * t;
+          ret(ctx, Math.round(jx), Math.round(jy), 2, 2, i % 3 ? "#f1f5f9" : "#cbd5e1");
+        }
+      }
+    }
+
+    function desenharFogo() {
+      const a = emerg.ativa;
+      if (!a || a.tipo !== "incendio") return;
+      const p = a.pallet;
+      const t = Date.now() / 90;
+      const forca = Math.max(0.15, a.fogo);
+      // Brilho laranja no chão
+      ctx.fillStyle = `rgba(249, 115, 22, ${0.12 + 0.08 * Math.sin(t)})`;
+      ctx.fillRect(p.x - 14, p.y - 10, p.w + 28, p.h + 24);
+      // Chamas: colunas que sobem e descem
+      for (let i = 0; i < 12; i++) {
+        const fx = p.x - 5 + i * 3.6;
+        const centro = 1 - Math.abs(i - 5.5) / 6.5; // mais alto no meio
+        const alt = Math.round((12 + 22 * centro * Math.abs(Math.sin(t * 0.7 + i * 1.7)) + 6 * centro) * forca);
+        const base = p.y + p.h - 6;
+        ret(ctx, Math.round(fx), base - alt, 4, alt, "#7f1d1d");
+        ret(ctx, Math.round(fx) + 1, base - alt + 1, 2, alt - 1, "#ea580c");
+        if (alt > 6) ret(ctx, Math.round(fx) + 1, base - alt + 4, 2, Math.max(1, alt - 8), "#facc15");
+        if (alt > 12) ret(ctx, Math.round(fx) + 1, base - alt + 8, 1, Math.max(1, alt - 14), "#fef9c3");
+      }
+      // Fumaça subindo
+      for (let i = 0; i < 6; i++) {
+        const fase = ((Date.now() / 1400) + i / 6) % 1;
+        const sx = p.x + p.w / 2 + Math.sin(i * 2.3 + fase * 4) * 10;
+        const sy = p.y + 4 - fase * 46;
+        const r = Math.round(3 + fase * 6);
+        ctx.fillStyle = `rgba(55, 60, 72, ${0.45 * (1 - fase) * forca})`;
+        ctx.fillRect(Math.round(sx - r), Math.round(sy - r), r * 2, r * 2);
+      }
+    }
+
+    function desenharAlvoDescarga() {
+      if (!descargaAtiva()) return;
+      const a = emerg.ativa;
+      const pos = a.pos;
+      const pisca = Math.floor(Date.now() / 200) % 2 === 0;
+      ctx.strokeStyle = pisca ? "#22d3ee" : "#a5f3fc";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(pos.rackX, pos.rackY, pos.rackW, pos.rackH);
+      if (a.etapa === "LEVAR" || a.etapa === "GUARDAR") {
+        const rua = RUAS_CONFIG.find(r => r.id === pos.rua);
+        const x0 = rua.corridorX + 4, y0 = pos.zoneY - 2, w = 40, h = pos.zoneH + 4;
+        ctx.fillStyle = "rgba(34, 211, 238, 0.12)";
+        ctx.fillRect(x0, y0, w, h);
+        ctx.fillStyle = pisca ? "#22d3ee" : "#0e7490";
+        for (let x = x0; x < x0 + w; x += 6) { ctx.fillRect(x, y0, 3, 2); ctx.fillRect(x, y0 + h - 2, 3, 2); }
+        for (let y = y0; y < y0 + h; y += 6) { ctx.fillRect(x0, y, 2, 3); ctx.fillRect(x0 + w - 2, y, 2, 3); }
+      }
+      desenharPainelBitmap(pos.idCompleto.replace(/ /g, "") + " N" + a.nivel, pos.rackX + pos.rackW / 2, pos.rackY - 10, "#083344", "#22d3ee", "#a5f3fc");
+    }
+
+    /* ==========================================================================
        16b. CAMPANHA: FASES EM SEQUÊNCIA E BRIEFING
        ========================================================================== */
     let faseIndex = 0;              // 0, 1, 2
@@ -7533,6 +8013,7 @@
       ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing", "modal-pedido-ok"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
       document.getElementById("hud").style.display = "none";
+      resetarEmergencias();
       document.getElementById("modal-start").style.display = "flex";
       estadoJogo = "MENU";
       carregarMelhorTempoInicial();
@@ -7812,6 +8293,7 @@
 
     // Baia do pulmão que importa agora: na fase 2 é fixa, na armazenagem depende do pallet
     function baiaAlvoAtual() {
+      if (descargaAtiva()) return emerg.ativa.pos.idCompleto.replace(/ /g, "");
       if (modoArmaz()) {
         const p = palletArmazenagemAtual();
         return p ? p.baia : null;
@@ -7819,6 +8301,7 @@
       return MISSAO_ATUAL.enderecoPulmao;
     }
     function nivelAlvoAtual() {
+      if (descargaAtiva()) return emerg.ativa.nivel;
       if (modoArmaz()) {
         const p = palletArmazenagemAtual();
         return p ? p.nivel : 3;
@@ -7827,6 +8310,10 @@
     }
 
     function posicaoBaiaAlvo() {
+      if (descargaAtiva()) {
+        const pos = emerg.ativa.pos;
+        return { x: pos.rackX + pos.rackW / 2, y: pos.rackY + pos.rackH / 2 };
+      }
       const idx = Math.max(0, PULMAO.baias.indexOf(baiaAlvoAtual()));
       return { x: PULMAO.x + idx * PULMAO.baiaW + PULMAO.baiaW / 2, y: PULMAO.y };
     }
@@ -7910,12 +8397,12 @@
       veiculo.vel = veiculo.vx = veiculo.vy = 0;
       garfoNivel = 0;
       erguendo = false;
-      const guardar = modoArmaz();
-      irParaEtapa(guardar ? "GUARDAR" : "ERGUER");
+      const guardar = modoArmaz() || descargaAtiva();
+      if (!descargaAtiva()) irParaEtapa(guardar ? "GUARDAR" : "ERGUER");
       const nivel = nivelAlvoAtual();
       Object.assign(GARFO_ALVO, NIVEIS_GARFO[nivel] || NIVEIS_GARFO[3]);
       document.getElementById("erguer-titulo").textContent =
-        `PULMÃO ${baiaAlvoAtual()} · NÍVEL ${nivel}` + (guardar ? " · GUARDAR" : "");
+        `${descargaAtiva() ? "RACK" : "PULMÃO"} ${baiaAlvoAtual()} · NÍVEL ${nivel}` + (guardar ? " · GUARDAR" : "");
       document.getElementById("erguer-alvo-txt").textContent = "N" + nivel;
       [1, 2, 3].forEach(n => { document.getElementById("erguer-n" + n).style.display = n === nivel ? "none" : ""; });
       const alvo = document.getElementById("erguer-alvo");
@@ -7956,7 +8443,7 @@
       erguendo = false;
       if (garfoNivel >= GARFO_ALVO.min && garfoNivel <= GARFO_ALVO.max) {
         SFX.garfoOk();
-        if (modoArmaz()) {
+        if (modoArmaz() || descargaAtiva()) {
           document.getElementById("erguer-feedback").textContent = "✓ PALLET GUARDADO!";
           estadoJogo = "ERGUER_OK";
           setTimeout(() => {
@@ -8042,6 +8529,7 @@
       veiculo.vel = -20;
       const b = posicaoBaiaAlvo();
       JUICE.particulas(b.x, b.y + 10, "poeira", 10);
+      if (descargaAtiva()) { concluirDescarga(); return; }
       if (!palletArmazenagemAtual()) {
         if (armazNaFila()) concluirArmazenagemDaFila();
         else iniciarExpedicaoFinal("tudoGuardado", "ARMAZENADO!");
@@ -8120,7 +8608,7 @@
     function desenharRecebimento() {
       const z = ZONA_RECEB;
       const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
-      const ativa = etapa === "PEGAR_RECEB";
+      const ativa = etapa === "PEGAR_RECEB" || (descargaAtiva() && emerg.ativa.etapa === "PEGAR");
       const pisca = Math.floor(Date.now() / 250) % 2 === 0;
       ctx.fillStyle = ativa ? "rgba(250, 204, 21, 0.12)" : "rgba(148, 163, 184, 0.08)";
       ctx.fillRect(z.x, z.y, z.w, z.h);
@@ -8281,12 +8769,13 @@
       const tela = document.getElementById("boot-tela");
       tela.textContent = "";
       document.getElementById("modal-boot").style.display = "flex";
+      const urgencia = !ehColetor();
       const linhas = [
         "E-SHIP WMS v1.996",
         "> BATERIA............ " + Math.round(Math.max(0, coletor.bateria)) + "s",
         "> CONECTANDO REDE.... OK",
         "> CARREGANDO MAPA.... OK",
-        "> SINCRONIZANDO PEDIDO #1043 .... OK",
+        urgencia ? "> RETOMANDO TURNO.... OK" : "> SINCRONIZANDO PEDIDO #1043 .... OK",
         "",
         "PRONTO. BOM TRABALHO, OPERADOR."
       ];
@@ -8301,6 +8790,12 @@
           setTimeout(() => {
             if (estadoJogo !== "BOOT") return;
             document.getElementById("modal-boot").style.display = "none";
+            if (urgencia) {
+              estadoJogo = "JOGANDO";
+              limparInputs();
+              concluirEmergencia();
+              return;
+            }
             irParaEtapa("COLETAR");
             abrirCardPedido(true);
           }, 700);
@@ -8308,7 +8803,10 @@
       }, 230);
     }
 
-    function falharFase(evento) {
+    function falharFase(evento, titulo = "BATERIA ACABOU") {
+      document.getElementById("falha-titulo").textContent = titulo;
+      document.documentElement.classList.remove("emergencia");
+      document.getElementById("emergencia-banner").classList.remove("visivel");
       estadoJogo = "FALHOU";
       cronometroIniciado = false;
       limparInputs();
@@ -8407,7 +8905,7 @@
     function desenharCenarioFases() {
       desenharPulmao();
       desenharMarcaEncaixe();
-      if (modoArmaz()) desenharRecebimento();
+      if (modoArmaz() || descargaAtiva()) desenharRecebimento();
       if (tipoFase() === "empilhadeira") {
         const z = ZONA_ENTREGA_F2;
         const pisca = Math.floor(Date.now() / 250) % 2 === 0;
@@ -8433,7 +8931,7 @@
           ctx.fillRect(Math.round(p.x - 9), Math.round(p.y - 1), 18, 2);
         }
       }
-      if (ehVeiculo() || (MISSAO_ATUAL.geracao && MISSAO_ATUAL.geracao.armazenagem)) {
+      if (ehVeiculo() || MISSAO_ATUAL.urgencias) {
         // Empilhadeira do jogador
         const { spr, chave } = spriteVeiculoCanvas(veiculo.theta, veiculo.comPallet);
         const ox = Math.round(veiculo.x), oy = Math.round(veiculo.y);
@@ -8444,7 +8942,7 @@
         ctx.fillRect(ox - 1, oy - 1, 2, 2);
         if (!veiculo.pilotando) desenharBitmap("04", ox, oy - 26, "#fbbf24", 1, "center");
       }
-      if (ehColetor() && !coletor.achado) {
+      if (coletorSumido()) {
         // O coletor só aparece quando você está bem perto (ele está escondido)
         const d = Math.hypot(coletor.x - player.x, coletor.y - player.y);
         if (d < 60) {
@@ -8467,6 +8965,10 @@
         receb_ok: ["[E] PEGAR PALLET", "#052e16", "#34d399", "#bbf7d0"],
         receb_alinhar: ["ENCAIXE NA MARCA", "#422006", "#facc15", "#fef08a"],
         pulmao_guardar: ["[E] GUARDAR", "#052e16", "#34d399", "#bbf7d0"],
+        extintor: ["[E] PEGAR EXTINTOR", "#7f1d1d", "#fecaca", "#ffffff"],
+        fogo: ["SEGURE [E] APAGAR", "#7f1d1d", "#fecaca", "#ffffff"],
+        rua_ok: ["[E] GUARDAR", "#052e16", "#34d399", "#bbf7d0"],
+        rua_alinhar: ["PARE NA MARCA", "#422006", "#facc15", "#fef08a"],
         npc: ["[E] PERGUNTAR", "#0b1326", "#ffffff", "#fbbf24"]
       };
       const t = textos[z.tipo];
