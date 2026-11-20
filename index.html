@@ -2207,11 +2207,11 @@
       armazOk1: ["Guardou, mas o recebimento ficou entupido um tempo.", "Atrasou, mas tá no rack. Segue."],
 
       chefeBravo: [
-        "{n} PEDIDOS ATRASADOS?! Blablablá prazo, blablablá cliente, blablablá... o SAC vai me ligar!",
-        "Eu tô vendo o painel, viu? {n} atrasados. Blablablá blablablá. Acelera essa separação!",
-        "Bonito, hein? {n} no vermelho. Blablablá meta, blablablá indicador, blablablá...",
-        "Na minha época a gente... blablablá blablablá. {n} atrasados! Bora, bora!",
-        "Blablablá reunião, blablablá diretoria... e eu explico {n} atrasados como? Corre!"
+        "{n} pedidos parados no balcão?! O cliente pagou frete expresso, não frete paciência!",
+        "Tô olhando o painel: {n} pedidos na fila. Isso é balcão ou sala de espera?",
+        "Bonito, hein? {n} pedidos esperando. Quer que eu leve um cafezinho pra eles também?",
+        "{n} na fila! Se fosse fila de banco eu até entendia. Bora separar!",
+        "A diretoria acabou de perguntar dos {n} pedidos parados. Eu disse que você tava resolvendo. Tá, né?"
       ],
 
       // ---------- Urgências ----------
@@ -2398,6 +2398,42 @@
         // Ruído picotado de impressora matricial
         for (let i = 0; i < 4; i++) {
           this.playTone(180 + i * 20, "sawtooth", 0.03, 0.12, 0.01, 0.2 + i * 0.05);
+        }
+      },
+
+      // Voz do chefe resmungando: sílabas "bla" com tom subindo e descendo, filtradas como voz abafada
+      blablabla(duracao) {
+        if (!audioCtx || isMuted) return;
+        const inicio = audioCtx.currentTime + 0.02;
+        const silaba = 0.13;
+        const n = Math.max(3, Math.floor(duracao / silaba));
+        for (let i = 0; i < n; i++) {
+          const t = inicio + i * silaba + (Math.random() - 0.5) * 0.02;
+          // Entonação de bronca: sobe no começo de cada "frase" e cai no fim
+          const frase = (i % 7) / 7;
+          const tom = 150 + 70 * Math.sin(frase * Math.PI) + Math.random() * 25;
+          const osc = audioCtx.createOscillator();
+          const filtro = audioCtx.createBiquadFilter();
+          const ganho = audioCtx.createGain();
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(tom * 0.92, t);
+          osc.frequency.linearRampToValueAtTime(tom, t + 0.05);
+          osc.frequency.linearRampToValueAtTime(tom * 0.85, t + silaba * 0.9);
+          // "b-l-a": o filtro abre (consoante) e fica no "a"
+          filtro.type = "bandpass";
+          filtro.Q.setValueAtTime(3, t);
+          filtro.frequency.setValueAtTime(380, t);
+          filtro.frequency.linearRampToValueAtTime(950 + Math.random() * 250, t + 0.045);
+          filtro.frequency.linearRampToValueAtTime(700, t + silaba * 0.9);
+          ganho.gain.setValueAtTime(0.0001, t);
+          ganho.gain.linearRampToValueAtTime(0.16, t + 0.025);
+          ganho.gain.linearRampToValueAtTime(0.11, t + silaba * 0.55);
+          ganho.gain.exponentialRampToValueAtTime(0.0008, t + silaba * 0.95);
+          osc.connect(filtro);
+          filtro.connect(ganho);
+          ganho.connect(masterGain);
+          osc.start(t);
+          osc.stop(t + silaba);
         }
       },
 
@@ -7276,12 +7312,12 @@
 
     function atualizarFila(dt) {
       if (!ehFila() || !cronometroIniciado) return;
-      // Chefe reclama quando 3 pedidos estão atrasados ao mesmo tempo (de novo só se a fila melhorar)
-      const atrasados = fila.pedidos.filter(estaAtrasado).length;
-      if (atrasados >= 3 && !fila.chefeAvisou) {
+      // Chefe reclama quando a fila do balcão chega a 3 pedidos esperando (de novo só se a fila baixar)
+      const naFila = pedidosEsperando().length;
+      if (naFila >= 3 && !fila.chefeAvisou) {
         fila.chefeAvisou = true;
-        chefeReclama(atrasados);
-      } else if (atrasados < 3) {
+        chefeReclama(naFila);
+      } else if (naFila < 3) {
         fila.chefeAvisou = false;
       }
       // A cada minuto cai um pedido aleatório. Com o balcão vazio e nada na mão, não precisa esperar o minuto.
@@ -8062,16 +8098,13 @@
       span.textContent = "";
       el.classList.add("visivel");
       desenharRostoChefe(2);
+      SFX.blablabla(fala.length * 0.038); // resmungo do tamanho da fala
       let i = 0;
       // Boca mexendo enquanto fala
       chefe.timerBoca = setInterval(() => desenharRostoChefe([1, 2, 0, 2, 1][Math.floor(Math.random() * 5)]), 90);
       chefe.timerDigitar = setInterval(() => {
         const ch = fala[i];
         span.textContent += ch;
-        // "Voz" de bipinhos, mais grave no blablablá
-        if (ch && /[a-zà-ú]/i.test(ch) && i % 2 === 0) {
-          SFX.playTone(220 + Math.random() * 200, "square", 0.04, 0.05, 0.003);
-        }
         i++;
         if (i >= fala.length) {
           clearInterval(chefe.timerDigitar);
