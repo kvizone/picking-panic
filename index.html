@@ -3261,7 +3261,7 @@
     const bufferCanvas = document.createElement("canvas");
     bufferCanvas.width = VIEW_W;
     bufferCanvas.height = VIEW_H;
-    const ctx = bufferCanvas.getContext("2d");
+    let ctx = bufferCanvas.getContext("2d"); // let: a camada estática troca o alvo do desenho por um instante
     ctx.imageSmoothingEnabled = false;
 
     let estadoJogo = "MENU";
@@ -4793,36 +4793,11 @@
       ctx.save();
       ctx.translate(-camX, -camY);
 
-      // 2. Piso do Galpão e Pátio
-      ctx.fillStyle = "#94a3b8";
-      ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+      // 2. Camada estática: piso, faixas, paredes, pátio e racks (desenhada uma vez)
+      if (!CAMADA_ESTATICA) construirCamadaEstatica();
+      ctx.drawImage(CAMADA_ESTATICA, 0, 0);
 
-      ctx.fillStyle = "#83909e";
-      for (let x = 0; x < WORLD_WIDTH; x += 32) ctx.fillRect(x, 0, 1, WORLD_HEIGHT);
-      for (let y = 0; y < WORLD_HEIGHT; y += 32) ctx.fillRect(0, y, WORLD_WIDTH, 1);
-
-      // Pátio de asfalto (a partir da parede das docas)
-      ctx.fillStyle = "#1e293b";
-      ctx.fillRect(DOCA_PAREDE_X, 0, WORLD_WIDTH - DOCA_PAREDE_X, WORLD_HEIGHT);
-
-      // Faixas de circulação e zebrados azuis
-      ctx.fillStyle = "#2563eb";
-      ctx.fillRect(23 * TILE_SIZE, 24, 2, WORLD_HEIGHT - 48);
-      ctx.fillRect(34 * TILE_SIZE, 24, 2, WORLD_HEIGHT - 48);
-
-      for (let zy = 120; zy < WORLD_HEIGHT - 120; zy += 180) {
-        for (let s = 0; s < 5; s++) {
-          ctx.fillStyle = "#3b82f6";
-          ctx.fillRect(24 * TILE_SIZE + s * 32 + 6, zy, 18, 32);
-        }
-      }
-
-      // Área de consolidação
-      ctx.strokeStyle = "#ea580c";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(43 * TILE_SIZE, 80, 12 * TILE_SIZE, 280);
-
-      // Renderiza marcas de pneu do Juice no chão
+      // Marcas de pneu do Juice no chão
       JUICE.render(ctx);
 
       // 3. Zonas de Interação WMS no chão
@@ -4847,165 +4822,38 @@
         }
       });
 
-      desenharCodigosDeRua();
+      // 4. Baias do pedido (itens piscando ou já coletados)
+      desenharBaiasDoPedido();
 
-      // 4. Porta-Paletes
-      RUAS_CONFIG.forEach(rua => {
-        ctx.fillStyle = "#1e3a8a";
-        ctx.fillRect(rua.corridorX - 2, 24, 52, 12);
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(rua.corridorX - 2, 24, 52, 12);
-        desenharBitmap(rua.id, rua.corridorX + 24, 27, "#ffffff", 1, "center");
-      });
-
-      posicoesWMS.forEach(pos => {
-        const itemRack = itemDaPosicao(pos);
-        const isTarget = !!(itemRack && itemRack.coletados < itemRack.qtd);
-        const itemFeito = !!(itemRack && !isTarget);
-        ctx.fillStyle = "#1d4ed8";
-        ctx.fillRect(pos.rackX, pos.rackY, pos.rackW, pos.rackH);
-        ctx.fillStyle = "#ea580c";
-        ctx.fillRect(pos.rackX, pos.rackY, pos.rackW, 2);
-        ctx.fillRect(pos.rackX, pos.rackY + pos.rackH - 2, pos.rackW, 2);
-
-        ctx.fillStyle = "#172554";
-        ctx.fillRect(pos.rackX, pos.rackY, 2, pos.rackH);
-        ctx.fillRect(pos.rackX + pos.rackW - 2, pos.rackY, 2, pos.rackH);
-
-        ctx.fillStyle = "#0f172a";
-        ctx.fillRect(pos.rackX + 1, pos.rackY + 3, pos.rackW - 2, 7);
-        desenharBitmap(pos.posicao, pos.rackX + pos.rackW / 2, pos.rackY + 4, "#f8fafc", 1, "center");
-
-        if (isTarget) {
-          const restantes = Math.max(0, itemRack.qtd - itemRack.coletados);
-          for (let b = 0; b < restantes; b++) {
-            const by = pos.rackY + 13 + b * 11;
-            const bw = Math.max(6, pos.rackW - 4);
-            const bx = pos.rackX + Math.floor((pos.rackW - bw) / 2);
-            ctx.fillStyle = "#f8fafc";
-            ctx.fillRect(bx - 1, by - 1, bw + 2, 10);
-            ctx.fillStyle = "#b45309";
-            ctx.fillRect(bx, by, bw, 8);
-            ctx.fillStyle = "#facc15";
-            ctx.fillRect(bx, by + 3, bw, 2);
-          }
-          ctx.strokeStyle = (Math.floor(Date.now() / 180) % 2 === 0) ? "#facc15" : "#fef08a";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(pos.rackX, pos.rackY, pos.rackW, pos.rackH);
-        } else if (itemFeito) {
-          // Baia já coletada: vazia, com um check verde
-          ctx.fillStyle = "#0f172a";
-          ctx.fillRect(pos.rackX + 3, pos.rackY + 14, Math.max(4, pos.rackW - 6), pos.rackH - 18);
-          desenharBitmap("✓", pos.rackX + pos.rackW / 2, pos.rackY + 26, "#34d399", 2, "center");
-        } else {
-          ctx.fillStyle = "#b45309";
-          ctx.fillRect(pos.rackX + 3, pos.rackY + 14, Math.max(4, pos.rackW - 6), pos.rackH - 18);
-          ctx.fillStyle = "#facc15";
-          ctx.fillRect(pos.rackX + 3, pos.rackY + Math.floor(pos.rackH / 2), Math.max(4, pos.rackW - 6), 2);
-        }
-      });
-
-      // 5. Terminal WMS
-      ctx.fillStyle = "#1e293b";
-      ctx.fillRect(TERMINAL_INICIAL.x, TERMINAL_INICIAL.y, TERMINAL_INICIAL.w, TERMINAL_INICIAL.h);
-      ctx.strokeStyle = "#38bdf8";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(TERMINAL_INICIAL.x, TERMINAL_INICIAL.y, TERMINAL_INICIAL.w, TERMINAL_INICIAL.h);
-      ctx.fillStyle = "#10b981";
-      ctx.fillRect(TERMINAL_INICIAL.x + 8, TERMINAL_INICIAL.y + 4, 16, 10);
-      desenharBitmap("WMS", TERMINAL_INICIAL.x + TERMINAL_INICIAL.w / 2, TERMINAL_INICIAL.y - 8, "#ffffff", 1, "center");
+      // 5. Balcão WMS
+      desenharBalcaoArte();
+      desenharBitmap("WMS", TERMINAL_INICIAL.x + TERMINAL_INICIAL.w / 2, TERMINAL_INICIAL.y - 16, "#ffffff", 1, "center");
       desenharFilaNoBalcao();
 
       // 6. Bancadas
       ESTACOES_EMBALAGEM.forEach(est => {
-        ctx.fillStyle = "#334155";
-        ctx.fillRect(est.x, est.y, est.w, est.h);
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(est.x, est.y, est.w, est.h);
-
-        ctx.fillStyle = "#0f172a";
-        ctx.fillRect(est.x + 6, est.y + 4, 14, 10);
-        ctx.fillStyle = "#38bdf8";
-        ctx.fillRect(est.x + 8, est.y + 6, 10, 6);
-
-        ctx.fillStyle = "#ea580c";
-        ctx.fillRect(est.x + 26, est.y + 6, 6, 6);
-        ctx.fillStyle = "#b45309";
-        ctx.fillRect(est.x + 38, est.y + 4, 18, 14);
-
+        desenharBancadaArte(est);
         desenharBitmap(est.nome, est.x + est.w / 2, est.y - 8, "#ffffff", 1, "center");
       });
 
-      // 7. Pallets
+      // 7. Pallets de consolidação
       PALLETS_CONSOLIDACAO.forEach(p => {
-        ctx.fillStyle = "#78350f";
-        ctx.fillRect(p.x, p.y, p.w, p.h);
-        ctx.fillStyle = "#451a03";
-        for (let r = 4; r < p.w; r += 8) ctx.fillRect(p.x + r, p.y + 1, 2, p.h - 2);
-
-        if (p.boxes > 0) {
-          ctx.fillStyle = "#b45309";
-          ctx.fillRect(p.x + 4, p.y + 4, p.w - 8, p.h - 8);
-          ctx.fillStyle = "#facc15";
-          ctx.fillRect(p.x + 4, p.y + p.h / 2 - 1, p.w - 8, 2);
-        }
-
+        desenharPalletArte(p);
         const corPallet = (p.id === MISSAO_ATUAL.docaSaida) ? "#fbbf24" : "#ffffff";
         desenharBitmap(p.label, p.x + p.w / 2, p.y + p.h + 3, corPallet, 1, "center");
       });
 
-      // 8. Parede das docas, portas e caminhões (traseira na doca, cabine para fora)
-      ctx.fillStyle = "#0f172a";
-      ctx.fillRect(DOCA_PAREDE_X, 0, DOCA_PAREDE_W, WORLD_HEIGHT);
-
-      CAMINHOES.forEach(cam => {
-        ctx.fillStyle = "#334155";
-        ctx.fillRect(DOCA_PAREDE_X + 1, cam.y + 2, DOCA_PAREDE_W - 2, cam.h - 4);
-        ctx.fillStyle = "#94a3b8";
-        for (let s = 4; s < cam.h - 4; s += 4) {
-          ctx.fillRect(DOCA_PAREDE_X + 2, cam.y + s, DOCA_PAREDE_W - 4, 2);
-        }
-        ctx.strokeStyle = "#fbbf24";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(DOCA_PAREDE_X, cam.y, DOCA_PAREDE_W, cam.h);
-      });
-
-      CAMINHOES.forEach(cam => {
-        const curX = cam.x + cam.departOffset;
-        const curY = cam.y;
-        const cabW = 28;
-        const trailerW = cam.w - cabW;
-
-        ctx.fillStyle = "#f8fafc";
-        ctx.fillRect(curX, curY, trailerW, cam.h);
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(curX, curY, trailerW, cam.h);
-
-        ctx.fillStyle = "#475569";
-        const doorH = cam.h * (1 - cam.doorClosed * 0.85);
-        ctx.fillRect(curX + 1, curY + 4, 4, doorH);
-
-        ctx.fillStyle = "#2563eb";
-        ctx.fillRect(curX + trailerW, curY + 6, cabW, cam.h - 12);
-        ctx.fillStyle = "#38bdf8";
-        ctx.fillRect(curX + cam.w - 12, curY + 12, 8, cam.h - 28);
-
-        ctx.fillStyle = "#0f172a";
-        ctx.fillRect(curX + 18, curY + cam.h - 5, 12, 5);
-        ctx.fillRect(curX + cam.w - 24, curY + cam.h - 5, 12, 5);
-
-        desenharBitmap("E-SHIP", curX + 22, curY + 26, "#1e3a8a", 1, "left");
-        desenharBitmap(cam.docaId, curX + 22, curY + 36, "#ea580c", 1, "left");
-      });
+      // 8. Docas e caminhões
+      CAMINHOES.forEach(cam => desenharDocaECaminhaoArte(cam));
 
       // 8b. Pulmão, área de entrega, empilhadeira do jogador e coletor
       desenharCenarioFases();
 
       // 9. NPCs
-      npcs.forEach(npc => renderPixelCharacter(npc.x, npc.y, npc.dir, 0, npc.vestColor, false, false));
+      npcs.forEach((npc, i) => {
+        const passo = npc.parado > 0 ? 0 : Math.floor(Date.now() / 140 + i * 3) % 4;
+        renderPixelCharacter(npc.x, npc.y, npc.dir, passo, npc.vestColor, false, false);
+      });
 
       // 9b. Carrinho de picking
       desenharCarrinho();
@@ -5042,124 +4890,971 @@
     }
 
     /* ==========================================================================
-       13. SPRITES CHIBI COM SQUASH & FLASH
+       13. ARTE v0.7 · VISTA 3/4 COM MAIS DETALHE
+       Luz vindo de cima à esquerda: sombras caem para baixo e para a direita.
+       Todo objeto tem contorno escuro, 3 a 4 tons por material e textura.
+       Peças estáticas (piso, paredes, racks, pátio) são desenhadas uma vez só.
        ========================================================================== */
-    function renderPixelCharacter(x, y, dir, frame, vestColor, hasVolumes, isSealed, sx = 1, sy = 1, fWhite = false, fRed = false) {
+    const ARTE = {
+      contorno: "#1a1c2c",
+      sombra: "rgba(18, 20, 34, 0.26)",
+      sombraForte: "rgba(18, 20, 34, 0.38)"
+    };
+
+    // Ruído determinístico: o mesmo "aleatório" a cada carregamento
+    function ruido(x, y, s = 0) {
+      let h = (x * 374761393 + y * 668265263 + s * 2147483647) | 0;
+      h = Math.imul(h ^ (h >>> 13), 1274126177);
+      h ^= h >>> 16;
+      return (h >>> 0) / 4294967296;
+    }
+
+    function hexParaRgb(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return [n >> 16, (n >> 8) & 255, n & 255];
+    }
+    function rgbParaHex(r, g, b) {
+      const c = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+      return "#" + c(r) + c(g) + c(b);
+    }
+    // f > 0 clareia, f < 0 escurece
+    function tom(hex, f) {
+      const [r, g, b] = hexParaRgb(hex);
+      if (f >= 0) return rgbParaHex(r + (255 - r) * f, g + (255 - g) * f, b + (255 - b) * f);
+      return rgbParaHex(r * (1 + f), g * (1 + f), b * (1 + f));
+    }
+
+    function ret(g, x, y, w, h, c) {
+      g.fillStyle = c;
+      g.fillRect(x, y, w, h);
+    }
+    // Retângulo com contorno de 1px
+    function caixaContorno(g, x, y, w, h, c, borda = ARTE.contorno) {
+      ret(g, x, y, w, h, borda);
+      ret(g, x + 1, y + 1, w - 2, h - 2, c);
+    }
+
+    /* ---------- Sprites a partir de texto (cada letra é uma cor) ---------- */
+    const CACHE_SPR = new Map();
+    function spriteDeTexto(chave, linhas, paleta) {
+      if (CACHE_SPR.has(chave)) return CACHE_SPR.get(chave);
+      const h = linhas.length;
+      const w = linhas[0].length;
+      const c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      const g = c.getContext("2d");
+      for (let y = 0; y < h; y++) {
+        if (linhas[y].length !== w) throw new Error(`sprite ${chave}: linha ${y} com ${linhas[y].length} (esperado ${w})`);
+        for (let x = 0; x < w; x++) {
+          const cor = paleta[linhas[y][x]];
+          if (cor) ret(g, x, y, 1, 1, cor);
+        }
+      }
+      CACHE_SPR.set(chave, c);
+      return c;
+    }
+    // Versão do sprite pintada de uma cor só (flash de dano, sombra projetada)
+    function spriteTingido(chave, base, cor) {
+      const k = chave + "|" + cor;
+      if (CACHE_SPR.has(k)) return CACHE_SPR.get(k);
+      const c = document.createElement("canvas");
+      c.width = base.width;
+      c.height = base.height;
+      const g = c.getContext("2d");
+      g.drawImage(base, 0, 0);
+      g.globalCompositeOperation = "source-in";
+      ret(g, 0, 0, c.width, c.height, cor);
+      CACHE_SPR.set(k, c);
+      return c;
+    }
+
+    /* ---------- Personagens: 14x22, quatro direções, passo em 4 quadros ---------- */
+    const PESSOA_CABECA_FRENTE = [
+      "....oooooo....",
+      "...oLWWWWWo...",
+      "..oLWWWWWWWo..",
+      "..oWWWWWWWwo..",
+      ".oBBBBBBBBBBo.",
+      "..ohssssssho..",
+      "..osesssseso..",
+      "..osssssssso..",
+      "..oSssmmssSo..",
+      "...oSSSSSSo..."
+    ];
+    const PESSOA_CABECA_COSTAS = [
+      "....oooooo....",
+      "...oLWWWWWo...",
+      "..oLWWWWWWWo..",
+      "..oWWWWWWWwo..",
+      ".oBBBBBBBBBBo.",
+      "..ohhhhhhhho..",
+      "..ohhhhhhhho..",
+      "..oHhhhhhhHo..",
+      "..oHHHHHHHHo..",
+      "...oSSSSSSo..."
+    ];
+    const PESSOA_TRONCO = [
+      "..oTVVVVVVTo..",
+      ".osTVVVVVVTso.",
+      ".oTVRRRRRRVTo.",
+      ".oTVVVVVVVVTo.",
+      ".osvVVVVVVvso.",
+      "..ovRRRRRRvo..",
+      "..oPPPPPPPPo..",
+      "..oPPPppPPPo.."
+    ];
+    const PESSOA_PERNAS = [
+      ["..oPPo..oPPo..", "..oPPo..oPPo..", "..oKKo..oKKo..", "..oooo..oooo.."],
+      ["..oPPo..oPPo..", "..oPPo..oKKo..", "..oKKo..oooo..", "..oooo........"],
+      ["..oPPo..oPPo..", "..oPPo..oPPo..", "..oKKo..oKKo..", "..oooo..oooo.."],
+      ["..oPPo..oPPo..", "..oKKo..oPPo..", "..oooo..oKKo..", "........oooo.."]
+    ];
+    // De lado (olhando para a direita; a esquerda é o espelho)
+    const PESSOA_LADO = [
+      ".....ooooo....",
+      "....oLWWWWo...",
+      "...oLWWWWWWo..",
+      "...oWWWWWWwo..",
+      "...oBBBBBBBBBo",
+      "...ohhsssssso.",
+      "...ohssssesso.",
+      "...ohssssssso.",
+      "...oHssssmso..",
+      "....oSSSSSo...",
+      "....oTVVVVo...",
+      "....oTVVVVo...",
+      "....oTRRRRo...",
+      "....osVVVVo...",
+      "....oVVVVVo...",
+      "....ovRRRvo...",
+      "....oPPPPPo...",
+      "....oPPPPPo..."
+    ];
+    const PESSOA_LADO_PERNAS = [
+      ["....oPPoPPo...", "....oPPoPPo...", "....oKKoKKKo..", "....oooooooo.."],
+      ["...oPPo.oPPo..", "..oPPo...oPPo.", "..oKKo...oKKKo", "..oooo...ooooo"],
+      ["....oPPoPPo...", "....oPPoPPo...", "....oKKoKKKo..", "....oooooooo.."],
+      ["....oPPPPo....", "....oPPPPo....", "....oKKKKKo...", "....ooooooo..."]
+    ];
+    const CAIXA_COLO = [
+      "oooooooooo",
+      "oCCCCCCCCo",
+      "oCCYYYYCCo",
+      "occccccccc".slice(0, 9) + "o",
+      "occccccccc".slice(0, 9) + "o",
+      "occccccccc".slice(0, 9) + "o",
+      "oooooooooo"
+    ];
+    const CAIXA_COLO_SELADA = [
+      "oooooooooo",
+      "oCCYYYYCCo",
+      "oCCYYYYCCo",
+      "occcllccco",
+      "occcllccco",
+      "occccccccc".slice(0, 9) + "o",
+      "oooooooooo"
+    ];
+
+    function paletaPessoa(p) {
+      return {
+        o: ARTE.contorno, e: ARTE.contorno,
+        L: tom(p.capacete, 0.6), W: p.capacete, w: tom(p.capacete, -0.22), B: tom(p.capacete, -0.38),
+        h: p.cabelo, H: tom(p.cabelo, -0.3),
+        s: p.pele, S: tom(p.pele, -0.2), m: tom(p.pele, -0.42),
+        T: p.camisa, V: p.colete, v: tom(p.colete, -0.25), R: "#e8eef5",
+        P: p.calca, p: tom(p.calca, -0.3), K: "#1f2433"
+      };
+    }
+    const PALETA_CAIXA = { o: ARTE.contorno, C: "#dba872", Y: "#e9c46a", c: "#b07a45", l: "#f8fafc" };
+
+    function spritePessoa(apar, dir, frame) {
+      const lado = dir === "LEFT" || dir === "RIGHT";
+      const costas = dir === "UP";
+      const f = frame % 4;
+      const chave = `pessoa|${apar.id}|${lado ? "L" : costas ? "U" : "D"}|${f}`;
+      if (CACHE_SPR.has(chave)) return CACHE_SPR.get(chave);
+      const linhas = lado
+        ? [...PESSOA_LADO, ...PESSOA_LADO_PERNAS[f]]
+        : [...(costas ? PESSOA_CABECA_COSTAS : PESSOA_CABECA_FRENTE), ...PESSOA_TRONCO, ...PESSOA_PERNAS[f]];
+      return spriteDeTexto(chave, linhas, paletaPessoa(apar));
+    }
+
+    // Aparências: o operador e três colegas diferentes
+    const APARENCIA_JOGADOR = {
+      id: "jogador", capacete: "#f4f6fa", cabelo: "#3b2a20", pele: "#f0be98",
+      camisa: "#3f4c63", colete: "#facc15", calca: "#34405a"
+    };
+    const APARENCIAS_NPC = [
+      { id: "npc0", capacete: "#60a5fa", cabelo: "#1f1a17", pele: "#b97a52", camisa: "#334155", colete: "#ea580c", calca: "#3a3f4f" },
+      { id: "npc1", capacete: "#f4f6fa", cabelo: "#7a4a2a", pele: "#e7b48d", camisa: "#1f3b4d", colete: "#10b981", calca: "#2f3b52" },
+      { id: "npc2", capacete: "#fb923c", cabelo: "#2b2b2b", pele: "#8a5a3c", camisa: "#3b2f4f", colete: "#8b5cf6", calca: "#3a3446" }
+    ];
+    function aparenciaPorCor(vestColor) {
+      return APARENCIAS_NPC.find(a => a.colete === vestColor) ||
+        { ...APARENCIAS_NPC[0], id: "npc_" + vestColor, colete: vestColor };
+    }
+
+    function sombraNoChao(x, y, w) {
+      const h = Math.max(2, Math.round(w / 4));
+      ctx.fillStyle = ARTE.sombra;
+      ctx.fillRect(Math.round(x - w / 2 + 2), Math.round(y), w - 4, 1);
+      ctx.fillRect(Math.round(x - w / 2), Math.round(y + 1), w, h - 1);
+      ctx.fillRect(Math.round(x - w / 2 + 2), Math.round(y + h), w - 4, 1);
+    }
+
+    function renderPixelCharacter(x, y, dir, frame, vestColor, hasVolumes, isSealed, sx = 1, sy = 1, fWhite = false, fRed = false, aparencia = null) {
+      const apar = aparencia || (vestColor === "#facc15" ? APARENCIA_JOGADOR : aparenciaPorCor(vestColor));
       ctx.save();
       ctx.translate(Math.round(x), Math.round(y));
       ctx.scale(sx, sy);
-
-      // Flashes de impacto
-      if (fWhite) {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(-8, -10, 16, 20);
-        ctx.restore();
-        return;
-      }
-      if (fRed) {
-        ctx.fillStyle = "#ef4444";
-        ctx.fillRect(-8, -10, 16, 20);
-        ctx.restore();
-        return;
-      }
-
-      // Sombra
-      ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
-      ctx.fillRect(-6, 6, 12, 3);
-
-      // Pés
-      ctx.fillStyle = "#0f172a";
-      const step = (frame === 1) ? 2 : ((frame === 3) ? -2 : 0);
-      if (dir === "UP" || dir === "DOWN") {
-        ctx.fillRect(-5, 5 + step, 4, 3);
-        ctx.fillRect(1, 5 - step, 4, 3);
+      sombraNoChao(0, 6, 12);
+      const f = frame % 4;
+      const bob = (f === 1 || f === 3) ? -1 : 0;
+      let spr = spritePessoa(apar, dir, f);
+      if (fWhite) spr = spriteTingido(`pessoa|${apar.id}|${dir}|${f}`, spr, "#ffffff");
+      if (fRed) spr = spriteTingido(`pessoa|${apar.id}|${dir}|${f}`, spr, "#ef4444");
+      const carregando = (hasVolumes || isSealed) && !fWhite && !fRed;
+      const caixa = carregando ? spriteDeTexto(isSealed ? "caixaSelada" : "caixa", isSealed ? CAIXA_COLO_SELADA : CAIXA_COLO, PALETA_CAIXA) : null;
+      if (dir === "LEFT") {
+        ctx.scale(-1, 1);
+        ctx.drawImage(spr, -7, -13 + bob);
+        if (caixa) ctx.drawImage(caixa, 1, -3 + bob);
       } else {
-        ctx.fillRect(-4 + step, 5, 8, 3);
+        ctx.drawImage(spr, -7, -13 + bob);
+        if (caixa && dir === "RIGHT") ctx.drawImage(caixa, 1, -3 + bob);
+        if (caixa && dir === "DOWN") ctx.drawImage(caixa, -5, -2 + bob);
+        // De costas: a caixa aparece por cima dos ombros, para dar pra ver que está carregando
+        if (caixa && dir === "UP") ctx.drawImage(caixa, -5, -5 + bob);
       }
-
-      // Colete
-      ctx.fillStyle = vestColor;
-      ctx.fillRect(-6, -2, 12, 8);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(-6, 1, 12, 2);
-
-      // Capacete
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(-5, -9, 10, 8);
-      ctx.fillStyle = "#cbd5e1";
-      ctx.fillRect(-6, -5, 12, 2);
-
-      // Rosto
-      ctx.fillStyle = "#fed7aa";
-      if (dir === "DOWN") ctx.fillRect(-4, -3, 8, 2);
-      else if (dir === "LEFT") ctx.fillRect(-5, -3, 3, 2);
-      else if (dir === "RIGHT") ctx.fillRect(2, -3, 3, 2);
-
-      // Volumes carregados
-      if (hasVolumes || isSealed) {
-        ctx.fillStyle = isSealed ? "#78350f" : "#b45309";
-        ctx.fillRect(-5, -1, 10, 8);
-        ctx.fillStyle = "#facc15";
-        ctx.fillRect(-5, 2, 10, 2);
-        if (isSealed) {
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(-2, 0, 4, 3);
-        }
-      }
-
       ctx.restore();
     }
 
-    let FORKLIFT_SPRITES = null;
-    function obterSpritesEmpilhadeira() {
-      if (FORKLIFT_SPRITES) return FORKLIFT_SPRITES;
-      const pixels = [];
-      const push = (x, y, color) => pixels.push({ x, y, color });
+    /* ---------- Empilhadeira: mapa local de pixels (y positivo = frente) ---------- */
+    function pixelsEmpilhadeira(corCorpo, corLateral, comPallet) {
+      const mapa = new Map();
+      const set = (x, y, c) => mapa.set(x + "," + y, c);
+      const O = ARTE.contorno;
+      const claro = tom(corCorpo, 0.35);
+      const escuro = corLateral;
+      // Rodas (por baixo da carroceria)
+      for (const wx of [-12, -11, 11, 12]) {
+        for (let wy = -14; wy <= -8; wy++) set(wx, wy, (wy % 2 === 0) ? "#111827" : "#2a3140");
+        for (let wy = 6; wy <= 12; wy++) set(wx, wy, (wy % 2 === 0) ? "#111827" : "#2a3140");
+      }
+      for (const wx of [-12, 12]) { set(wx, -11, "#7b8494"); set(wx, 9, "#7b8494"); }
+      // Carroceria com cantos arredondados
       for (let y = -17; y <= 17; y++) {
-        for (let x = -11; x <= 11; x++) {
-          const borda = (x === -11 || x === 11 || y === -17 || y === 17);
-          let color = borda ? "#000000" : "#eab308";
-          if (!borda && Math.abs(x) >= 9) color = "#a16207";
-          if (!borda && x >= -7 && x <= 7 && y >= -13 && y <= -1) color = "#0f172a";
-          if (x >= -5 && x <= 5 && y >= -11 && y <= -3) color = "#7dd3fc";
-          push(x, y, color);
+        for (let x = -10; x <= 10; x++) {
+          if (Math.abs(x) === 10 && Math.abs(y) >= 16) continue;
+          const borda = Math.abs(x) === 10 || Math.abs(y) === 17 || (Math.abs(x) === 9 && Math.abs(y) === 16);
+          let c = corCorpo;
+          if (x <= -8) c = claro;
+          if (x >= 8) c = escuro;
+          if (y <= -12) c = (x <= -8) ? corCorpo : escuro; // contrapeso
+          if (borda) c = O;
+          set(x, y, c);
         }
       }
-      for (const wx of [-12, -11, 11, 12]) {
-        for (const wy of [-8, -7, -6, 5, 6, 7]) push(wx, wy, "#0f172a");
+      // Grade do contrapeso
+      for (const gy of [-15, -13]) for (let x = -6; x <= 6; x++) set(x, gy, "#3f3f46");
+      // Piso da cabine, banco, volante
+      for (let y = -11; y <= 6; y++) for (let x = -7; x <= 7; x++) set(x, y, "#3b4250");
+      for (let y = -9; y <= -3; y++) for (let x = -4; x <= 4; x++) set(x, y, "#141822");
+      for (let x = -3; x <= 3; x++) set(x, -8, "#3a4152");
+      for (let x = -2; x <= 2; x++) set(x, 2, "#141822");
+      // Teto de proteção: travessas e colunas
+      for (let x = -8; x <= 8; x++) { set(x, -11, "#262a33"); set(x, -6, "#3c414d"); set(x, -1, "#3c414d"); set(x, 5, "#262a33"); }
+      for (let y = -11; y <= 5; y++) { set(-8, y, "#262a33"); set(8, y, "#262a33"); }
+      for (const [cx, cy] of [[-8, -11], [8, -11], [-8, 5], [8, 5]]) set(cx, cy, "#0f1117");
+      // Painel e faróis
+      for (let y = 7; y <= 13; y++) for (let x = -7; x <= 7; x++) set(x, y, y === 7 ? claro : corCorpo);
+      set(-6, 13, "#fef9c3"); set(-5, 13, "#fef9c3"); set(5, 13, "#fef9c3"); set(6, 13, "#fef9c3");
+      // Torre (mastro) e espelho dos garfos
+      for (let y = 14; y <= 17; y++) {
+        for (let x = -9; x <= 9; x++) {
+          let c = y === 14 ? "#8a93a3" : "#5b6474";
+          if (Math.abs(x) === 9 || y === 17) c = O;
+          if (Math.abs(x) === 5 && y < 17) c = "#3e4552";
+          set(x, y, c);
+        }
       }
+      // Garfos
       for (let y = 18; y <= 27; y++) {
-        for (const x of [-9, -8, -7, -6, 5, 6, 7, 8]) push(x, y, "#cbd5e1");
+        for (const x of [-8, -7, -6]) set(x, y, x === -6 ? "#9ca3af" : "#dfe3ea");
+        for (const x of [6, 7, 8]) set(x, y, x === 8 ? "#9ca3af" : "#dfe3ea");
       }
-      const sprites = {};
-      Object.keys(DIR_THETA).forEach(dir => {
-        const theta = DIR_THETA[dir];
-        const map = new Map();
-        pixels.forEach(p => {
-          const w = localParaMundo(p.x, p.y, theta);
-          map.set(Math.round(w.x) + "," + Math.round(w.y), p.color);
-        });
-        sprites[dir] = [...map.entries()].map(([k, color]) => {
-          const [x, y] = k.split(",").map(Number);
-          return { x, y, color };
-        });
-      });
-      FORKLIFT_SPRITES = sprites;
-      return sprites;
+      for (const x of [-8, -7, -6, 6, 7, 8]) set(x, 27, "#8a93a3");
+      if (comPallet) {
+        for (let y = 19; y <= 40; y++) {
+          for (let x = -11; x <= 11; x++) {
+            const borda = Math.abs(x) === 11 || y === 19 || y === 40;
+            let c = "#c88a4e";
+            if (x <= -9 || y <= 21) c = "#e0a96d";
+            if (x >= 9 || y >= 38) c = "#9c6534";
+            if (y === 29 || y === 30 || x === 0 || x === -1) c = "#e9c46a";
+            if (borda) c = "#3f2a14";
+            set(x, y, c);
+          }
+        }
+        for (let x = -10; x <= 10; x += 5) set(x, 40, "#6b4423");
+      }
+      return mapa;
     }
 
+    // Gira o mapa local para um ângulo, amostrando de trás pra frente (sem buracos)
+    function canvasEmpilhadeiraGirada(chave, mapa, ang) {
+      if (CACHE_SPR.has(chave)) return CACHE_SPR.get(chave);
+      const R = 46;
+      const c = document.createElement("canvas");
+      c.width = c.height = R * 2 + 1;
+      const g = c.getContext("2d");
+      for (let wy = -R; wy <= R; wy++) {
+        for (let wx = -R; wx <= R; wx++) {
+          const l = mundoParaLocal(wx, wy, ang);
+          const cor = mapa.get(Math.round(l.x) + "," + Math.round(l.y));
+          if (cor) ret(g, wx + R, wy + R, 1, 1, cor);
+        }
+      }
+      CACHE_SPR.set(chave, c);
+      return c;
+    }
+
+    function desenharEmpilhadeiraCanvas(spr, chave, x, y) {
+      const R = 46;
+      const ox = Math.round(x) - R, oy = Math.round(y) - R;
+      ctx.globalAlpha = 0.26;
+      ctx.drawImage(spriteTingido(chave, spr, "#121422"), ox + 2, oy + 3);
+      ctx.globalAlpha = 1;
+      ctx.drawImage(spr, ox, oy);
+    }
+
+    let MAPA_EMP_NPC = null;
     function renderPixelForklift(x, y, dir, beaconTimer) {
-      const sprites = obterSpritesEmpilhadeira();
-      const spr = sprites[dir] || sprites.DOWN;
-      const ox = Math.round(x);
-      const oy = Math.round(y);
-      spr.forEach(p => {
-        ctx.fillStyle = p.color;
-        ctx.fillRect(ox + p.x, oy + p.y, 1, 1);
-      });
+      if (!MAPA_EMP_NPC) MAPA_EMP_NPC = pixelsEmpilhadeira("#eab308", "#a16207", false);
+      const chave = "empNpc|" + dir;
+      const spr = canvasEmpilhadeiraGirada(chave, MAPA_EMP_NPC, DIR_THETA[dir] ?? 0);
+      desenharEmpilhadeiraCanvas(spr, chave, x, y);
+      // Giroflex no teto, com brilho
       const flash = Math.floor(beaconTimer) % 2 === 0;
-      ctx.fillStyle = flash ? "#f97316" : "#7c2d12";
+      const ox = Math.round(x), oy = Math.round(y);
+      if (flash) {
+        ctx.fillStyle = "rgba(249, 115, 22, 0.25)";
+        ctx.fillRect(ox - 5, oy - 5, 10, 10);
+      }
+      ctx.fillStyle = ARTE.contorno;
       ctx.fillRect(ox - 2, oy - 2, 4, 4);
+      ctx.fillStyle = flash ? "#fb923c" : "#7c2d12";
+      ctx.fillRect(ox - 1, oy - 1, 2, 2);
+    }
+
+    /* ---------- Camada estática: piso, paredes, racks, pátio ---------- */
+    let CAMADA_ESTATICA = null;
+
+    function construirCamadaEstatica() {
+      const c = document.createElement("canvas");
+      c.width = WORLD_WIDTH;
+      c.height = WORLD_HEIGHT;
+      const g = c.getContext("2d");
+      const ctxOriginal = ctx;
+      ctx = g; // as funções de texto desenham no ctx global
+      try {
+        desenharPisoArte(g);
+        desenharFaixasArte(g);
+        desenharPatioArte(g);
+        desenharParedesArte(g);
+        desenharRacksArte(g);
+        desenharCodigosDeRua();
+      } finally {
+        ctx = ctxOriginal;
+      }
+      CAMADA_ESTATICA = c;
+    }
+
+    function desenharPisoArte(g) {
+      const x0 = 24, y0 = 24, x1 = DOCA_PAREDE_X, y1 = WORLD_HEIGHT - 24;
+      // Placas de concreto 32x32 com variação de tom
+      for (let ty = y0; ty < y1; ty += 32) {
+        for (let tx = x0; tx < x1; tx += 32) {
+          const v = (ruido(tx, ty, 1) - 0.5) * 0.05;
+          ret(g, tx, ty, 32, 32, tom("#a5adba", v));
+          ret(g, tx, ty, 32, 1, "#8e97a5");
+          ret(g, tx, ty, 1, 32, "#8e97a5");
+          ret(g, tx + 1, ty + 31, 31, 1, "#b5bcc7");
+        }
+      }
+      // Pontinhos do concreto
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          const r = ruido(x, y, 2);
+          if (r < 0.018) ret(g, x, y, 1, 1, "#949dab");
+          else if (r > 0.988) ret(g, x, y, 1, 1, "#b9c0ca");
+        }
+      }
+      // Manchas e marcas de uso
+      for (let i = 0; i < 46; i++) {
+        const mx = x0 + Math.floor(ruido(i, 7, 3) * (x1 - x0));
+        const my = y0 + Math.floor(ruido(i, 9, 3) * (y1 - y0));
+        const r = 3 + Math.floor(ruido(i, 11, 3) * 7);
+        g.fillStyle = "rgba(70, 76, 92, 0.045)";
+        for (let dy = -r; dy <= r; dy++) {
+          const larg = Math.round(Math.sqrt(r * r - dy * dy) * (0.8 + ruido(i, dy, 4) * 0.4));
+          g.fillRect(mx - larg, my + dy, larg * 2, 1);
+        }
+      }
+      // Rachaduras finas
+      for (let i = 0; i < 14; i++) {
+        let cx = x0 + Math.floor(ruido(i, 1, 5) * (x1 - x0));
+        let cy = y0 + Math.floor(ruido(i, 2, 5) * (y1 - y0));
+        for (let k = 0; k < 18; k++) {
+          ret(g, cx, cy, 1, 1, "#8b94a2");
+          cx += ruido(i, k, 6) < 0.5 ? 1 : 0;
+          cy += ruido(i, k, 7) < 0.6 ? 1 : -1;
+        }
+      }
+    }
+
+    function pintarDesgastado(g, x, y, w, h, cor, seed) {
+      ret(g, x, y, w, h, cor);
+      for (let yy = y; yy < y + h; yy++) {
+        for (let xx = x; xx < x + w; xx++) {
+          if (ruido(xx, yy, seed) < 0.05) ret(g, xx, yy, 1, 1, tom(cor, -0.08));
+          else if (ruido(xx, yy, seed + 1) < 0.015) ret(g, xx, yy, 1, 1, "#a5adba");
+        }
+      }
+    }
+
+    function desenharFaixasArte(g) {
+      // Corredor de pedestres: faixas azuis desgastadas
+      pintarDesgastado(g, 23 * TILE_SIZE, 24, 2, WORLD_HEIGHT - 48, "#2f6fd6", 20);
+      pintarDesgastado(g, 34 * TILE_SIZE, 24, 2, WORLD_HEIGHT - 48, "#2f6fd6", 21);
+      for (let zy = 120; zy < WORLD_HEIGHT - 120; zy += 180) {
+        for (let s = 0; s < 5; s++) {
+          pintarDesgastado(g, 24 * TILE_SIZE + s * 32 + 6, zy, 18, 32, "#e9edf3", 30 + s);
+        }
+        // Placa de "PARE" pintada no chão antes da faixa
+        ret(g, 24 * TILE_SIZE + 4, zy - 6, 168, 2, "#d9b23c");
+      }
+      // Área de consolidação: linha laranja com cantos zebrados e letreiro no chão
+      const ax = 43 * TILE_SIZE, ay = 80, aw = 12 * TILE_SIZE, ah = 280;
+      pintarDesgastado(g, ax, ay, aw, 2, "#e8682a", 40);
+      pintarDesgastado(g, ax, ay + ah - 2, aw, 2, "#e8682a", 41);
+      pintarDesgastado(g, ax, ay, 2, ah, "#e8682a", 42);
+      pintarDesgastado(g, ax + aw - 2, ay, 2, ah, "#e8682a", 43);
+      for (const [cx, cy] of [[ax + 2, ay + 2], [ax + aw - 14, ay + 2], [ax + 2, ay + ah - 14], [ax + aw - 14, ay + ah - 14]]) {
+        for (let i = 0; i < 12; i++) for (let j = 0; j < 12; j++) {
+          if (((i + j) >> 2) % 2 === 0) ret(g, cx + i, cy + j, 1, 1, "#d9b23c");
+        }
+      }
+      g.globalAlpha = 0.35;
+      desenharBitmap("CONSOLIDACAO", ax + aw / 2, ay + ah - 12, "#5b6474", 1, "center");
+      g.globalAlpha = 1;
+    }
+
+    function desenharPatioArte(g) {
+      const x0 = DOCA_PAREDE_X + DOCA_PAREDE_W;
+      ret(g, x0, 0, WORLD_WIDTH - x0, WORLD_HEIGHT, "#3a3f4b");
+      for (let y = 0; y < WORLD_HEIGHT; y++) {
+        for (let x = x0; x < WORLD_WIDTH; x++) {
+          const r = ruido(x, y, 50);
+          if (r < 0.05) ret(g, x, y, 1, 1, "#444a57");
+          else if (r > 0.965) ret(g, x, y, 1, 1, "#30343e");
+        }
+      }
+      // Manchas de óleo
+      for (let i = 0; i < 10; i++) {
+        const mx = x0 + 20 + Math.floor(ruido(i, 3, 51) * (WORLD_WIDTH - x0 - 60));
+        const my = 20 + Math.floor(ruido(i, 4, 51) * (WORLD_HEIGHT - 40));
+        g.fillStyle = "rgba(10, 12, 18, 0.22)";
+        for (let dy = -4; dy <= 4; dy++) {
+          const l = Math.round(Math.sqrt(16 - dy * dy / 1.2) * 1.6);
+          g.fillRect(mx - l, my + dy, l * 2, 1);
+        }
+      }
+      // Vagas dos caminhões e área de manobra
+      CAMINHOES.forEach(cam => {
+        for (const yy of [cam.y - 6, cam.y + cam.h + 4]) pintarDesgastado(g, x0 + 6, yy, 230, 2, "#e9edf3", 60 + yy);
+        for (let i = 0; i < 8; i++) pintarDesgastado(g, x0 + 4 + i * 18, cam.y + cam.h / 2 - 1, 10, 2, "#d9b23c", 70 + i);
+      });
+      // Faixa de grama com arbustos no fim do pátio
+      const gx = WORLD_WIDTH - 34;
+      ret(g, gx - 3, 0, 3, WORLD_HEIGHT, "#9ca3af");
+      ret(g, gx - 1, 0, 1, WORLD_HEIGHT, "#6b7280");
+      ret(g, gx, 0, WORLD_WIDTH - gx, WORLD_HEIGHT, "#4f8a3a");
+      for (let y = 0; y < WORLD_HEIGHT; y++) for (let x = gx; x < WORLD_WIDTH; x++) {
+        const r = ruido(x, y, 52);
+        if (r < 0.12) ret(g, x, y, 1, 1, "#5f9c45");
+        else if (r > 0.9) ret(g, x, y, 1, 1, "#3f7330");
+      }
+      for (let i = 0; i < 9; i++) {
+        const bx = gx + 6 + Math.floor(ruido(i, 1, 53) * 14);
+        const by = 30 + i * 70 + Math.floor(ruido(i, 2, 53) * 20);
+        desenharArbusto(g, bx, by);
+      }
+      // Postes de luz com poça de luz no chão
+      for (const py of [60, 260, 450, 600]) {
+        const px = WORLD_WIDTH - 44;
+        g.fillStyle = "rgba(254, 240, 138, 0.06)";
+        for (let r = 30; r > 6; r -= 6) g.fillRect(px - r, py + 8 - r / 2, r * 2, r);
+        ret(g, px + 1, py - 22, 3, 30, ARTE.contorno);
+        ret(g, px + 2, py - 21, 1, 28, "#6b7280");
+        ret(g, px - 6, py - 24, 12, 4, ARTE.contorno);
+        ret(g, px - 5, py - 23, 10, 2, "#fef3c7");
+        ret(g, px - 1, py + 7, 7, 3, ARTE.sombra);
+      }
+      // Cones e balizadores
+      for (const [cx, cy] of [[1000, 232], [1012, 240], [1000, 412], [1170, 520], [1180, 528]]) desenharCone(g, cx, cy);
+      for (const cy of [118, 210, 294, 386]) desenharBalizador(g, x0 + 4, cy);
+    }
+
+    function desenharArbusto(g, x, y) {
+      ret(g, x - 6, y + 4, 14, 3, "rgba(0,0,0,0.2)");
+      caixaContorno(g, x - 6, y - 4, 12, 9, "#3f7a2e");
+      ret(g, x - 4, y - 6, 8, 3, ARTE.contorno);
+      ret(g, x - 3, y - 5, 6, 3, "#4f9a3a");
+      ret(g, x - 4, y - 3, 3, 2, "#6cbf4f");
+      ret(g, x + 1, y - 1, 2, 1, "#6cbf4f");
+      ret(g, x + 2, y + 2, 3, 2, "#2f5f22");
+    }
+    function desenharCone(g, x, y) {
+      ret(g, x - 4, y + 3, 9, 2, ARTE.sombra);
+      ret(g, x - 4, y + 1, 8, 3, ARTE.contorno);
+      ret(g, x - 3, y + 2, 6, 1, "#c2410c");
+      ret(g, x - 2, y - 5, 4, 7, ARTE.contorno);
+      ret(g, x - 1, y - 4, 2, 6, "#f97316");
+      ret(g, x - 1, y - 2, 2, 1, "#f8fafc");
+      ret(g, x - 1, y - 4, 1, 1, "#fdba74");
+    }
+    // Balizador visto de cima: topo redondo amarelo com anel preto
+    function desenharBalizador(g, x, y) {
+      ret(g, x - 1, y + 2, 7, 3, ARTE.sombra);
+      ret(g, x - 2, y - 3, 5, 7, ARTE.contorno);
+      ret(g, x - 3, y - 2, 7, 5, ARTE.contorno);
+      ret(g, x - 1, y - 2, 3, 5, "#facc15");
+      ret(g, x - 2, y - 1, 5, 3, "#facc15");
+      ret(g, x - 1, y - 1, 1, 1, "#fef08a");
+      ret(g, x, y, 1, 1, "#a16207");
+    }
+
+    function desenharParedesArte(g) {
+      // Parede norte em 3/4: tampa escura + fachada de telha metálica
+      ret(g, 0, 0, DOCA_PAREDE_X + DOCA_PAREDE_W, 6, "#262b3a");
+      ret(g, 0, 5, DOCA_PAREDE_X + DOCA_PAREDE_W, 1, "#4a5268");
+      for (let x = 0; x < DOCA_PAREDE_X + DOCA_PAREDE_W; x++) {
+        const fase = x % 6;
+        const cor = fase === 0 ? "#6c7890" : fase === 1 ? "#a3aec2" : fase < 4 ? "#8d99ae" : "#7d899f";
+        ret(g, x, 6, 1, 14, cor);
+      }
+      // Rodapé zebrado
+      for (let x = 0; x < DOCA_PAREDE_X + DOCA_PAREDE_W; x++) {
+        for (let y = 20; y < 24; y++) {
+          ret(g, x, y, 1, 1, (((x + y) >> 2) % 2 === 0) ? "#e5b62e" : "#22252f");
+        }
+      }
+      ret(g, 0, 24, DOCA_PAREDE_X, 3, "rgba(18, 20, 34, 0.18)");
+      // Janelas altas
+      for (let wx = 60; wx < DOCA_PAREDE_X - 40; wx += 150) {
+        caixaContorno(g, wx, 8, 26, 9, "#8fd3f4");
+        ret(g, wx + 1, 13, 24, 3, "#5fb2de");
+        ret(g, wx + 13, 9, 1, 7, ARTE.contorno);
+        ret(g, wx + 3, 9, 3, 1, "#e0f4ff");
+        ret(g, wx + 16, 9, 2, 1, "#e0f4ff");
+      }
+      // Objetos na parede
+      desenharExtintor(g, 140, 9);
+      desenharExtintor(g, 470, 9);
+      desenharExtintor(g, 880, 9);
+      desenharPlaca(g, 30, 8, 22, 9, "#15803d", "SAIDA");
+      desenharPlaca(g, 300, 8, 26, 9, "#1d4ed8", "EPI");
+      desenharPlaca(g, 690, 8, 34, 9, "#b91c1c", "PERIGO");
+      desenharRelogio(g, 600, 12);
+      // Quadro de avisos perto do balcão
+      caixaContorno(g, 398, 7, 30, 12, "#b9875a");
+      ret(g, 401, 9, 7, 6, "#f8fafc");
+      ret(g, 410, 9, 6, 5, "#fde68a");
+      ret(g, 418, 10, 7, 6, "#bfdbfe");
+      ret(g, 404, 9, 1, 1, "#ef4444");
+      ret(g, 420, 10, 1, 1, "#ef4444");
+      // Quadro elétrico
+      caixaContorno(g, 780, 7, 16, 13, "#9aa3b2");
+      ret(g, 781, 8, 14, 1, "#c0c7d2");
+      ret(g, 786, 11, 5, 5, "#facc15");
+      ret(g, 788, 12, 1, 2, ARTE.contorno);
+      // Parede oeste e parede sul (vemos só o topo)
+      ret(g, 0, 0, 24, WORLD_HEIGHT, "#262b3a");
+      ret(g, 23, 24, 1, WORLD_HEIGHT - 48, "#4a5268");
+      ret(g, 24, 24, 3, WORLD_HEIGHT - 48, "rgba(18, 20, 34, 0.15)");
+      ret(g, 0, WORLD_HEIGHT - 24, DOCA_PAREDE_X + DOCA_PAREDE_W, 24, "#262b3a");
+      ret(g, 24, WORLD_HEIGHT - 24, DOCA_PAREDE_X - 24, 1, "#4a5268");
+      for (let x = 30; x < DOCA_PAREDE_X; x += 64) ret(g, x, WORLD_HEIGHT - 16, 20, 2, "#323849");
+      // Parede das docas (topo) com pilares
+      ret(g, DOCA_PAREDE_X, 0, DOCA_PAREDE_W, WORLD_HEIGHT, "#262b3a");
+      ret(g, DOCA_PAREDE_X, 0, 1, WORLD_HEIGHT, "#4a5268");
+      for (let y = 30; y < WORLD_HEIGHT; y += 80) ret(g, DOCA_PAREDE_X + 2, y, DOCA_PAREDE_W - 4, 6, "#323849");
+    }
+
+    function desenharExtintor(g, x, y) {
+      caixaContorno(g, x - 4, y - 1, 12, 13, "#f8fafc");
+      ret(g, x - 3, y, 10, 2, "#dc2626");
+      ret(g, x, y + 2, 5, 9, ARTE.contorno);
+      ret(g, x + 1, y + 3, 3, 7, "#dc2626");
+      ret(g, x + 1, y + 3, 1, 6, "#f87171");
+      ret(g, x + 1, y + 1, 3, 2, "#1f2937");
+      ret(g, x + 4, y + 4, 2, 5, "#1f2937");
+    }
+    function desenharPlaca(g, x, y, w, h, cor, texto) {
+      caixaContorno(g, x, y, w, h, cor);
+      ret(g, x + 1, y + 1, w - 2, 1, tom(cor, 0.25));
+      const ctxAntes = ctx;
+      ctx = g;
+      desenharBitmap(texto, x + w / 2, y + 2, "#ffffff", 1, "center");
+      ctx = ctxAntes;
+    }
+    function desenharRelogio(g, x, y) {
+      ret(g, x - 4, y - 5, 9, 11, ARTE.contorno);
+      ret(g, x - 5, y - 4, 11, 9, ARTE.contorno);
+      ret(g, x - 3, y - 4, 7, 9, "#f8fafc");
+      ret(g, x - 4, y - 3, 9, 7, "#f8fafc");
+      ret(g, x, y - 3, 1, 4, ARTE.contorno);
+      ret(g, x, y, 3, 1, "#dc2626");
+    }
+
+    // Conteúdo de uma posição de rack vista de cima (caixas, filme, caixas plásticas)
+    function desenharConteudoBaia(g, x, y, w, h, seed) {
+      const tipo = Math.floor(ruido(seed, 1, 80) * 5);
+      const px = x + 2, py = y + 12, pw = w - 4, ph = h - 15;
+      // Pallet por baixo (bordas de madeira aparecendo)
+      ret(g, px, py, pw, ph, "#6b4423");
+      ret(g, px, py + 2, pw, 1, "#8a5a30");
+      ret(g, px, py + ph - 3, pw, 1, "#8a5a30");
+      if (tipo === 0) {
+        // Caixas de papelão em pilha 2x3
+        for (let r = 0; r < 3; r++) for (let col = 0; col < 2; col++) {
+          const bx = px + 1 + col * Math.floor(pw / 2), by = py + 1 + r * Math.floor((ph - 2) / 3);
+          const bw = Math.floor(pw / 2) - 1, bh = Math.floor((ph - 2) / 3) - 1;
+          caixaContorno(g, bx, by, bw, bh, ruido(seed, r * 2 + col, 81) < 0.5 ? "#c8955f" : "#b88550");
+          ret(g, bx + 1, by + 1, bw - 2, 1, "#dfb07a");
+          ret(g, bx + Math.floor(bw / 2), by + 1, 1, bh - 2, "#e5c068");
+        }
+      } else if (tipo === 1) {
+        // Pallet com filme stretch (brilho)
+        caixaContorno(g, px, py, pw, ph, "#d5dde8");
+        ret(g, px + 1, py + 1, pw - 2, 2, "#eef2f8");
+        ret(g, px + 2, py + 3, 2, ph - 6, "#f8fbff");
+        ret(g, px + pw - 3, py + 1, 1, ph - 2, "#aab5c5");
+        ret(g, px + 4, py + Math.floor(ph / 2), pw - 6, 3, "#3b82f6");
+      } else if (tipo === 2) {
+        // Caixas plásticas azuis
+        for (let r = 0; r < 2; r++) {
+          const by = py + 1 + r * Math.floor(ph / 2);
+          caixaContorno(g, px + 1, by, pw - 2, Math.floor(ph / 2) - 2, "#2f6fd6");
+          ret(g, px + 2, by + 1, pw - 4, 1, "#5b93ea");
+          ret(g, px + 3, by + 3, pw - 6, Math.floor(ph / 2) - 7, "#1e4fa3");
+        }
+      } else if (tipo === 3) {
+        // Caixa grande única com etiqueta
+        caixaContorno(g, px, py, pw, ph, "#c08a52");
+        ret(g, px + 1, py + 1, pw - 2, 1, "#dcab74");
+        ret(g, px + 1, py + Math.floor(ph / 2), pw - 2, 2, "#e5c068");
+        ret(g, px + 3, py + 4, 5, 4, "#f8fafc");
+      } else {
+        // Sacos/fardos
+        for (let r = 0; r < 3; r++) {
+          const by = py + 1 + r * Math.floor((ph - 2) / 3);
+          caixaContorno(g, px + 1, by, pw - 2, Math.floor((ph - 2) / 3) - 1, "#d9cfa8");
+          ret(g, px + 2, by + 1, pw - 4, 1, "#ece4c4");
+        }
+      }
+    }
+
+    function desenharRacksArte(g) {
+      RUAS_CONFIG.forEach(rua => {
+        [rua.rackLeftX, rua.rackRightX].forEach((rx, lado) => {
+          const y0 = startY, y1 = startY + 10 * bayHeight;
+          // Sombra no chão (luz de cima à esquerda)
+          g.fillStyle = ARTE.sombraForte;
+          g.fillRect(rx + RACK_W, y0 + 4, 4, y1 - y0);
+          g.fillRect(rx + 4, y1 + 8, RACK_W, 3);
+          // Fundo do rack (vão escuro)
+          ret(g, rx, y0, RACK_W, y1 - y0, "#20242f");
+          for (let i = 0; i < 10; i++) {
+            const by = y0 + i * bayHeight;
+            desenharConteudoBaia(g, rx, by, RACK_W, bayHeight, ruido(rx, by, 9) * 1000 | 0);
+            // Longarinas laranja nas laterais e travessa no limite da baia
+            ret(g, rx, by, RACK_W, 2, "#e8682a");
+            ret(g, rx, by + 2, RACK_W, 1, "#a8441a");
+            ret(g, rx, by, 1, bayHeight, "#c2531f");
+            ret(g, rx + RACK_W - 1, by, 1, bayHeight, "#8f3915");
+            // Colunas azuis nos cantos, com furos
+            for (const cx of [rx, rx + RACK_W - 3]) {
+              caixaContorno(g, cx, by - 1, 3, 4, "#2f6fd6");
+              ret(g, cx + 1, by, 1, 1, "#7fb0f5");
+            }
+            // Plaquinha com o endereço
+            ret(g, rx + 1, by + 3, RACK_W - 2, 7, "#0f1420");
+            ret(g, rx + 1, by + 3, RACK_W - 2, 1, "#2a3142");
+          }
+          // Frente do rack no fim do corredor (vista 3/4): longarinas e caixas
+          ret(g, rx, y1, RACK_W, 8, "#2a2f3c");
+          ret(g, rx, y1, RACK_W, 2, "#e8682a");
+          ret(g, rx, y1 + 4, RACK_W, 1, "#e8682a");
+          ret(g, rx + 3, y1 + 2, 4, 2, "#c8955f");
+          ret(g, rx + 8, y1 + 5, 5, 3, "#b88550");
+          ret(g, rx, y1, 2, 8, "#2f6fd6");
+          ret(g, rx + RACK_W - 2, y1, 2, 8, "#1e4fa3");
+          ret(g, rx, y1 + 8, RACK_W, 1, ARTE.contorno);
+          // Contorno externo
+          g.strokeStyle = ARTE.contorno;
+          g.lineWidth = 1;
+          g.strokeRect(rx + 0.5, y0 + 0.5, RACK_W - 1, y1 - y0 + 8);
+        });
+        // Placa suspensa da rua
+        caixaContorno(g, rua.corridorX - 2, 24, 52, 12, "#1e3a8a");
+        ret(g, rua.corridorX - 1, 25, 50, 1, "#3b5fc0");
+        ret(g, rua.corridorX - 1, 35, 50, 1, "#14285f");
+        ret(g, rua.corridorX - 2, 36, 52, 2, ARTE.sombra);
+      });
+      const ctxAntes = ctx;
+      ctx = g;
+      posicoesWMS.forEach(pos => desenharBitmap(pos.posicao, pos.rackX + pos.rackW / 2, pos.rackY + 4, "#f8fafc", 1, "center"));
+      RUAS_CONFIG.forEach(rua => desenharBitmap(rua.id, rua.corridorX + 24, 27, "#ffffff", 1, "center"));
+      ctx = ctxAntes;
+    }
+
+    /* ---------- Objetos dinâmicos (mudam durante o jogo) ---------- */
+
+    // Baias com item do pedido (piscando) ou já coletadas (vazias com check)
+    function desenharBaiasDoPedido() {
+      posicoesWMS.forEach(pos => {
+        const item = itemDaPosicao(pos);
+        if (!item) return;
+        const alvo = item.coletados < item.qtd;
+        const ix = pos.rackX + 2, iy = pos.rackY + 12, iw = pos.rackW - 4, ih = pos.rackH - 15;
+        ret(ctx, ix, iy, iw, ih, "#20242f");
+        if (alvo) {
+          const restantes = item.qtd - item.coletados;
+          for (let b = 0; b < restantes; b++) {
+            const by = iy + 2 + b * 12;
+            caixaContorno(ctx, ix, by, iw, 11, "#c8955f");
+            ret(ctx, ix + 1, by + 1, iw - 2, 2, "#e3b57f");
+            ret(ctx, ix + 1, by + 5, iw - 2, 2, "#e9c46a");
+            ret(ctx, ix + iw - 2, by + 1, 1, 9, "#9c6a3a");
+          }
+          ctx.strokeStyle = (Math.floor(Date.now() / 180) % 2 === 0) ? "#facc15" : "#fef08a";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(pos.rackX, pos.rackY, pos.rackW, pos.rackH);
+        } else {
+          desenharBitmap("✓", pos.rackX + pos.rackW / 2, pos.rackY + 26, "#34d399", 2, "center");
+        }
+      });
+    }
+
+    // Balcão do WMS: tampo, frente, monitor, teclado e impressora
+    function desenharBalcaoArte() {
+      const t = TERMINAL_INICIAL;
+      const x = t.x, y = t.y, w = t.w, h = t.h;
+      ret(ctx, x + 3, y + h, w, 4, ARTE.sombra);
+      ret(ctx, x + w, y + 4, 3, h, ARTE.sombra);
+      // Tampo
+      caixaContorno(ctx, x, y + 6, w, h - 6, "#c9d0da");
+      ret(ctx, x + 1, y + 7, w - 2, 1, "#e6eaf0");
+      // Frente do balcão
+      ret(ctx, x, y + h - 9, w, 9, ARTE.contorno);
+      ret(ctx, x + 1, y + h - 8, w - 2, 7, "#566179");
+      ret(ctx, x + 1, y + h - 8, w - 2, 1, "#6e7a93");
+      for (let px = x + 8; px < x + w - 4; px += 12) ret(ctx, px, y + h - 7, 1, 5, "#454e63");
+      ret(ctx, x + 1, y + h - 2, w - 2, 1, "#3b4356");
+      // Monitor (frente para o operador)
+      caixaContorno(ctx, x + 5, y - 6, 20, 15, "#2a3040");
+      const tela = (Math.floor(Date.now() / 600) % 2 === 0) ? "#34d399" : "#2fbf8a";
+      ret(ctx, x + 7, y - 4, 16, 10, "#0b3b2c");
+      ret(ctx, x + 8, y - 3, 10, 1, tela);
+      ret(ctx, x + 8, y - 1, 13, 1, "#1f8f66");
+      ret(ctx, x + 8, y + 1, 8, 1, "#1f8f66");
+      ret(ctx, x + 8, y + 3, 11, 1, tela);
+      ret(ctx, x + 13, y + 9, 4, 3, "#2a3040");
+      // Teclado
+      caixaContorno(ctx, x + 6, y + 13, 18, 6, "#3a4255");
+      for (let k = x + 8; k < x + 22; k += 2) ret(ctx, k, y + 15, 1, 2, "#8a93a3");
+      // Impressora de etiqueta
+      caixaContorno(ctx, x + 28, y + 4, 16, 10, "#e5e7eb");
+      ret(ctx, x + 29, y + 5, 14, 2, "#f8fafc");
+      ret(ctx, x + 30, y + 9, 12, 2, ARTE.contorno);
+      ret(ctx, x + 40, y + 6, 2, 1, "#22c55e");
+    }
+
+    // Bancada de embalagem: tampo de madeira, frente de aço e utensílios
+    function desenharBancadaArte(est) {
+      const { x, y, w, h } = est;
+      ret(ctx, x + 3, y + h, w, 4, ARTE.sombra);
+      ret(ctx, x + w, y + 4, 3, h, ARTE.sombra);
+      caixaContorno(ctx, x, y, w, h - 7, "#c49a6c");
+      for (let ly = y + 3; ly < y + h - 8; ly += 4) ret(ctx, x + 1, ly, w - 2, 1, "#b48a5c");
+      ret(ctx, x + 1, y + 1, w - 2, 1, "#dab688");
+      // Frente de aço com pés
+      ret(ctx, x, y + h - 8, w, 8, ARTE.contorno);
+      ret(ctx, x + 1, y + h - 7, w - 2, 3, "#5b6474");
+      ret(ctx, x + 1, y + h - 7, w - 2, 1, "#7b8494");
+      ret(ctx, x + 2, y + h - 4, 3, 3, "#3e4552");
+      ret(ctx, x + w - 5, y + h - 4, 3, 3, "#3e4552");
+      // Monitor pequeno
+      caixaContorno(ctx, x + 4, y + 2, 14, 11, "#2a3040");
+      ret(ctx, x + 6, y + 4, 10, 6, "#38bdf8");
+      ret(ctx, x + 7, y + 5, 4, 1, "#bae6fd");
+      // Fita adesiva (dispenser)
+      caixaContorno(ctx, x + 22, y + 6, 8, 7, "#dc2626");
+      ret(ctx, x + 24, y + 7, 4, 4, "#e9c46a");
+      ret(ctx, x + 25, y + 8, 2, 2, "#b45309");
+      // Rolo de filme bolha
+      caixaContorno(ctx, x + 22, y + 15, 10, 6, "#dbeafe");
+      ret(ctx, x + 23, y + 16, 8, 1, "#ffffff");
+      // Caixa aberta com abas
+      caixaContorno(ctx, x + 36, y + 3, 18, 14, "#c8955f");
+      ret(ctx, x + 38, y + 5, 14, 10, "#8a5a30");
+      ret(ctx, x + 34, y + 2, 4, 3, "#dfb07a");
+      ret(ctx, x + 52, y + 2, 4, 3, "#dfb07a");
+      // Balança com visor
+      caixaContorno(ctx, x + 56, y + 8, 7, 9, "#9aa3b2");
+      ret(ctx, x + 57, y + 9, 5, 2, "#22c55e");
+    }
+
+    // Caixa 3/4 (tampo + frente) usada nos pallets
+    function desenharCaixa34(x, y, w, h, alt, corBase) {
+      const topo = tom(corBase, 0.18), frente = tom(corBase, -0.12), lado = tom(corBase, -0.3);
+      ret(ctx, x, y, w, h + alt, ARTE.contorno);
+      ret(ctx, x + 1, y + 1, w - 2, h - 1, topo);
+      ret(ctx, x + 1, y + h, w - 2, alt - 1, frente);
+      ret(ctx, x + w - 2, y + h, 1, alt - 1, lado);
+      ret(ctx, x + Math.floor(w / 2) - 1, y + 1, 2, h - 1, "#e5c068");
+      ret(ctx, x + 1, y + 1, w - 2, 1, tom(corBase, 0.35));
+    }
+
+    function desenharPalletArte(p) {
+      const { x, y, w, h } = p;
+      ret(ctx, x + 3, y + h, w, 3, ARTE.sombra);
+      ret(ctx, x + w, y + 4, 3, h - 2, ARTE.sombra);
+      // Pallet de madeira: ripas no topo e blocos na frente
+      ret(ctx, x, y + 4, w, h - 4, ARTE.contorno);
+      for (let r = 0; r < 5; r++) {
+        const rx = x + 1 + r * 6;
+        ret(ctx, rx, y + 5, 5, h - 12, ruido(r, x, 90) < 0.5 ? "#b67a42" : "#a86d38");
+        ret(ctx, rx, y + 5, 5, 1, "#cf975c");
+      }
+      ret(ctx, x + 1, y + h - 7, w - 2, 6, "#7a4c24");
+      for (const bx of [x + 2, x + w / 2 - 3, x + w - 8]) ret(ctx, Math.round(bx), y + h - 6, 6, 4, "#5a3618");
+      // Caixas empilhadas (até 8): camada de 4, depois a de cima
+      const n = Math.min(8, p.boxes);
+      for (let i = 0; i < n; i++) {
+        const camada = Math.floor(i / 4);
+        const k = i % 4;
+        const bx = x + 2 + (k % 2) * 14;
+        const by = y + 3 + Math.floor(k / 2) * 10 - camada * 7;
+        desenharCaixa34(bx, by, 14, 8, 5, ruido(i, x, 91) < 0.5 ? "#c08a52" : "#b07a45");
+      }
+    }
+
+    // Porta da doca (persiana metálica) e caminhão
+    function desenharDocaECaminhaoArte(cam) {
+      const dx = DOCA_PAREDE_X, dw = DOCA_PAREDE_W;
+      // Batentes zebrados
+      for (let yy = cam.y - 4; yy < cam.y; yy++) for (let xx = dx; xx < dx + dw; xx++) ret(ctx, xx, yy, 1, 1, (((xx + yy) >> 1) % 2) ? "#e5b62e" : "#22252f");
+      for (let yy = cam.y + cam.h; yy < cam.y + cam.h + 4; yy++) for (let xx = dx; xx < dx + dw; xx++) ret(ctx, xx, yy, 1, 1, (((xx + yy) >> 1) % 2) ? "#e5b62e" : "#22252f");
+      // Vão da porta e persiana
+      ret(ctx, dx, cam.y, dw, cam.h, "#0b0e15");
+      const aberto = 1 - cam.doorClosed;
+      const fechadoH = Math.round(cam.h * (1 - aberto * 0.85));
+      for (let s = 0; s < fechadoH; s += 3) {
+        ret(ctx, dx + 1, cam.y + s, dw - 2, 2, "#8d99ae");
+        ret(ctx, dx + 1, cam.y + s + 2, dw - 2, 1, "#5b6474");
+      }
+      // Para-choques de borracha
+      ret(ctx, dx + dw - 3, cam.y + 6, 3, 8, "#111318");
+      ret(ctx, dx + dw - 3, cam.y + cam.h - 14, 3, 8, "#111318");
+      // Luz da doca
+      const pronto = aberto > 0.5 && !cam.departing && !cam.chegando && cam.departOffset === 0;
+      ret(ctx, dx + 4, cam.y - 10, 8, 5, ARTE.contorno);
+      ret(ctx, dx + 5, cam.y - 9, 3, 3, pronto ? "#22c55e" : "#3f1d1d");
+      ret(ctx, dx + 8, cam.y - 9, 3, 3, pronto ? "#14301f" : "#ef4444");
+
+      const cx = Math.round(cam.x + cam.departOffset), cy = cam.y;
+      const cabW = 28, bauW = cam.w - cabW;
+      if (cx > WORLD_WIDTH + 4) return;
+      // Sombra
+      ret(ctx, cx + 4, cy + cam.h, cam.w - 2, 4, ARTE.sombraForte);
+      // Rodas aparecendo nas laterais
+      for (const wx of [cx + 14, cx + 30, cx + bauW - 40, cx + bauW - 24, cx + cam.w - 18]) {
+        ret(ctx, wx, cy - 2, 10, 3, "#111318");
+        ret(ctx, wx, cy + cam.h - 1, 10, 3, "#111318");
+      }
+      // Baú: teto branco com nervuras
+      caixaContorno(ctx, cx, cy, bauW, cam.h, "#eef1f5");
+      for (let nx = cx + 8; nx < cx + bauW - 2; nx += 10) {
+        ret(ctx, nx, cy + 1, 1, cam.h - 2, "#d3d9e2");
+        ret(ctx, nx + 1, cy + 1, 1, cam.h - 2, "#ffffff");
+      }
+      ret(ctx, cx + 1, cy + cam.h - 4, bauW - 2, 3, "#c8cfda");
+      // Logo e-Ship pintado no teto
+      ret(ctx, cx + 16, cy + 22, 70, 22, "#1e3a8a");
+      ret(ctx, cx + 16, cy + 22, 70, 1, "#3b5fc0");
+      desenharBitmap("E-SHIP", cx + 51, cy + 26, "#ffffff", 2, "center");
+      desenharBitmap(cam.docaId, cx + 51, cy + 37, "#fdba74", 1, "center");
+      // Portas traseiras (lado da doca)
+      const portaH = Math.round(cam.h * (1 - cam.doorClosed * 0.85));
+      ret(ctx, cx + 1, cy + 3, 4, cam.h - 6, "#9aa3b2");
+      ret(ctx, cx + 1, cy + 3, 4, portaH > 6 ? Math.min(cam.h - 6, portaH) : 0, "#4b5563");
+      // Cabine azul com para-brisa e retrovisores
+      caixaContorno(ctx, cx + bauW, cy + 6, cabW, cam.h - 12, "#2563eb");
+      ret(ctx, cx + bauW + 1, cy + 7, cabW - 2, 2, "#4f86f0");
+      ret(ctx, cx + bauW + 1, cy + cam.h - 9, cabW - 2, 2, "#1d4ed8");
+      ret(ctx, cx + cam.w - 12, cy + 12, 9, cam.h - 24, ARTE.contorno);
+      ret(ctx, cx + cam.w - 11, cy + 13, 7, cam.h - 26, "#7dd3fc");
+      ret(ctx, cx + cam.w - 10, cy + 14, 2, 8, "#e0f2fe");
+      ret(ctx, cx + cam.w - 14, cy + 2, 4, 5, ARTE.contorno);
+      ret(ctx, cx + cam.w - 14, cy + cam.h - 7, 4, 5, ARTE.contorno);
+      ret(ctx, cx + bauW + 4, cy + 14, 6, cam.h - 28, "#1e40af");
+    }
+
+    // Carrinho de picking: cesto de grade, rodinhas e alça
+    function desenharCarrinhoArte(c, horizontal) {
+      const w = horizontal ? 15 : 11;
+      const h = horizontal ? 11 : 15;
+      const x = Math.round(c.x - w / 2), y = Math.round(c.y - h / 2);
+      ret(ctx, x + 2, y + h + 1, w, 2, ARTE.sombra);
+      for (const [rx, ry] of [[x - 1, y - 1], [x + w - 2, y - 1], [x - 1, y + h - 2], [x + w - 2, y + h - 2]]) {
+        ret(ctx, rx, ry, 3, 3, ARTE.contorno);
+        ret(ctx, rx + 1, ry + 1, 1, 1, "#6b7280");
+      }
+      caixaContorno(ctx, x, y, w, h, "#3e4757");
+      ret(ctx, x + 1, y + 1, w - 2, 1, "#c0c7d2");
+      ret(ctx, x + 1, y + 1, 1, h - 2, "#a3acba");
+      for (let i = x + 3; i < x + w - 1; i += 3) ret(ctx, i, y + 2, 1, h - 3, "#7b8494");
+      for (let j = y + 4; j < y + h - 1; j += 4) ret(ctx, x + 2, j, w - 3, 1, "#5b6474");
+    }
+
+    function desenharPalletChao(x, y, corFilme) {
+      const px = Math.round(x - 11), py = Math.round(y - 11);
+      ret(ctx, px + 3, py + 22, 22, 3, ARTE.sombra);
+      ret(ctx, px + 22, py + 3, 3, 21, ARTE.sombra);
+      ret(ctx, px, py, 22, 22, ARTE.contorno);
+      ret(ctx, px + 1, py + 1, 20, 20, "#7a4c24");
+      for (let r = 2; r < 21; r += 6) ret(ctx, px + r, py + 1, 4, 20, "#b67a42");
+      caixaContorno(ctx, px + 3, py + 2, 16, 16, corFilme);
+      ret(ctx, px + 4, py + 3, 14, 2, tom(corFilme, 0.4));
+      ret(ctx, px + 4, py + 5, 2, 11, tom(corFilme, 0.55));
+      ret(ctx, px + 17, py + 3, 1, 14, tom(corFilme, -0.3));
+      ret(ctx, px + 4, py + 10, 14, 2, "#e9c46a");
+    }
+
+    function desenharColetorArte(x, y) {
+      const cx = Math.round(x), cy = Math.round(y);
+      ret(ctx, cx - 3, cy + 7, 9, 2, ARTE.sombra);
+      caixaContorno(ctx, cx - 4, cy - 7, 8, 14, "#2a3040");
+      ret(ctx, cx - 3, cy - 6, 6, 5, "#334155");
+      ret(ctx, cx - 2, cy - 5, 4, 3, "#38bdf8");
+      for (let k = 0; k < 3; k++) ret(ctx, cx - 3 + k * 2, cy + 1, 1, 1, "#94a3b8");
+      for (let k = 0; k < 3; k++) ret(ctx, cx - 3 + k * 2, cy + 3, 1, 1, "#94a3b8");
+      ret(ctx, cx - 2, cy + 5, 4, 1, "#facc15");
+      ret(ctx, cx - 1, cy - 9, 2, 2, (Math.floor(Date.now() / 200) % 2 === 0) ? "#22c55e" : "#14532d");
     }
 
     /* ==========================================================================
@@ -6165,28 +6860,15 @@
       const h = horizontal ? 11 : 15;
       const x = Math.round(c.x - w / 2);
       const y = Math.round(c.y - h / 2);
-      // rodinhas
-      ctx.fillStyle = "#0f172a";
-      ctx.fillRect(x - 1, y - 1, 3, 3);
-      ctx.fillRect(x + w - 2, y - 1, 3, 3);
-      ctx.fillRect(x - 1, y + h - 2, 3, 3);
-      ctx.fillRect(x + w - 2, y + h - 2, 3, 3);
-      // grade de metal
-      ctx.fillStyle = "#94a3b8";
-      ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = "#334155";
-      ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
-      ctx.fillStyle = "#64748b";
-      for (let i = x + 3; i < x + w - 1; i += 3) ctx.fillRect(i, y + 1, 1, h - 2);
+      desenharCarrinhoArte(c, horizontal);
       // carga dentro do carrinho
       const caixas = carrinho.pego ? Math.min(4, volumesColetados + (pacoteEmbalado ? 1 : 0)) : 0;
       for (let b = 0; b < caixas; b++) {
         const bx = x + 2 + (b % 2) * Math.floor((w - 4) / 2);
         const by = y + 2 + Math.floor(b / 2) * Math.floor((h - 4) / 2);
-        ctx.fillStyle = pacoteEmbalado ? "#78350f" : "#b45309";
-        ctx.fillRect(bx, by, Math.floor((w - 4) / 2) - 1, Math.floor((h - 4) / 2) - 1);
-        ctx.fillStyle = "#facc15";
-        ctx.fillRect(bx, by + 2, Math.floor((w - 4) / 2) - 1, 1);
+        const bw = Math.floor((w - 4) / 2) - 1, bh = Math.floor((h - 4) / 2) - 1;
+        caixaContorno(ctx, bx, by, bw + 1, bh + 1, pacoteEmbalado ? "#9c6534" : "#c8955f");
+        ret(ctx, bx + 1, by + 2, bw - 1, 1, "#e9c46a");
       }
       // alça azul, do lado de quem empurra
       ctx.fillStyle = "#2563eb";
@@ -7435,20 +8117,6 @@
       }
     }
 
-    function desenharPalletChao(x, y, corFilme) {
-      const px = Math.round(x - 11), py = Math.round(y - 11);
-      ctx.fillStyle = "#451a03";
-      ctx.fillRect(px, py, 22, 22);
-      ctx.fillStyle = "#92400e";
-      for (let r = 2; r < 22; r += 6) ctx.fillRect(px + r, py + 1, 3, 20);
-      ctx.fillStyle = corFilme;
-      ctx.fillRect(px + 3, py + 3, 16, 16);
-      ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-      ctx.fillRect(px + 4, py + 4, 3, 14);
-      ctx.fillStyle = "#facc15";
-      ctx.fillRect(px + 3, py + 10, 16, 2);
-    }
-
     function desenharRecebimento() {
       const z = ZONA_RECEB;
       const etapa = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
@@ -7652,49 +8320,15 @@
     }
 
     /* ---------- Desenho das fases 2 e 3 ---------- */
-    let SPRITES_VEICULO = {};
-    function pixelsEmpilhadeira(corCorpo, corLateral, comPallet) {
-      const px = [];
-      const push = (x, y, c) => px.push({ x, y, c });
-      for (let y = -17; y <= 17; y++) {
-        for (let x = -11; x <= 11; x++) {
-          const borda = (x === -11 || x === 11 || y === -17 || y === 17);
-          let c = borda ? "#000000" : corCorpo;
-          if (!borda && Math.abs(x) >= 9) c = corLateral;
-          if (!borda && x >= -7 && x <= 7 && y >= -13 && y <= -1) c = "#0f172a";
-          if (x >= -5 && x <= 5 && y >= -11 && y <= -3) c = "#7dd3fc";
-          push(x, y, c);
-        }
-      }
-      for (const wx of [-12, -11, 11, 12]) for (const wy of [-8, -7, -6, 5, 6, 7]) push(wx, wy, "#0f172a");
-      for (let y = 18; y <= 27; y++) for (const x of [-9, -8, -7, -6, 5, 6, 7, 8]) push(x, y, "#cbd5e1");
-      if (comPallet) {
-        for (let y = 19; y <= 40; y++) {
-          for (let x = -11; x <= 11; x++) {
-            const borda = (x === -11 || x === 11 || y === 19 || y === 40);
-            let c = borda ? "#451a03" : "#b45309";
-            if (!borda && (y === 29 || y === 30)) c = "#facc15";
-            if (!borda && (x === 0)) c = "#92400e";
-            push(x, y, c);
-          }
-        }
-      }
-      return px;
-    }
-    function spriteVeiculo(theta, comPallet) {
+    // Empilhadeira do jogador (laranja), girada em 48 passos e guardada em cache
+    const MAPAS_VEICULO = {};
+    function spriteVeiculoCanvas(theta, comPallet) {
       const passos = 48;
-      let q = Math.round(((theta % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * passos) % passos;
-      const chave = q + (comPallet ? "p" : "");
-      if (SPRITES_VEICULO[chave]) return SPRITES_VEICULO[chave];
-      const ang = q / passos * Math.PI * 2;
-      const mapa = new Map();
-      pixelsEmpilhadeira("#f97316", "#c2410c", comPallet).forEach(p => {
-        const w = localParaMundo(p.x, p.y, ang);
-        mapa.set(Math.round(w.x) + "," + Math.round(w.y), p.c);
-      });
-      const spr = [...mapa.entries()].map(([k, c]) => { const [x, y] = k.split(",").map(Number); return { x, y, c }; });
-      SPRITES_VEICULO[chave] = spr;
-      return spr;
+      const q = Math.round(((theta % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * passos) % passos;
+      const k = comPallet ? "p" : "v";
+      if (!MAPAS_VEICULO[k]) MAPAS_VEICULO[k] = pixelsEmpilhadeira("#f97316", "#c2410c", comPallet);
+      const chave = "veiculo|" + q + k;
+      return { spr: canvasEmpilhadeiraGirada(chave, MAPAS_VEICULO[k], q / passos * Math.PI * 2), chave };
     }
 
     function desenharPulmao() {
@@ -7702,24 +8336,33 @@
         const bx = PULMAO.x + i * PULMAO.baiaW;
         const alvoNome = (ehVeiculo() || armazNaFila()) ? baiaAlvoAtual() : null;
         const alvo = nome === alvoNome;
-        ctx.fillStyle = "#1d4ed8";
-        ctx.fillRect(bx, PULMAO.y, PULMAO.baiaW, PULMAO.h);
-        ctx.fillStyle = "#ea580c";
-        ctx.fillRect(bx, PULMAO.y, PULMAO.baiaW, 3);
-        ctx.fillStyle = "#172554";
-        ctx.fillRect(bx, PULMAO.y, 2, PULMAO.h);
+        // Rack pesado visto de cima: vão escuro, longarinas laranja, colunas azuis
+        const py = PULMAO.y, bw = PULMAO.baiaW, bh = PULMAO.h;
+        if (i === 0) ret(ctx, PULMAO.x + 4, py - 3, bw * PULMAO.baias.length, 3, ARTE.sombra);
+        ret(ctx, bx, py, bw, bh, "#20242f");
         // Fase 2: a baia esvazia quando o pallet sai. Armazenagem: começa vazia até guardar.
         const vazio = modoArmaz() ? recebimento.vazias.has(nome) : (alvo && pulmaoPego);
         if (!vazio) {
-          ctx.fillStyle = "#78350f";
-          ctx.fillRect(bx + 8, PULMAO.y + 8, PULMAO.baiaW - 16, PULMAO.h - 12);
-          ctx.fillStyle = "#b45309";
-          ctx.fillRect(bx + 10, PULMAO.y + 10, PULMAO.baiaW - 20, PULMAO.h - 18);
-          ctx.fillStyle = "#facc15";
-          ctx.fillRect(bx + 10, PULMAO.y + 18, PULMAO.baiaW - 20, 2);
+          // Pallet com filme stretch e caixas por baixo
+          const px = bx + 7, pyy = py + 6, pw = bw - 14, ph = bh - 10;
+          ret(ctx, px - 1, pyy - 1, pw + 2, ph + 2, ARTE.contorno);
+          ret(ctx, px, pyy, pw, ph, "#7a4c24");
+          caixaContorno(ctx, px + 2, pyy + 1, pw - 4, ph - 3, i === 1 ? "#c8955f" : "#d5dde8");
+          ret(ctx, px + 3, pyy + 2, pw - 6, 2, i === 1 ? "#e3b57f" : "#eef2f8");
+          ret(ctx, px + 3, pyy + 4, 2, ph - 8, i === 1 ? "#dfb07a" : "#f8fbff");
+          ret(ctx, px + 3, pyy + Math.floor(ph / 2), pw - 6, 2, i === 1 ? "#e9c46a" : "#3b82f6");
+        } else {
+          for (let k = bx + 6; k < bx + bw - 4; k += 6) ret(ctx, k, py + 4, 1, bh - 8, "#2a2f3c");
         }
-        ctx.fillStyle = "#0f172a";
-        ctx.fillRect(bx + 4, PULMAO.y - 9, PULMAO.baiaW - 8, 8);
+        ret(ctx, bx, py, bw, 2, "#e8682a");
+        ret(ctx, bx, py + 2, bw, 1, "#a8441a");
+        ret(ctx, bx, py + bh - 3, bw, 2, "#e8682a");
+        caixaContorno(ctx, bx, py - 1, 4, 5, "#2f6fd6");
+        caixaContorno(ctx, bx + bw - 4, py - 1, 4, 5, "#2f6fd6");
+        caixaContorno(ctx, bx, py + bh - 5, 4, 5, "#1e4fa3");
+        caixaContorno(ctx, bx + bw - 4, py + bh - 5, 4, 5, "#1e4fa3");
+        ret(ctx, bx + 3, py - 10, bw - 6, 9, ARTE.contorno);
+        ret(ctx, bx + 4, py - 9, bw - 8, 7, "#0f1420");
         desenharBitmap(nome, bx + PULMAO.baiaW / 2, PULMAO.y - 8, alvo ? "#facc15" : "#f8fafc", 1, "center");
         const destacar = modoArmaz() ? (alvo && veiculo.comPallet) : (alvo && !pulmaoPego);
         if (destacar) {
@@ -7792,26 +8435,20 @@
       }
       if (ehVeiculo() || (MISSAO_ATUAL.geracao && MISSAO_ATUAL.geracao.armazenagem)) {
         // Empilhadeira do jogador
-        const spr = spriteVeiculo(veiculo.theta, veiculo.comPallet);
+        const { spr, chave } = spriteVeiculoCanvas(veiculo.theta, veiculo.comPallet);
         const ox = Math.round(veiculo.x), oy = Math.round(veiculo.y);
-        spr.forEach(p => { ctx.fillStyle = p.c; ctx.fillRect(ox + p.x, oy + p.y, 1, 1); });
-        ctx.fillStyle = (Math.floor(Date.now() / 300) % 2 === 0) ? "#3b82f6" : "#1e3a8a";
+        desenharEmpilhadeiraCanvas(spr, chave, veiculo.x, veiculo.y);
+        ctx.fillStyle = ARTE.contorno;
         ctx.fillRect(ox - 2, oy - 2, 4, 4);
+        ctx.fillStyle = (Math.floor(Date.now() / 300) % 2 === 0) ? "#60a5fa" : "#1e3a8a";
+        ctx.fillRect(ox - 1, oy - 1, 2, 2);
         if (!veiculo.pilotando) desenharBitmap("04", ox, oy - 26, "#fbbf24", 1, "center");
       }
       if (ehColetor() && !coletor.achado) {
         // O coletor só aparece quando você está bem perto (ele está escondido)
         const d = Math.hypot(coletor.x - player.x, coletor.y - player.y);
         if (d < 60) {
-          const cx = Math.round(coletor.x), cy = Math.round(coletor.y);
-          ctx.fillStyle = "#000000";
-          ctx.fillRect(cx - 4, cy - 7, 8, 14);
-          ctx.fillStyle = "#334155";
-          ctx.fillRect(cx - 3, cy - 6, 6, 5);
-          ctx.fillStyle = "#64748b";
-          ctx.fillRect(cx - 3, cy, 6, 5);
-          ctx.fillStyle = (Math.floor(Date.now() / 200) % 2 === 0) ? "#22c55e" : "#14532d";
-          ctx.fillRect(cx - 1, cy - 9, 2, 2);
+          desenharColetorArte(coletor.x, coletor.y);
         }
       }
     }
