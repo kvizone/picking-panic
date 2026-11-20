@@ -2621,42 +2621,7 @@
         if (this.empMotorGain) {
           this.empMotorGain.gain.setTargetAtTime(volMotor, audioCtx.currentTime, 0.08);
         }
-        // Bip só como alerta: empilhadeira chegando perto de você. Longe, só o ronco do motor.
-        const distAlerta = 130;
-        if (!audivel || dist > distAlerta) { this.empTimer = 0.5; return; }
-
-        const vol = (1 - dist / distAlerta) * 0.2 + 0.05;
-        const ritmo = 0.35 + (dist / distAlerta) * 0.45; // mais perto, mais rápido
-        this.empTimer += dt;
-        if (this.empTimer >= ritmo) {
-          this.empTimer = 0;
-          const now = audioCtx.currentTime;
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          let panner = null;
-          if (audioCtx.createStereoPanner) {
-            panner = audioCtx.createStereoPanner();
-            panner.pan.setValueAtTime(Math.max(-1, Math.min(1, panX)), now);
-          }
-
-          osc.type = "square";
-          osc.frequency.setValueAtTime(980, now);
-
-          gain.gain.setValueAtTime(vol, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
-
-          if (panner) {
-            osc.connect(gain);
-            gain.connect(panner);
-            panner.connect(masterGain);
-          } else {
-            osc.connect(gain);
-            gain.connect(masterGain);
-          }
-
-          osc.start(now);
-          osc.stop(now + 0.14);
-        }
+        // Sem bip: só o ronco do motor, mais alto quanto mais perto. O único bip é a ré da empilhadeira do jogador.
       },
 
       empilhadeiraCrash() {
@@ -2685,9 +2650,8 @@
       },
 
       // Pressão do tempo
-      tictac() {
-        this.playTone(1100, "square", 0.02, 0.12, 0.001);
-      },
+      // Sem tique-taque: o aviso de estrela perdida já vem pelo texto e pelo som de perda
+      tictac() {},
 
       estrelaPerdida() {
         this.playTone(320, "sawtooth", 0.15, 0.2, 0.01, 0);
