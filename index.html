@@ -1358,6 +1358,10 @@
       animation: bordaUrgencia 0.9s ease-in-out infinite;
     }
     @keyframes bordaUrgencia { 50% { box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.5), inset 0 0 30px rgba(239, 68, 68, 0.15); } }
+
+    /* Sem a linha de fase/etapa: o topo mostra só o que fazer. A linha do rádio aparece só quando alguém fala. */
+    #hud #hud-obj-step { display: none; }
+    #hud .obj-linha-meta:not(:has(#radio-box.show)) { display: none; }
 </style>
 </head>
 <body>
