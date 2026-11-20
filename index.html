@@ -1699,6 +1699,7 @@
     // Velocidades em tiles por segundo
     const VEL_ANDAR = 6.5;       // 104 px/s
     const VEL_CORRER = 12.0;     // 192 px/s (corrida arcade)
+    const VEL_CARREGANDO_CORRENDO = 9.5; // 152 px/s: dá pra correr com caixa, só um pouco mais devagar
     const VEL_CARREGANDO = 5.0;  // 80 px/s
     const VEL_CARRINHO = 8.0;            // empurrando o carrinho de picking
     const VEL_CARRINHO_CORRENDO = 12.5;  // carrinho + correr (mesmo carregado)
@@ -2724,39 +2725,8 @@
         this.humGain.gain.setTargetAtTime(alvo, audioCtx.currentTime, 0.18);
       },
 
-      atualizarAmbiente(dt) {
-        if (!audioCtx || isMuted || estadoJogo !== "JOGANDO") return;
-        this.scannerTimer -= dt;
-        if (this.scannerTimer <= 0) {
-          this.scannerTimer = 4 + Math.random() * 5; // 4 a 9 segundos
-          // Bipe distante de scanner
-          const now = audioCtx.currentTime;
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          let panner = null;
-          if (audioCtx.createStereoPanner) {
-            panner = audioCtx.createStereoPanner();
-            panner.pan.setValueAtTime((Math.random() - 0.5) * 1.8, now);
-          }
-
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(2400, now);
-          gain.gain.setValueAtTime(0.05, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-
-          if (panner) {
-            osc.connect(gain);
-            gain.connect(panner);
-            panner.connect(masterGain);
-          } else {
-            osc.connect(gain);
-            gain.connect(masterGain);
-          }
-
-          osc.start(now);
-          osc.stop(now + 0.08);
-        }
-      }
+      // Sem bipes de fundo: o único bip que importa é o do coletor perdido
+      atualizarAmbiente() {}
     };
 
     function alternarMudo() {
@@ -4204,13 +4174,13 @@
           moveY /= len;
 
           const comCarrinho = carrinho.pego;
-          // Sem carrinho, carregar caixa deixa lento e não corre. Com carrinho, a carga vai nele.
+          // Sem carrinho, carregar caixa deixa mais lento (andando ou correndo). Com carrinho, a carga vai nele.
           const isCarrying = !comCarrinho && (volumesColetados > 0 || pacoteEmbalado);
           const querCorrer = keys["ShiftLeft"] || keys["ShiftRight"] || correndoNoToque;
-          const isRunning = !isCarrying && querCorrer;
+          const isRunning = querCorrer;
           let speedPx = VEL_ANDAR * TILE_SIZE;
 
-          if (isCarrying) speedPx = VEL_CARREGANDO * TILE_SIZE;
+          if (isCarrying) speedPx = (isRunning ? VEL_CARREGANDO_CORRENDO : VEL_CARREGANDO) * TILE_SIZE;
           else if (comCarrinho) speedPx = (isRunning ? VEL_CARRINHO_CORRENDO : VEL_CARRINHO) * TILE_SIZE;
           else if (isRunning) speedPx = VEL_CORRER * TILE_SIZE;
 
@@ -7183,7 +7153,7 @@
           tentarDica("andar", `${K("←")}${K("↑")}${K("→")}${K("↓")} anda`, "Deslize o dedo para andar",
             { dur: 6, fim: () => Math.hypot(player.x - memoria.inicioX, player.y - memoria.inicioY) > 40 });
         }
-        if (memoria.andandoSemCorrer > 2.5 && !(volumesColetados > 0 && !carrinho.pego)) {
+        if (memoria.andandoSemCorrer > 2.5) {
           tentarDica("correr", `Segure ${K("SHIFT")} para correr`, "Deslize mais longe para correr",
             { dur: 4, fim: () => correndo });
         }
