@@ -1438,7 +1438,7 @@
             <span class="inv-label" id="hud-inv-label">CARGA</span>
             <span class="inv-status" id="hud-inv-status">0/4</span>
           </div>
-          <button type="button" id="musica-toggle-btn" class="hud-icone" title="Rádio caipira (R)"><span id="musica-icon">📻</span></button>
+          <button type="button" id="musica-toggle-btn" class="hud-icone" title="Rádio 89 FM (R)"><span id="musica-icon">📻</span></button>
           <button type="button" id="audio-toggle-btn" class="hud-icone" title="Som (M)"><span id="audio-icon">🔊</span></button>
         </div>
       </div>
@@ -2743,12 +2743,21 @@
     }
 
     /* ==========================================================================
-       2b. RÁDIO CAIPIRA (música de fundo via stream, com filtro de rádio AM)
+       2b. RÁDIO (música de fundo via stream, com filtro de rádio AM)
        Se a rádio permitir (CORS), o som passa por filtros: corta graves e agudos,
        satura um pouco e soma chiado. Se não permitir, toca direto, mais baixo.
        ========================================================================== */
     const RADIO_MUSICA = {
-      url: "https://8758.brasilstream.com.br/stream",
+      // Estações do rádio. [R] passa por elas na ordem e, depois da última, desliga.
+      estacoes: [
+        {
+          nome: "89 FM A Rádio Rock",
+          url: "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac",
+          aoLigar: "Rádio ligada na 89 FM. Rock no galpão, o pallet agora é palco."
+        }
+      ],
+      estacaoAtual: 0,
+      get url() { return this.estacoes[this.estacaoAtual].url; },
       volume: 0.55,          // volume da música com efeito AM
       volumeSemEfeito: 0.3,  // volume se a rádio não permitir o efeito
       ligada: true,
@@ -2762,7 +2771,24 @@
         try {
           const v = localStorage.getItem("pickingpanic_radio");
           if (v !== null) this.ligada = (v === "true");
+          const e = parseInt(localStorage.getItem("pickingpanic_radio_estacao"), 10);
+          if (e >= 0 && e < this.estacoes.length) this.estacaoAtual = e;
         } catch (e) {}
+      },
+
+      // Desmonta a estação atual pra próxima começar do zero
+      descartarAudio() {
+        if (this.audio) {
+          this.audio.pause();
+          this.audio.removeAttribute("src");
+          this.audio.load();
+          this.audio = null;
+        }
+        if (this.chiadoGain && audioCtx) this.chiadoGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+        this.chiadoGain = null;
+        this.saida = null;
+        this.comEfeito = false;
+        this.tentouCors = false;
       },
 
       criarAudio(comCors) {
@@ -2873,14 +2899,25 @@
         if (this.chiadoGain && audioCtx) this.chiadoGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
       },
 
+      // [R]: desligada -> 1ª estação -> 2ª estação -> ... -> desligada
       alternar() {
-        this.ligada = !this.ligada;
-        try { localStorage.setItem("pickingpanic_radio", String(this.ligada)); } catch (e) {}
+        if (!this.ligada) {
+          this.ligada = true;
+          this.estacaoAtual = 0;
+        } else if (this.estacaoAtual < this.estacoes.length - 1) {
+          this.estacaoAtual++;
+        } else {
+          this.ligada = false;
+        }
+        try {
+          localStorage.setItem("pickingpanic_radio", String(this.ligada));
+          localStorage.setItem("pickingpanic_radio_estacao", String(this.estacaoAtual));
+        } catch (e) {}
+        this.descartarAudio();
         if (this.ligada) {
           this.tocar();
-          falarTexto("Rádio ligada. Moda de viola no talo (no talo de AM).", "#fbbf24");
+          falarTexto(this.estacoes[this.estacaoAtual].aoLigar, "#fbbf24");
         } else {
-          this.parar();
           falarTexto("Rádio desligada. O silêncio do galpão é quase assustador.", "#94a3b8");
         }
         atualizarIconeMusica();
@@ -3500,7 +3537,7 @@
         return;
       }
 
-      // R: rádio caipira
+      // R: liga/desliga a rádio (89 FM)
       if (e.code === "KeyR") {
         initAudio();
         RADIO_MUSICA.alternar();
