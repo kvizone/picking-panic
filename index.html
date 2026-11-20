@@ -4682,7 +4682,7 @@
     function desenharCodigosDeRua() {
       RUAS_CONFIG.forEach(rua => {
         const cx = rua.corridorX + 24;
-        const marcas = [startY - 10];
+        const marcas = [];
         for (let i = 2; i < 10; i += 3) marcas.push(startY + i * bayHeight + 16);
         marcas.push(startY + 10 * bayHeight + 6);
         marcas.forEach(y => {
@@ -5101,6 +5101,31 @@
       ["....oPPoPPo...", "....oPPoPPo...", "....oKKoKKKo..", "....oooooooo.."],
       ["....oPPPPo....", "....oPPPPo....", "....oKKKKKo...", "....ooooooo..."]
     ];
+    // Cabelo comprido: mechas até os ombros na frente, rabo de cavalo nas costas e de lado
+    const LONGO_FRENTE = [
+      ".oh" + "hssssssh" + "ho.",
+      ".oh" + "sesssses" + "ho.",
+      ".oh" + "srssssrs" + "ho.",
+      ".oh" + "SssmmssS" + "ho.",
+      ".ohoSSSSSSoho.",
+      ".ohTVVVVVVTho."
+    ];
+    const LONGO_COSTAS = [
+      "...oHhhhhHo...",
+      "..oTVVhhVVTo..",
+      ".osTVVhhVVTso.",
+      ".oTVRRHHRRVTo."
+    ];
+    const LONGO_LADO = [
+      "..ohhhsssssso.",
+      "..ohhssssesso.",
+      "..oHhssssssso.",
+      "..oHHssssmso..",
+      "..oHoSSSSSo...",
+      "..oHoTVVVVo...",
+      "...ooTVVVVo..."
+    ];
+
     const CAIXA_COLO = [
       "oooooooooo",
       "oCCCCCCCCo",
@@ -5125,7 +5150,7 @@
         o: ARTE.contorno, e: ARTE.contorno,
         L: tom(p.capacete, 0.6), W: p.capacete, w: tom(p.capacete, -0.22), B: tom(p.capacete, -0.38),
         h: p.cabelo, H: tom(p.cabelo, -0.3),
-        s: p.pele, S: tom(p.pele, -0.2), m: tom(p.pele, -0.42),
+        s: p.pele, S: tom(p.pele, -0.2), m: tom(p.pele, -0.42), r: p.bochecha || tom(p.pele, -0.08),
         T: p.camisa, V: p.colete, v: tom(p.colete, -0.25), R: "#e8eef5",
         P: p.calca, p: tom(p.calca, -0.3), K: "#1f2433"
       };
@@ -5138,16 +5163,24 @@
       const f = frame % 4;
       const chave = `pessoa|${apar.id}|${lado ? "L" : costas ? "U" : "D"}|${f}`;
       if (CACHE_SPR.has(chave)) return CACHE_SPR.get(chave);
-      const linhas = lado
+      let linhas = lado
         ? [...PESSOA_LADO, ...PESSOA_LADO_PERNAS[f]]
         : [...(costas ? PESSOA_CABECA_COSTAS : PESSOA_CABECA_FRENTE), ...PESSOA_TRONCO, ...PESSOA_PERNAS[f]];
+      if (apar.cabeloLongo) {
+        // Troca as linhas 5 a 11 pela versão com cabelo comprido
+        const troca = lado ? LONGO_LADO : costas ? LONGO_COSTAS : LONGO_FRENTE;
+        const inicio = lado ? 5 : costas ? 9 : 5;
+        linhas = linhas.slice();
+        troca.forEach((l, i) => { linhas[inicio + i] = l; });
+      }
       return spriteDeTexto(chave, linhas, paletaPessoa(apar));
     }
 
     // Aparências: o operador e três colegas diferentes
+    // A operadora: menina parda, cabelo escuro comprido preso em rabo de cavalo
     const APARENCIA_JOGADOR = {
-      id: "jogador", capacete: "#f4f6fa", cabelo: "#3b2a20", pele: "#f0be98",
-      camisa: "#3f4c63", colete: "#facc15", calca: "#34405a"
+      id: "jogadora", capacete: "#f4f6fa", cabelo: "#2b1a12", pele: "#b97c55", bochecha: "#c97a62",
+      camisa: "#3f4c63", colete: "#facc15", calca: "#34405a", cabeloLongo: true
     };
     const APARENCIAS_NPC = [
       { id: "npc0", capacete: "#60a5fa", cabelo: "#1f1a17", pele: "#b97a52", camisa: "#334155", colete: "#ea580c", calca: "#3a3f4f" },
@@ -5672,16 +5705,10 @@
           g.lineWidth = 1;
           g.strokeRect(rx + 0.5, y0 + 0.5, RACK_W - 1, y1 - y0 + 8);
         });
-        // Placa suspensa da rua
-        caixaContorno(g, rua.corridorX - 2, 24, 52, 12, "#1e3a8a");
-        ret(g, rua.corridorX - 1, 25, 50, 1, "#3b5fc0");
-        ret(g, rua.corridorX - 1, 35, 50, 1, "#14285f");
-        ret(g, rua.corridorX - 2, 36, 52, 2, ARTE.sombra);
       });
       const ctxAntes = ctx;
       ctx = g;
       posicoesWMS.forEach(pos => desenharBitmap(pos.posicao, pos.rackX + pos.rackW / 2, pos.rackY + 4, "#f8fafc", 1, "center"));
-      RUAS_CONFIG.forEach(rua => desenharBitmap(rua.id, rua.corridorX + 24, 27, "#ffffff", 1, "center"));
       ctx = ctxAntes;
     }
 
