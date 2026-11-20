@@ -1362,6 +1362,40 @@
     /* Sem a linha de fase/etapa: o topo mostra só o que fazer. A linha do rádio aparece só quando alguém fala. */
     #hud #hud-obj-step { display: none; }
     #hud .obj-linha-meta:not(:has(#radio-box.show)) { display: none; }
+
+    /* Chefe reclamando */
+    .chefe-popup {
+      position: absolute;
+      left: calc(10px * var(--escala));
+      bottom: calc(10px * var(--escala));
+      z-index: 47;
+      display: flex;
+      gap: calc(7px * var(--escala));
+      align-items: flex-start;
+      max-width: min(calc(290px * var(--escala)), 62%);
+      padding: calc(6px * var(--escala));
+      background: #f8fafc;
+      color: #111827;
+      border: 2px solid #111827;
+      box-shadow: 3px 3px 0 #000;
+      cursor: pointer;
+      transform: translateX(-130%);
+      transition: transform 0.18s ease-out;
+    }
+    .chefe-popup.visivel { transform: translateX(0); animation: chefeTreme 0.35s 0.2s 2; }
+    @keyframes chefeTreme { 25% { margin-left: -3px; } 75% { margin-left: 3px; } }
+    #chefe-rosto {
+      width: calc(60px * var(--escala));
+      height: calc(60px * var(--escala));
+      image-rendering: pixelated;
+      background: #fca5a5;
+      border: 2px solid #111827;
+      flex-shrink: 0;
+    }
+    .chefe-fala { display: flex; flex-direction: column; gap: calc(4px * var(--escala)); font-size: calc(8px * var(--escala)); line-height: 1.6; }
+    .chefe-fala b { font-weight: normal; background: #b91c1c; color: #ffffff; padding: 1px 5px; align-self: flex-start; }
+    html.toque .chefe-popup { left: 50%; bottom: calc(120px * var(--escala)); transform: translate(-50%, 260%); max-width: 92%; }
+    html.toque .chefe-popup.visivel { transform: translate(-50%, 0); }
 </style>
 </head>
 <body>
@@ -1422,6 +1456,11 @@
     <!-- Fala dos colegas (texto inteiro, perto de quem falou) -->
     <div id="balao-npc" class="balao balao-npc"><span id="balao-npc-texto"></span></div>
     <!-- Chamado da missão: fica na tela até o operador pegar o pedido -->
+    <!-- Popup do chefe (3 pedidos atrasados) -->
+    <div id="chefe-popup" class="chefe-popup" title="Fechar">
+      <canvas id="chefe-rosto" width="20" height="20"></canvas>
+      <div class="chefe-fala"><b>CHEFE · RÁDIO</b><span id="chefe-texto"></span></div>
+    </div>
     <div id="emergencia-banner" class="emergencia-banner">
       <div class="emerg-linha"><span id="emergencia-titulo">🔥 INCÊNDIO</span><span id="emergencia-tempo">0:30</span></div>
       <div class="emerg-trilho"><i id="emergencia-barra"></i></div>
@@ -2165,6 +2204,14 @@
       armazOk3: ["Guardado num piscar. O inventário nem viu.", "Pallet no lugar antes do motorista acender o cigarro."],
       armazOk2: ["Guardado no prazo. O pulmão respira.", "No lugar certo, no nível certo. Bonito."],
       armazOk1: ["Guardou, mas o recebimento ficou entupido um tempo.", "Atrasou, mas tá no rack. Segue."],
+
+      chefeBravo: [
+        "{n} PEDIDOS ATRASADOS?! Blablablá prazo, blablablá cliente, blablablá... o SAC vai me ligar!",
+        "Eu tô vendo o painel, viu? {n} atrasados. Blablablá blablablá. Acelera essa separação!",
+        "Bonito, hein? {n} no vermelho. Blablablá meta, blablablá indicador, blablablá...",
+        "Na minha época a gente... blablablá blablablá. {n} atrasados! Bora, bora!",
+        "Blablablá reunião, blablablá diretoria... e eu explico {n} atrasados como? Corre!"
+      ],
 
       // ---------- Urgências ----------
       fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
@@ -6647,6 +6694,7 @@
       resetarRecebimento();
       resetarFila();
       resetarEmergencias();
+      fecharChefe();
       resetarDicasDaPartida();
       ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
@@ -7276,6 +7324,7 @@
       fila.selecionado = 0;
       fila.recemAceito = false;
       fila.escolhendo = false;
+      fila.chefeAvisou = false;
       fila.vendo = null;
       fila.armazGeradas = 0;
       fila.seq = MISSAO_ATUAL.geracao ? MISSAO_ATUAL.geracao.numeroInicial : 0;
@@ -7293,6 +7342,14 @@
 
     function atualizarFila(dt) {
       if (!ehFila() || !cronometroIniciado) return;
+      // Chefe reclama quando 3 pedidos estão atrasados ao mesmo tempo (de novo só se a fila melhorar)
+      const atrasados = fila.pedidos.filter(estaAtrasado).length;
+      if (atrasados >= 3 && !fila.chefeAvisou) {
+        fila.chefeAvisou = true;
+        chefeReclama(atrasados);
+      } else if (atrasados < 3) {
+        fila.chefeAvisou = false;
+      }
       // A cada minuto cai um pedido aleatório. Com o balcão vazio e nada na mão, não precisa esperar o minuto.
       const g = MISSAO_ATUAL.geracao;
       if (g && !filaConcluida()) {
@@ -8002,6 +8059,93 @@
         for (let y = y0; y < y0 + h; y += 6) { ctx.fillRect(x0, y, 2, 3); ctx.fillRect(x0 + w - 2, y, 2, 3); }
       }
       desenharPainelBitmap(pos.idCompleto.replace(/ /g, "") + " N" + a.nivel, pos.rackX + pos.rackW / 2, pos.rackY - 10, "#083344", "#22d3ee", "#a5f3fc");
+    }
+
+    /* ==========================================================================
+       16a5. O CHEFE RECLAMANDO (3 pedidos atrasados ao mesmo tempo)
+       Popup no canto, sem pausar: rosto bravo, boca mexendo e "blablablá".
+       ========================================================================== */
+    function linhasChefe(boca) {
+      const mid = (inner) => "..oh" + inner + "ho..";
+      const bocas = [
+        ["sssssmmsssss", "ssssssssssss", "ssssssssssss"],
+        ["ssssmttmssss", "ssssmddmssss", "ssssssssssss"],
+        ["sssmttttmsss", "sssmddddmsss", "ssssmmmmssss"]
+      ][boca];
+      return [
+        "......oooooooo......",
+        "....oossLLssssoo....",
+        "...osssLsssrsrsso...",
+        mid("ssssssssssss"),
+        mid("bbssssssssbb"),
+        mid("sbbbssssbbbs"),
+        mid("gwegssssgewg"),
+        mid("ggggssssgggg"),
+        mid("rsssSSSSsssr"),
+        mid("sssMMMMMMsss"),
+        mid(bocas[0]),
+        mid(bocas[1]),
+        mid(bocas[2]),
+        "...osssssssssssso...",
+        "....oossssssssoo....",
+        "......osSSSSso......",
+        "...oocccckkccccoo...",
+        "..o" + "cccccc" + "kk" + "cccccc" + "o..",
+        ".o" + "dd" + "ccccc" + "kk" + "ccccc" + "dd" + "o.",
+        ".o" + "ddd" + "cccc" + "kk" + "cccc" + "ddd" + "o."
+      ];
+    }
+    const PALETA_CHEFE = {
+      o: ARTE.contorno, s: "#e9b28a", S: "#c98d66", L: "#fbd7b9", h: "#6b6f7a",
+      b: "#2b1d14", g: "#1f2937", w: "#ffffff", e: "#111827", r: "#e8705a",
+      M: "#4b3621", m: "#5a1f1f", t: "#ffffff", d: "#7f1d1d",
+      c: "#eef1f5", k: "#b91c1c"
+    };
+
+    const chefe = { timerDigitar: null, timerBoca: null, timerSair: null };
+
+    function desenharRostoChefe(boca) {
+      const cv = document.getElementById("chefe-rosto");
+      const g = cv.getContext("2d");
+      g.imageSmoothingEnabled = false;
+      g.clearRect(0, 0, cv.width, cv.height);
+      g.drawImage(spriteDeTexto("chefe" + boca, linhasChefe(boca), PALETA_CHEFE), 0, 0);
+    }
+
+    function fecharChefe() {
+      clearInterval(chefe.timerDigitar);
+      clearInterval(chefe.timerBoca);
+      clearTimeout(chefe.timerSair);
+      const el = document.getElementById("chefe-popup");
+      if (el) el.classList.remove("visivel");
+    }
+
+    function chefeReclama(qtd) {
+      fecharChefe();
+      const el = document.getElementById("chefe-popup");
+      const span = document.getElementById("chefe-texto");
+      const fala = sortearTexto("chefeBravo").replace("{n}", String(qtd));
+      span.textContent = "";
+      el.classList.add("visivel");
+      desenharRostoChefe(2);
+      let i = 0;
+      // Boca mexendo enquanto fala
+      chefe.timerBoca = setInterval(() => desenharRostoChefe([1, 2, 0, 2, 1][Math.floor(Math.random() * 5)]), 90);
+      chefe.timerDigitar = setInterval(() => {
+        const ch = fala[i];
+        span.textContent += ch;
+        // "Voz" de bipinhos, mais grave no blablablá
+        if (ch && /[a-zà-ú]/i.test(ch) && i % 2 === 0) {
+          SFX.playTone(220 + Math.random() * 200, "square", 0.04, 0.05, 0.003);
+        }
+        i++;
+        if (i >= fala.length) {
+          clearInterval(chefe.timerDigitar);
+          clearInterval(chefe.timerBoca);
+          desenharRostoChefe(0);
+          chefe.timerSair = setTimeout(fecharChefe, 3800);
+        }
+      }, 38);
     }
 
     /* ==========================================================================
@@ -9048,6 +9192,7 @@
       fecharPedidoOk();
     });
     document.getElementById("hud-fila").addEventListener("click", cliqueNaFila);
+    document.getElementById("chefe-popup").addEventListener("click", fecharChefe);
     document.getElementById("btn-close-order").addEventListener("click", () => {
       SFX.menuBlip();
       fecharCardPedido();
