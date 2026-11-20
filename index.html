@@ -2439,8 +2439,8 @@
           filtro.frequency.linearRampToValueAtTime(950 + Math.random() * 250, t + 0.045);
           filtro.frequency.linearRampToValueAtTime(700, t + silaba * 0.9);
           ganho.gain.setValueAtTime(0.0001, t);
-          ganho.gain.linearRampToValueAtTime(0.16, t + 0.025);
-          ganho.gain.linearRampToValueAtTime(0.11, t + silaba * 0.55);
+          ganho.gain.linearRampToValueAtTime(0.38, t + 0.025);
+          ganho.gain.linearRampToValueAtTime(0.27, t + silaba * 0.55);
           ganho.gain.exponentialRampToValueAtTime(0.0008, t + silaba * 0.95);
           osc.connect(filtro);
           filtro.connect(ganho);
@@ -8154,7 +8154,7 @@
           clearInterval(chefe.timerDigitar);
           clearInterval(chefe.timerBoca);
           desenharRostoChefe(0);
-          chefe.timerSair = setTimeout(fecharChefe, 3800);
+          chefe.timerSair = setTimeout(fecharChefe, 8800); // tempo pra ler com calma (+5s)
         }
       }, 38);
     }
