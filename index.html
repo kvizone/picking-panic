@@ -810,7 +810,9 @@
     /* Boneco comemorando em canvas pequeno */
     #celeb-canvas {
       display: block;
-      margin: 8px auto 0 auto;
+      width: 72px;
+      height: 102px;
+      margin: 4px auto 0 auto;
       image-rendering: pixelated;
     }
     /* ==========================================================================
@@ -1477,7 +1479,6 @@
         <h1 style="margin: 0;">
           <img src="assets/logo-800.png" alt="PICKING PANIC" class="logo-img">
         </h1>
-        <p style="color: #fbbf24; font-size: 8px; margin-top: 4px;">OPERADOR DE ARMAZÉM 1996 · 6 FASES</p>
 
         <!-- Só o essencial: o resto aparece na hora certa, durante o jogo -->
         <div class="tela-essencial">
@@ -1495,7 +1496,7 @@
         </div>
 
         <button class="btn" id="btn-start-game" style="font-size: 11px; padding: 14px;">
-          INICIAR TURNO [ENTER]
+          INICIAR
         </button>
       </div>
     </div>
@@ -1628,7 +1629,7 @@
         <p id="falha-texto" style="font-size: 8px; color: #cbd5e1; line-height: 1.8;"></p>
         <div style="display: flex; gap: 10px;">
           <button class="btn" id="btn-falha-retry" style="flex: 1;">TENTAR DE NOVO [ENTER]</button>
-          <button class="btn btn-secondary" id="btn-falha-menu" style="flex: 1;">MENU</button>
+          <button class="btn btn-secondary" id="btn-falha-menu" style="flex: 1;">INÍCIO</button>
         </div>
       </div>
     </div>
@@ -1681,12 +1682,12 @@
         <div id="res-campanha" style="display: none; background: #1e1b4b; border: 2px solid #fbbf24; padding: 10px; font-size: 8px; line-height: 1.9; text-align: left;"></div>
 
         <!-- Bonequinho comemorando em pixel art -->
-        <canvas id="celeb-canvas" width="48" height="48"></canvas>
+        <canvas id="celeb-canvas" width="24" height="34"></canvas>
 
         <div style="display: flex; gap: 10px; margin-top: 4px;">
           <button class="btn" id="btn-next-phase" style="flex: 1;">PRÓXIMA FASE [ENTER]</button>
           <button class="btn btn-secondary" id="btn-play-again" style="flex: 1;">REPETIR</button>
-          <button class="btn btn-secondary" id="btn-back-menu" style="flex: 1;">MENU</button>
+          <button class="btn btn-secondary" id="btn-back-menu" style="flex: 1;">INÍCIO</button>
         </div>
       </div>
     </div>
@@ -6356,7 +6357,7 @@
       const ultimaFase = faseIndex + 1 >= FASES.length;
       document.getElementById("res-fase").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ${MISSAO_ATUAL.nomeFase}` +
         (TOQUE_DISPOSITIVO ? ` · CELULAR (3★ ATÉ ${Math.round(lim.tres)}s)` : "");
-      document.getElementById("btn-next-phase").textContent = ultimaFase ? "MENU [ENTER]" : "PRÓXIMA FASE [ENTER]";
+      document.getElementById("btn-next-phase").textContent = ultimaFase ? "INÍCIO [ENTER]" : "PRÓXIMA FASE [ENTER]";
       // Na última fase o botão principal já leva ao menu
       document.getElementById("btn-back-menu").style.display = ultimaFase ? "none" : "";
       const tituloEl = document.getElementById("res-titulo");
@@ -6576,48 +6577,44 @@
       vitoriaTimers.confettiRaf = requestAnimationFrame(loop);
     }
 
+    // A operadora comemorando: o mesmo sprite do jogo, de frente, com os braços pra cima
+    function spriteComemoracao() {
+      if (CACHE_SPR.has("comemora")) return CACHE_SPR.get("comemora");
+      let base = [...PESSOA_CABECA_FRENTE, ...PESSOA_TRONCO, ...PESSOA_PERNAS[0]];
+      if (APARENCIA_JOGADOR.cabeloLongo) LONGO_FRENTE.forEach((l, i) => { base[5 + i] = l; });
+      // Margem de 2px de cada lado para caberem os braços
+      const linhas = [".".repeat(18), ...base.map(l => ".." + l + "..")].map(l => l.split(""));
+      // As mãos que estavam pra baixo viram manga da camisa
+      for (const y of [12, 15]) { linhas[y][4] = "T"; linhas[y][13] = "T"; }
+      // Braços erguidos: contorno + manga + mão no alto
+      for (let y = 0; y <= 12; y++) {
+        for (const [x0, x1] of [[0, 3], [14, 17]]) {
+          linhas[y][x0] = "o";
+          linhas[y][x1] = "o";
+          const meio = y === 0 ? "o" : y <= 2 ? "s" : "T";
+          linhas[y][x0 + 1] = meio;
+          linhas[y][x0 + 2] = meio;
+        }
+      }
+      return spriteDeTexto("comemora", linhas.map(l => l.join("")), paletaPessoa(APARENCIA_JOGADOR));
+    }
+
     function animarBonecoCelebracao() {
       const c = document.getElementById("celeb-canvas");
       const cctx = c.getContext("2d");
       cctx.imageSmoothingEnabled = false;
+      const spr = spriteComemoracao();
 
       const geracao = vitoriaTimers.geracao;
       const loopCeleb = () => {
         if (geracao !== vitoriaTimers.geracao || estadoJogo !== "VITORIA") return;
-        cctx.clearRect(0, 0, 48, 48);
-
-        const jumpY = Math.abs(Math.sin(Date.now() / 150)) * 10;
-        cctx.save();
-        cctx.translate(24, 34 - jumpY);
-        cctx.scale(2, 2);
-
-        // Capacete branco
-        cctx.fillStyle = "#ffffff";
-        cctx.fillRect(-5, -10, 10, 8);
-        cctx.fillStyle = "#cbd5e1";
-        cctx.fillRect(-6, -6, 12, 2);
-
-        // Rosto feliz
-        cctx.fillStyle = "#fed7aa";
-        cctx.fillRect(-4, -4, 8, 3);
-
-        // Colete amarelo
-        cctx.fillStyle = "#facc15";
-        cctx.fillRect(-6, -1, 12, 8);
-        cctx.fillStyle = "#ffffff";
-        cctx.fillRect(-6, 2, 12, 2);
-
-        // Braços erguidos comemorando!
-        cctx.fillStyle = "#1e293b";
-        cctx.fillRect(-9, -8, 3, 8);
-        cctx.fillRect(6, -8, 3, 8);
-
-        // Pés
-        cctx.fillStyle = "#0f172a";
-        cctx.fillRect(-5, 6, 4, 3);
-        cctx.fillRect(1, 6, 4, 3);
-
-        cctx.restore();
+        cctx.clearRect(0, 0, c.width, c.height);
+        const pulo = Math.round(Math.abs(Math.sin(Date.now() / 150)) * 7);
+        // Sombra no chão diminui quando ela sobe
+        const ls = 14 - Math.round(pulo / 2);
+        cctx.fillStyle = "rgba(18, 20, 34, 0.3)";
+        cctx.fillRect(Math.round(12 - ls / 2), 32, ls, 2);
+        cctx.drawImage(spr, 3, 33 - spr.height - pulo);
         vitoriaTimers.celebRaf = requestAnimationFrame(loopCeleb);
       };
       vitoriaTimers.celebRaf = requestAnimationFrame(loopCeleb);
