@@ -73,8 +73,16 @@ O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais
 | 🔥 Incêndio | Pegue o extintor no armário vermelho da parede e segure E perto do pallet até apagar | 30s / 26s |
 | 📟 Coletor perdido | Sem coletor, sem WMS: siga o bip e a barra SINAL, pergunte aos colegas | 60s / 55s |
 | 🚚 Descarga urgente | Suba na empilhadeira, pegue o pallet no recebimento e guarde na posição sorteada da rua (R0X-PYY), no nível pedido | 120s / 100s |
+| 🪣 Pedido abandonado | Um colega chuta o balde e vai embora. O pedido dele cai no topo do balcão, com o primeiro item já separado: termine e entregue | 150s / 130s |
+| 💥 Batida na doca | Duas empilhadeiras batem no pallet da doca e pega fogo. Apague com o extintor. Os pedidos que estavam naquele pallet queimam e voltam pro balcão como "-R" pra refazer | 34s / 30s |
 
 O extintor e a empilhadeira ficam sempre no mapa, mas só funcionam na urgência deles. Os pedidos não param: enquanto você resolve a urgência, o prazo deles continua correndo.
+
+## Galpão vivo
+
+Os colegas (Robson, Jéssica e Kauã) trabalham de verdade: pegam caixa na rua, embalam numa bancada e levam pro pallet da doca, em loop. Eles saem das ruas pelo corredor de cima, pra deixar livre a área do pulmão onde a empilhadeira manobra.
+
+O chefe sai da sala (porta "CHEFE" na parede de cima) de tempos em tempos, passeia por dois ou três pontos do galpão, para pra vigiar e volta. Se passar perto de você, solta um comentário.
 
 ## Fase 4: Fila no Balcão
 

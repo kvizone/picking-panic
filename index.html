@@ -1907,7 +1907,7 @@
       // Começa com um pedido; depois cai um aleatório a cada minuto. Fecha ao entregar a meta.
       geracao: { intervalo: 60, meta: 3, armazenagem: false, numeroInicial: 1100 },
       // Urgências: a primeira cai aos 35s, depois uma a cada 75s. Tempos para resolver cada uma.
-      urgencias: { primeira: 35, intervalo: 75, tempos: { incendio: 30, coletor: 60, descarga: 120 } },
+      urgencias: { primeira: 35, intervalo: 75, tempos: { incendio: 30, coletor: 60, descarga: 120, abandono: 150, batida: 34 } },
       bateriaSegundos: 60,
       pedidos: [
         {
@@ -1974,7 +1974,7 @@
       estrelas: { tres: 310, duas: 390 },
       tempoColetaPorVolume: 1.0,
       geracao: { intervalo: 60, meta: 5, armazenagem: false, numeroInicial: 1200 },
-      urgencias: { primeira: 25, intervalo: 60, tempos: { incendio: 26, coletor: 55, descarga: 100 } },
+      urgencias: { primeira: 25, intervalo: 60, tempos: { incendio: 26, coletor: 55, descarga: 100, abandono: 130, batida: 30 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -2269,6 +2269,16 @@
       // ---------- Urgências ----------
       fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
       descargaAtrasou: ["A descarga travou a doca e o fornecedor foi embora.", "O pallet ficou no recebimento e a doca parou."],
+      abandonoAtrasou: ["O pedido do colega ficou parado e o cliente cancelou.", "Ninguém terminou o pedido e o caminhão saiu sem ele."],
+      falaAbandono: ["Cansei! Tô indo embora!", "Pra mim deu. Fui!", "Hoje não dá mais. Tchau, galera!", "Vou abrir uma lojinha de açaí. Fui!"],
+      chefeRonda: [
+        "Tô só de olho. Pode continuar.",
+        "Não liga pra mim, finge que eu não tô aqui.",
+        "Bom ritmo, hein. Continua assim.",
+        "Capacete no lugar? Ótimo.",
+        "Só passando. O balcão tá andando?",
+        "Esse corredor tá bonito. Gosto de ver."
+      ],
       urgenciaResolvida: ["Resolvido. Pode voltar pro pedido.", "Crise controlada. Bora que o balcão não para.", "Apagou o incêndio, literalmente ou não."],
 
       // ---------- Fase 5: recebimento e armazenagem ----------
@@ -3532,9 +3542,9 @@
 
     // NPCs
     const npcs = [
-      { x: 4 * TILE_SIZE + 24, y: 10 * TILE_SIZE, dir: "DOWN", waypoints: [{ x: 4 * TILE_SIZE + 24, y: 6 * TILE_SIZE }, { x: 4 * TILE_SIZE + 24, y: 34 * TILE_SIZE }], wpIndex: 0, speed: 45, vestColor: "#ea580c" },
-      { x: 9 * TILE_SIZE + 24, y: 30 * TILE_SIZE, dir: "UP", waypoints: [{ x: 9 * TILE_SIZE + 24, y: 34 * TILE_SIZE }, { x: 9 * TILE_SIZE + 24, y: 6 * TILE_SIZE }], wpIndex: 0, speed: 40, vestColor: "#10b981" },
-      { x: 19 * TILE_SIZE + 24, y: 15 * TILE_SIZE, dir: "DOWN", waypoints: [{ x: 19 * TILE_SIZE + 24, y: 6 * TILE_SIZE }, { x: 19 * TILE_SIZE + 24, y: 34 * TILE_SIZE }], wpIndex: 0, speed: 42, vestColor: "#8b5cf6" }
+      { nome: "ROBSON", x: 4 * TILE_SIZE + 24, y: 10 * TILE_SIZE, dir: "DOWN", waypoints: [{ x: 4 * TILE_SIZE + 24, y: 6 * TILE_SIZE }, { x: 4 * TILE_SIZE + 24, y: 34 * TILE_SIZE }], wpIndex: 0, speed: 45, vestColor: "#ea580c" },
+      { nome: "JÉSSICA", x: 9 * TILE_SIZE + 24, y: 30 * TILE_SIZE, dir: "UP", waypoints: [{ x: 9 * TILE_SIZE + 24, y: 34 * TILE_SIZE }, { x: 9 * TILE_SIZE + 24, y: 6 * TILE_SIZE }], wpIndex: 0, speed: 40, vestColor: "#10b981" },
+      { nome: "KAUÃ", x: 19 * TILE_SIZE + 24, y: 15 * TILE_SIZE, dir: "DOWN", waypoints: [{ x: 19 * TILE_SIZE + 24, y: 6 * TILE_SIZE }, { x: 19 * TILE_SIZE + 24, y: 34 * TILE_SIZE }], wpIndex: 0, speed: 42, vestColor: "#8b5cf6" }
     ];
 
     npcs.forEach(npc => {
@@ -4034,7 +4044,7 @@
     }
 
     function obterAlvoAtual() {
-      if (emerg.ativa) return alvoUrgencia();
+      if (urgenciaQueGuia()) return alvoUrgencia();
       const etapaId = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
       switch (etapaId) {
         case "RECEBER":
@@ -4246,6 +4256,7 @@
       if (coletorSumido() && estadoJogo === "JOGANDO") atualizarFase3(dt);
       atualizarFila(dt);
       atualizarEmergencias(dt);
+      atualizarRonda(dt);
       if (estadoJogo === "FALHOU") return;
 
       // 1. Movimento do Jogador
@@ -4435,20 +4446,8 @@
       // 3. NPCs
       if (SFX.npcBumpCooldown > 0) SFX.npcBumpCooldown = Math.max(0, SFX.npcBumpCooldown - dt);
       npcs.forEach(npc => {
-        const wp = npc.waypoints[npc.wpIndex];
-        const dx = wp.x - npc.x;
-        const dy = wp.y - npc.y;
-        const d = Math.hypot(dx, dy);
-        if (npc.parado > 0) {
-          // Parado: assustado com a buzina ou conversando com o jogador
-          npc.parado -= dt;
-        } else if (d < 4) {
-          npc.wpIndex = (npc.wpIndex + 1) % npc.waypoints.length;
-        } else {
-          npc.x += (dx / d) * npc.speed * dt;
-          npc.y += (dy / d) * npc.speed * dt;
-          npc.dir = (Math.abs(dx) > Math.abs(dy)) ? (dx > 0 ? "RIGHT" : "LEFT") : (dy > 0 ? "DOWN" : "UP");
-        }
+        if (npc.foiEmbora) return;
+        moverColega(npc, dt);
 
         const dJog = Math.hypot(player.x - npc.x, player.y - npc.y);
         if (!veiculo.pilotando && dJog < (player.radius + 6)) {
@@ -5030,6 +5029,8 @@
       });
 
       // 7b. Urgências: fogo, extintor na parede e posição da descarga
+      desenharPortaEscritorio();
+      desenharBatida();
       desenharFogo();
       desenharExtintorFixo();
       desenharAlvoDescarga();
@@ -5042,9 +5043,12 @@
 
       // 9. NPCs
       npcs.forEach((npc, i) => {
-        const passo = npc.parado > 0 ? 0 : Math.floor(Date.now() / 140 + i * 3) % 4;
-        renderPixelCharacter(npc.x, npc.y, npc.dir, passo, npc.vestColor, false, false);
+        if (npc.foiEmbora) return;
+        const passo = (npc.parado > 0 || npc.esperando > 0) ? 0 : Math.floor(Date.now() / 140 + i * 3) % 4;
+        renderPixelCharacter(npc.x, npc.y, npc.dir, passo, npc.vestColor, npc.caixa === "aberta", npc.caixa === "selada");
       });
+      desenharRonda();
+      desenharBalde();
 
       // 9b. Carrinho de picking
       desenharCarrinho();
@@ -5274,6 +5278,12 @@
     ];
 
     function paletaPessoa(p) {
+      if (p.careca) {
+        // Careca: o "capacete" vira a cabeça, com brilho no topo e a franja grisalha dos lados
+        return { ...paletaPessoa({ ...p, careca: false }),
+          L: tom(p.pele, 0.38), W: p.pele, w: tom(p.pele, -0.1), B: p.cabelo,
+          R: p.colete, k: "#b91c1c", M: "#4b3621" };
+      }
       return {
         o: ARTE.contorno, e: ARTE.contorno,
         L: tom(p.capacete, 0.6), W: p.capacete, w: tom(p.capacete, -0.22), B: tom(p.capacete, -0.38),
@@ -5294,6 +5304,12 @@
       let linhas = lado
         ? [...PESSOA_LADO, ...PESSOA_LADO_PERNAS[f]]
         : [...(costas ? PESSOA_CABECA_COSTAS : PESSOA_CABECA_FRENTE), ...PESSOA_TRONCO, ...PESSOA_PERNAS[f]];
+      if (apar.careca && !lado && !costas) {
+        // Bigode e gravata do chefe
+        linhas = linhas.slice();
+        linhas[7] = "..osMMMMMMso..";
+        for (let y = 10; y <= 14; y++) linhas[y] = linhas[y].slice(0, 6) + "kk" + linhas[y].slice(8);
+      }
       if (apar.cabeloLongo) {
         // Troca as linhas 5 a 11 pela versão com cabelo comprido
         const troca = lado ? LONGO_LADO : costas ? LONGO_COSTAS : LONGO_FRENTE;
@@ -5315,6 +5331,10 @@
       { id: "npc1", capacete: "#f4f6fa", cabelo: "#7a4a2a", pele: "#e7b48d", camisa: "#1f3b4d", colete: "#10b981", calca: "#2f3b52" },
       { id: "npc2", capacete: "#fb923c", cabelo: "#2b2b2b", pele: "#8a5a3c", camisa: "#3b2f4f", colete: "#8b5cf6", calca: "#3a3446" }
     ];
+    const APARENCIA_CHEFE = {
+      id: "chefe", careca: true, capacete: "#e9b28a", cabelo: "#8b8f99", pele: "#e9b28a",
+      camisa: "#eef1f5", colete: "#eef1f5", calca: "#2b3140"
+    };
     function aparenciaPorCor(vestColor) {
       return APARENCIAS_NPC.find(a => a.colete === vestColor) ||
         { ...APARENCIAS_NPC[0], id: "npc_" + vestColor, colete: vestColor };
@@ -6262,6 +6282,10 @@
       // Empilhadeiras (perigo)
       minimapCtx.fillStyle = "#ef4444";
       empAtivas.forEach(emp => minimapCtx.fillRect(emp.x * sx - 1, emp.y * sy - 1, 3, 3));
+      if (ronda.ativo) {
+        minimapCtx.fillStyle = "#f8fafc";
+        minimapCtx.fillRect(ronda.x * sx - 1, ronda.y * sy - 1, 3, 3);
+      }
 
       // Itens pendentes da etiqueta
       if (MISSAO_ATUAL.etapas[etapaAtualIndex]?.id === "COLETAR") {
@@ -6336,7 +6360,7 @@
         }
         document.getElementById("hud-obj-desc").textContent = desc;
       }
-      if (emerg.ativa) {
+      if (urgenciaQueGuia()) {
         const info = URGENCIA_INFO[emerg.ativa.tipo];
         document.getElementById("hud-obj-step").textContent = `FASE ${faseIndex + 1}/${FASES.length} · URGÊNCIA · ${info.nome}`;
         document.getElementById("hud-obj-desc").textContent = textoUrgencia();
@@ -6758,7 +6782,9 @@
         npc.dir = npc.spawnDir;
         npc.wpIndex = 0;
         npc.parado = 0;
+        resetarColega(npc);
       });
+      resetarRonda();
 
       // Estado próprio de cada fase
       resetarVeiculo();
@@ -7185,7 +7211,7 @@
     let chamadoAtivo = false;
     function atualizarChamadoBalcao() {
       const el = document.getElementById("chamado-balcao");
-      const mostrar = estadoJogo === "JOGANDO" && precisaPegarPedido() && !emerg.ativa;
+      const mostrar = estadoJogo === "JOGANDO" && precisaPegarPedido() && !urgenciaQueGuia();
       chamadoAtivo = mostrar;
       el.classList.toggle("visivel", mostrar);
       if (!mostrar) return false;
@@ -7328,7 +7354,11 @@
       const g = MISSAO_ATUAL.geracao;
       return g ? g.meta : (MISSAO_ATUAL.pedidos || []).length;
     }
-    function filaConcluida() { return pedidosEntregues().length >= metaFila(); }
+    function filaConcluida() {
+      // Pedido largado por colega precisa sair, mesmo que a meta já tenha batido
+      const urgentePendente = fila.pedidos.some(p => p.def.urgente && p.status !== "entregue");
+      return pedidosEntregues().length >= metaFila() && !urgentePendente;
+    }
 
     const sortear = (lista) => lista[Math.floor(Math.random() * lista.length)];
 
@@ -7348,6 +7378,18 @@
           itens: [{ rua: palete.baia, posicao: "N" + palete.nivel, nome: "PALLET " + palete.nome, qtd: 1 }]
         };
       } else {
+        def = criarDefPicking();
+      }
+      const p = {
+        def, indice: fila.pedidos.length, status: "esperando", chegouEm: tempoDecorrido, aceitoEm: 0, entregueEm: 0,
+        penAntes: 0, atrasoAvisado: false, resultado: null
+      };
+      fila.pedidos.push(p);
+      notificarPedido(p);
+    }
+
+    function criarDefPicking() {
+      {
         const n = Math.random() < 0.4 ? 3 : 2;
         const enderecos = new Set();
         const nomes = new Set();
@@ -7362,18 +7404,12 @@
           itens.push({ rua, posicao, nome, qtd: Math.random() < 0.25 ? 2 : 1 });
         }
         const vol = somaVolumes(itens);
-        def = {
+        return {
           tipo: "picking", numero: "#" + fila.seq, cliente: sortear(CLIENTES),
           docaSaida: Math.random() < 0.5 ? "DOCA 1" : "DOCA 2",
           chegada: 0, prazo: 32 + vol * 8, quantidadeVolumes: vol, itens
         };
       }
-      const p = {
-        def, indice: fila.pedidos.length, status: "esperando", chegouEm: tempoDecorrido, aceitoEm: 0, entregueEm: 0,
-        penAntes: 0, atrasoAvisado: false, resultado: null
-      };
-      fila.pedidos.push(p);
-      notificarPedido(p);
     }
 
     function prazoDe(p) { return p.def.prazo * fatorTempo(); }
@@ -7383,7 +7419,7 @@
       return ehFila() && !fila.ativo && !cargaDepositada && pedidosEsperando().length > 0;
     }
     function pedidosEsperando() { return fila.pedidos.filter(p => p.status === "esperando"); }
-    function pedidosRestantes() { return fila.pedidos.filter(p => p.status !== "entregue").length; }
+    function pedidosRestantes() { return fila.pedidos.filter(p => p.status !== "entregue" && p.status !== "queimado").length; }
     function pedidosEntregues() { return fila.pedidos.filter(p => p.status === "entregue"); }
     function estaAtrasado(p) { return (p.status === "esperando" || p.status === "ativo") && idadeDe(p) > prazoDe(p); }
     function mmss(seg) {
@@ -7487,7 +7523,8 @@
 
     // Fila do balcão, do mais urgente (menos prazo sobrando) para o menos urgente
     function listaBalcao() {
-      return pedidosEsperando().sort((a, b) => (prazoDe(a) - idadeDe(a)) - (prazoDe(b) - idadeDe(b)));
+      const folga = (p) => p.def.urgente ? -1e9 : prazoDe(p) - idadeDe(p);
+      return pedidosEsperando().sort((a, b) => folga(a) - folga(b));
     }
 
     // No balcão: o cupom do pedido mais urgente já sai impresso, numa janela só
@@ -7514,7 +7551,7 @@
         numero: p.def.numero,
         cliente: p.def.cliente,
         docaSaida: p.def.docaSaida,
-        itens: p.def.itens.map(it => ({ ...it, coletados: 0 })),
+        itens: p.def.itens.map((it, i) => ({ ...it, coletados: (p.def.jaSeparado && i === 0) ? it.qtd : 0 })),
         quantidadeVolumes: p.def.quantidadeVolumes
       });
       etiquetaObs = "";
@@ -7523,9 +7560,11 @@
       document.getElementById("cup-titulo").textContent = lista.length > 1
         ? `PEDIDO ${fila.selecionado + 1} DE ${lista.length} NO BALCÃO · ◀ ▶ TROCA`
         : "PEDIDO NO BALCÃO";
-      document.getElementById("cup-prazo").textContent = atrasado
+      document.getElementById("cup-prazo").textContent = p.def.urgente
+        ? `URGENTE · LARGADO PELO ${p.def.dono} · 1º ITEM JÁ SEPARADO`
+        : atrasado
         ? `ATRASADO HÁ ${mmss(idade - prazo)}`
-        : `ESPERANDO ${mmss(idade)} · PRAZO ${mmss(prazo)}`;
+        : `${p.def.refazer ? "REFAZER (QUEIMOU) · " : ""}ESPERANDO ${mmss(idade)} · PRAZO ${mmss(prazo)}`;
       document.querySelector("#cupom-seletor .cup-info").classList.toggle("atrasado", atrasado);
       document.getElementById("cup-ant").disabled = lista.length < 2;
       document.getElementById("cup-prox").disabled = lista.length < 2;
@@ -7578,10 +7617,11 @@
         recebimento.pallets = [{ ...p.def.palete, n: 1, x: 898, y: 374, pego: false, guardado: false }];
         recebimento.vazias = new Set([p.def.palete.baia]);
       }
-      volumesColetados = 0;
+      volumesColetados = MISSAO_ATUAL.itens.reduce((t, it) => t + (it.coletados || 0), 0);
       pacoteEmbalado = false;
       cargaDepositada = false;
       progressoColeta = 0;
+      if (p.def.jaSeparado) falarTexto(`O ${p.def.dono} já tinha separado ${MISSAO_ATUAL.itens[0].nome}. Falta o resto.`, "#fde047");
       // A doca do pedido abre a porta (se o caminhão já encostou)
       const cam = CAMINHOES.find(c => c.docaId === MISSAO_ATUAL.docaSaida);
       if (cam && !cam.chegando) cam.doorClosed = 0;
@@ -7607,6 +7647,8 @@
       fila.ativo = null;
       fila.ultimo = p;
       atualizarChipFila();
+      const a = emerg.ativa;
+      if (a && a.tipo === "abandono" && a.pedido === p) concluirEmergencia();
     }
 
     function abrirPedidoOk() {
@@ -7742,11 +7784,18 @@
     const URGENCIA_INFO = {
       incendio: { icone: "🔥", nome: "INCÊNDIO", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" },
       coletor: { icone: "📟", nome: "COLETOR PERDIDO", falha: "bateriaAcabou", tituloFalha: "BATERIA ACABOU" },
-      descarga: { icone: "🚚", nome: "DESCARGA URGENTE", falha: "descargaAtrasou", tituloFalha: "A DOCA TRAVOU" }
+      descarga: { icone: "🚚", nome: "DESCARGA URGENTE", falha: "descargaAtrasou", tituloFalha: "A DOCA TRAVOU" },
+      abandono: { icone: "🪣", nome: "PEDIDO ABANDONADO", falha: "abandonoAtrasou", tituloFalha: "O PEDIDO FICOU PRA TRÁS" },
+      batida: { icone: "💥", nome: "BATIDA NA DOCA", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" }
     };
+    const TEMPO_BATIDA = 1.6; // segundos das empilhadeiras vindo até a batida
+    // Urgências que não param o pedido: o jogador segue no fluxo normal do balcão
+    const urgenciaNoFluxo = () => !!emerg.ativa && emerg.ativa.tipo === "abandono";
+    const urgenciaQueGuia = () => !!emerg.ativa && !urgenciaNoFluxo();
 
     const descargaAtiva = () => !!emerg.ativa && emerg.ativa.tipo === "descarga";
-    const incendioAtivo = () => !!emerg.ativa && emerg.ativa.tipo === "incendio";
+    const incendioAtivo = () => !!emerg.ativa && (emerg.ativa.tipo === "incendio" || (emerg.ativa.tipo === "batida" && !(emerg.ativa.colisao > 0)));
+    const temFogo = (a) => !!a && (a.tipo === "incendio" || a.tipo === "batida");
     function coletorSumido() {
       if (ehColetor()) return !coletor.achado;
       return !!emerg.ativa && emerg.ativa.tipo === "coletor" && !coletor.achado;
@@ -7766,7 +7815,7 @@
     }
 
     function sortearOrdemUrgencias() {
-      const tipos = ["incendio", "coletor", "descarga"];
+      const tipos = Object.keys(MISSAO_ATUAL.urgencias.tempos);
       for (let i = tipos.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [tipos[i], tipos[j]] = [tipos[j], tipos[i]];
@@ -7778,13 +7827,28 @@
     function iniciarEmergencia() {
       const u = MISSAO_ATUAL.urgencias;
       if (!emerg.ordem.length) emerg.ordem = sortearOrdemUrgencias();
-      const tipo = emerg.ordem.shift();
+      let tipo = emerg.ordem.shift();
+      // Sem colega no galpão, ninguém tem como largar o pedido
+      if (tipo === "abandono" && !colegasNoGalpao().length) tipo = emerg.ordem.shift() || "incendio";
       emerg.ultimo = tipo;
       const limite = u.tempos[tipo] * fatorTempo();
       const a = { tipo, limite, restante: limite };
       if (tipo === "incendio") {
         const p = sortear(PALLETS_CONSOLIDACAO);
         Object.assign(a, { pallet: p, x: p.x + p.w / 2, y: p.y + p.h / 2, fogo: 1 });
+      } else if (tipo === "batida") {
+        // Duas empilhadeiras vêm de lados opostos e batem no pallet da doca
+        const doca = fila.ultimo && fila.ultimo.def.docaSaida ? fila.ultimo.def.docaSaida : sortear(["DOCA 1", "DOCA 2"]);
+        const p = PALLETS_CONSOLIDACAO.find(pl => pl.id === doca);
+        const cx = p.x + p.w / 2;
+        Object.assign(a, { pallet: p, x: cx, y: p.y + p.h / 2, fogo: 0, colisao: TEMPO_BATIDA,
+          emps: [{ x0: cx, y0: p.y - 110, x1: cx, y1: p.y - 18, dir: "DOWN" },
+                 { x0: cx, y0: p.y + p.h + 110, x1: cx, y1: p.y + p.h + 18, dir: "UP" }] });
+      } else if (tipo === "abandono") {
+        const npc = sortear(colegasNoGalpao());
+        colegaLargaOEmprego(npc);
+        a.colega = npc.nome;
+        a.pedido = criarPedidoAbandonado(npc, limite);
       } else if (tipo === "coletor") {
         // Some num esconderijo longe de onde o operador está
         let tentativas = 0;
@@ -7808,6 +7872,8 @@
       JUICE.shake(5, 0.35);
       const texto = {
         incendio: `Fogo no pallet ${a.pallet ? a.pallet.label : ""}! Pegue o extintor.`,
+        batida: `Cuidado! Duas empilhadeiras vindo pra ${a.pallet ? a.pallet.label : "doca"}...`,
+        abandono: `${a.colega} chutou o balde e foi embora! Termine o pedido ${a.pedido ? a.pedido.def.numero : ""} dele.`,
         coletor: "O coletor sumiu! Sem ele, sem WMS. Siga o bip.",
         descarga: `Descarga urgente: leve o pallet até a ${a.pos ? a.pos.idCompleto : ""}.`
       }[tipo];
@@ -7843,8 +7909,23 @@
       }
       if (a.tipo === "coletor") a.restante = coletor.bateria; // a bateria é o relógio
       else a.restante -= dt;
+      // Batida: as duas empilhadeiras chegam, batem e o pallet pega fogo
+      if (a.tipo === "batida" && a.colisao > 0) {
+        a.colisao -= dt;
+        if (a.colisao <= 0) {
+          a.fogo = 1;
+          a.pallet.boxes = 0;
+          SFX.empilhadeiraCrash();
+          JUICE.shake(8, 0.45);
+          JUICE.particulas(a.x, a.pallet.y - 4, "faisca", 18);
+          JUICE.particulas(a.x, a.pallet.y + a.pallet.h + 4, "faisca", 18);
+          JUICE.textoFlutuante(a.x, a.pallet.y - 24, "CRASH!", "#f97316");
+          falarTexto(`Bateram na ${a.pallet.label} e pegou fogo! Pegue o extintor.`, "#ef4444");
+          atualizarHUD();
+        }
+      }
       // Fogo: o extintor baixa; sem jato, ele volta a crescer devagar
-      if (a.tipo === "incendio") {
+      if (temFogo(a) && !(a.colisao > 0)) {
         if (emerg.spray) a.fogo -= dt / 2.2;
         else a.fogo = Math.min(1, a.fogo + dt * 0.05);
         emerg.spray = false;
@@ -7876,7 +7957,8 @@
       const b = document.getElementById("emergencia-banner");
       if (!a) { b.classList.remove("visivel"); return; }
       const info = URGENCIA_INFO[a.tipo];
-      const onde = a.tipo === "incendio" ? ` · PALLET ${a.pallet.label}` : a.tipo === "descarga" ? ` · ${a.pos.idCompleto} N${a.nivel}` : "";
+      const onde = temFogo(a) ? ` · ${a.pallet.label}` : a.tipo === "descarga" ? ` · ${a.pos.idCompleto} N${a.nivel}`
+        : a.tipo === "abandono" ? ` · ${a.pedido.def.numero}` : "";
       document.getElementById("emergencia-titulo").textContent = `${info.icone} ${info.nome}${onde}`;
       const t = Math.max(0, a.restante);
       const rel = document.getElementById("emergencia-tempo");
@@ -7893,7 +7975,9 @@
     function textoUrgencia() {
       const a = emerg.ativa;
       const E = EH_TOQUE ? "o botão" : "[E]";
-      if (a.tipo === "incendio") {
+      if (a.tipo === "batida" && a.colisao > 0) return "Saia da frente: tem empilhadeira vindo!";
+      if (a.tipo === "abandono") return `Pegue o ${a.pedido.def.numero} no balcão e entregue antes do tempo acabar.`;
+      if (temFogo(a)) {
         return emerg.extintorNaMao
           ? `Chegue perto do fogo e segure ${E} para apagar.`
           : `Pegue o extintor na parede (armário vermelho) ${E}.`;
@@ -7908,7 +7992,7 @@
     function alvoUrgencia() {
       const a = emerg.ativa;
       if (a.tipo === "coletor") return null; // sem coletor, sem seta
-      if (a.tipo === "incendio") return emerg.extintorNaMao ? { x: a.x, y: a.y } : { x: EXTINTOR_POS.x, y: EXTINTOR_POS.y + 16 };
+      if (temFogo(a)) return emerg.extintorNaMao ? { x: a.x, y: a.y } : { x: EXTINTOR_POS.x, y: EXTINTOR_POS.y + 16 };
       if (!veiculo.pilotando) return { x: veiculo.x, y: veiculo.y };
       if (a.etapa === "PEGAR") { const p = palletArmazenagemAtual(); return p ? { x: p.x - 30, y: p.y } : null; }
       const rua = RUAS_CONFIG.find(r => r.id === a.pos.rua);
@@ -7933,6 +8017,65 @@
       JUICE.particulas(a.x, a.y, "poeira", 22);
       JUICE.textoFlutuante(a.x, a.y - 20, "APAGADO!", "#e0f2fe");
       concluirEmergencia();
+      if (a.tipo === "batida") refazerPedidosQueimados(a.pallet);
+    }
+
+    // Depois da batida: o que estava no pallet da doca queimou e volta pro balcão
+    function refazerPedidosQueimados(pallet) {
+      const queimados = pedidosEntregues()
+        .filter(p => p.def.docaSaida === pallet.id)
+        .sort((x, y) => y.entregueEm - x.entregueEm)
+        .slice(0, 2);
+      if (!queimados.length) {
+        falarTexto(`Fogo apagado. Sorte que a ${pallet.label} estava vazia.`, "#34d399");
+        return;
+      }
+      queimados.forEach(o => {
+        o.status = "queimado";
+        const def = { ...o.def, numero: o.def.numero + "-R", refazer: true, urgente: false, jaSeparado: false };
+        fila.pedidos.push({ def, indice: fila.pedidos.length, status: "esperando", chegouEm: tempoDecorrido,
+                            aceitoEm: 0, entregueEm: 0, penAntes: 0, atrasoAvisado: false, resultado: null });
+      });
+      SFX.notificacao();
+      atualizarChipFila(true);
+      atualizarHUD();
+      const nums = queimados.map(o => o.def.numero).join(" e ");
+      falarTexto(`Fogo apagado, mas o ${nums} queimou no pallet. Refaça no balcão.`, "#fde047");
+    }
+
+    // Pedido largado pelo colega: cai no topo do balcão, já com o primeiro item separado
+    function criarPedidoAbandonado(npc, limite) {
+      fila.seq++;
+      const def = criarDefPicking();
+      Object.assign(def, { numero: "#" + fila.seq, urgente: true, dono: npc.nome, jaSeparado: true,
+                           prazo: limite / fatorTempo() });
+      const p = { def, indice: fila.pedidos.length, status: "esperando", chegouEm: tempoDecorrido, aceitoEm: 0,
+                  entregueEm: 0, penAntes: 0, atrasoAvisado: false, resultado: null };
+      fila.pedidos.push(p);
+      SFX.notificacao();
+      atualizarChipFila(true);
+      return p;
+    }
+
+    /* ---------- Desenho: as empilhadeiras da batida ---------- */
+    function desenharBatida() {
+      const a = emerg.ativa;
+      if (!a || a.tipo !== "batida") return;
+      const t = a.colisao > 0 ? 1 - a.colisao / TEMPO_BATIDA : 1;
+      const e = t * t; // aceleram até bater
+      a.emps.forEach((m, i) => {
+        let x = m.x0 + (m.x1 - m.x0) * e;
+        let y = m.y0 + (m.y1 - m.y0) * e;
+        if (a.colisao <= 0) { x += Math.sin(Date.now() / 40 + i) * 0.6; }
+        renderPixelForklift(x, y, m.dir, Date.now() / 300 + i);
+        if (a.colisao <= 0) {
+          // Fumaça saindo do motor batido
+          const f = ((Date.now() / 900) + i * 0.5) % 1;
+          ctx.fillStyle = `rgba(55, 60, 72, ${0.5 * (1 - f)})`;
+          const r = Math.round(2 + f * 4);
+          ctx.fillRect(Math.round(x - r + (i ? 6 : -6)), Math.round(y - 10 - f * 22 - r), r * 2, r * 2);
+        }
+      });
     }
 
     function concluirDescarga() {
@@ -8076,7 +8219,7 @@
       ret(ctx, x + 1, y + 1, 2, 7, "#dc2626");
       ret(ctx, x + 1, y + 1, 1, 6, "#f87171");
       const a = emerg.ativa;
-      if (a && a.tipo === "incendio" && keys["KeyE"] && Math.hypot(player.x - a.x, player.y - a.y) < 46) {
+      if (temFogo(a) && !(a.colisao > 0) && keys["KeyE"] && Math.hypot(player.x - a.x, player.y - a.y) < 46) {
         // Jato de pó: pontinhos brancos do bico até o fogo
         for (let i = 0; i < 14; i++) {
           const t = ((Date.now() / 60 + i * 7) % 14) / 14;
@@ -8089,7 +8232,7 @@
 
     function desenharFogo() {
       const a = emerg.ativa;
-      if (!a || a.tipo !== "incendio") return;
+      if (!temFogo(a) || a.colisao > 0) return;
       const p = a.pallet;
       const t = Date.now() / 90;
       const forca = Math.max(0.15, a.fogo);
@@ -8220,6 +8363,244 @@
           chefe.timerSair = setTimeout(fecharChefe, 8800); // tempo pra ler com calma (+5s)
         }
       }, 38);
+    }
+
+    /* ==========================================================================
+       16f. GALPÃO VIVO: colegas trabalhando e o chefe fazendo ronda
+       Os colegas pegam caixa na rua, embalam na bancada e levam pra doca, em loop.
+       O chefe sai da sala de vez em quando, passeia e volta.
+       ========================================================================== */
+    const PORTA_ESCRITORIO = { x: 520, y: 30 };
+    const FAIXA_TOPO = 36;                   // corredor de cima, entre a parede e o começo das ruas
+    const SAIDA_RUAS_X = 380;                // passagem entre a R04 e o balcão
+    const FAIXAS_ABERTAS = [230, 370];       // faixas livres entre bancadas e pallets
+    const naRua = (x) => x < 368;
+    const faixaPerto = (y) => FAIXAS_ABERTAS.reduce((a, b) => Math.abs(b - y) < Math.abs(a - y) ? b : a);
+
+    // Caminho que não atravessa racks, bancadas nem pallets, e deixa livre
+    // a parte de baixo do galpão (pulmão e recebimento, onde a empilhadeira manobra)
+    function rotaAte(x0, y0, x1, y1) {
+      const ruaA = naRua(x0), ruaB = naRua(x1);
+      if (ruaA && ruaB) {
+        if (Math.abs(x0 - x1) < 30) return [{ x: x1, y: y1 }];
+        return [{ x: x0, y: FAIXA_TOPO }, { x: x1, y: FAIXA_TOPO }, { x: x1, y: y1 }];
+      }
+      if (ruaA) {
+        const L = faixaPerto(y1);
+        return [{ x: x0, y: FAIXA_TOPO }, { x: SAIDA_RUAS_X, y: FAIXA_TOPO }, { x: SAIDA_RUAS_X, y: L }, { x: x1, y: L }, { x: x1, y: y1 }];
+      }
+      if (ruaB) {
+        const L = faixaPerto(y0);
+        return [{ x: x0, y: L }, { x: SAIDA_RUAS_X, y: L }, { x: SAIDA_RUAS_X, y: FAIXA_TOPO }, { x: x1, y: FAIXA_TOPO }, { x: x1, y: y1 }];
+      }
+      const L = faixaPerto((y0 + y1) / 2);
+      return [{ x: x0, y: L }, { x: x1, y: L }, { x: x1, y: y1 }];
+    }
+
+    // Anda pela rota; devolve true quando chegou no fim
+    function seguirRota(ent, dt) {
+      if (!ent.rota || !ent.rota.length) return true;
+      const wp = ent.rota[0];
+      const dx = wp.x - ent.x, dy = wp.y - ent.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 1.5) {
+        ent.rota.shift();
+        return !ent.rota.length;
+      }
+      const passo = Math.min(d, ent.speed * dt);
+      ent.x += dx / d * passo;
+      ent.y += dy / d * passo;
+      ent.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "RIGHT" : "LEFT") : (dy > 0 ? "DOWN" : "UP");
+      return false;
+    }
+
+    function resetarColega(npc) {
+      const i = npcs.indexOf(npc);
+      npc.rota = null;
+      npc.alvo = null;
+      npc.esperando = 0;
+      npc.caixa = [null, "aberta", "selada"][i % 3];
+      npc.saindo = false;
+      npc.foiEmbora = false;
+    }
+
+    // Ciclo de trabalho: rua → bancada → doca → rua
+    function proximaTarefa(npc) {
+      if (!npc.caixa) {
+        const pos = sortear(posicoesWMS);
+        const rua = RUAS_CONFIG.find(r => r.id === pos.rua);
+        npc.alvo = { x: rua.corridorX + (pos.isImpar ? 13 : 35), y: pos.zoneY + pos.zoneH / 2,
+                     olhar: pos.isImpar ? "LEFT" : "RIGHT", espera: 1.6, faz: "pegar" };
+      } else if (npc.caixa === "aberta") {
+        const est = sortear(ESTACOES_EMBALAGEM);
+        npc.alvo = { x: est.x - 10, y: est.y + est.h / 2, olhar: "RIGHT", espera: 2.8, faz: "embalar" };
+      } else {
+        // Só nas docas: o lado dos STAGES fica livre pra empilhadeira manobrar
+        const pl = sortear(PALLETS_CONSOLIDACAO.filter(x => x.id.startsWith("DOCA")));
+        npc.alvo = { x: pl.x - 10, y: pl.y + pl.h / 2, olhar: "RIGHT", espera: 0.9, faz: "expedir" };
+      }
+      npc.rota = rotaAte(npc.x, npc.y, npc.alvo.x, npc.alvo.y);
+    }
+
+    function moverColega(npc, dt) {
+      if (npc.parado > 0) { npc.parado -= dt; return; } // buzina, conversa, susto
+      if (npc.esperando > 0) {
+        npc.esperando -= dt;
+        npc.dir = npc.alvo.olhar;
+        if (npc.esperando <= 0) {
+          npc.caixa = { pegar: "aberta", embalar: "selada", expedir: null }[npc.alvo.faz];
+          proximaTarefa(npc);
+        }
+        return;
+      }
+      if (!npc.rota) { proximaTarefa(npc); return; }
+      if (seguirRota(npc, dt)) {
+        if (npc.saindo) { npc.foiEmbora = true; return; }
+        npc.rota = null;
+        npc.esperando = npc.alvo ? npc.alvo.espera : 0.5;
+      }
+    }
+
+    function colegasNoGalpao() { return npcs.filter(n => !n.foiEmbora && !n.saindo); }
+
+    // Pedestres que a empilhadeira do jogador precisa respeitar
+    function pedestres() {
+      const l = npcs.filter(n => !n.foiEmbora);
+      if (ronda.ativo) l.push(ronda);
+      return l;
+    }
+
+    /* ---------- Colega chutando o balde ---------- */
+    const balde = { ativo: false, x: 0, y: 0, vx: 0, t: 0 };
+
+    function colegaLargaOEmprego(npc) {
+      npc.saindo = true;
+      npc.esperando = 0;
+      npc.caixa = null;
+      npc.parado = 1.3; // chuta o balde, fala e só depois vai embora
+      npc.rota = [...rotaAte(npc.x, npc.y, PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8), { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4 }];
+      Object.assign(balde, { ativo: true, x: npc.x + 4, y: npc.y + 2, vx: npc.dir === "LEFT" ? -70 : 70, t: 0 });
+      SFX.npcBump();
+      SFX.playTone(300, "square", 0.08, 0.12, 0.01, 0.05);
+      JUICE.textoFlutuante(npc.x, npc.y - 22, "FUI!", "#fde047");
+      mostrarBalaoNpc(npc, sortearTexto("falaAbandono"));
+    }
+
+    function desenharBalde() {
+      if (!balde.ativo) return;
+      // Voa em arco por 0,7s e fica tombado no chão
+      const voo = Math.min(balde.t, 0.7);
+      const bx = Math.round(balde.x + balde.vx * voo);
+      const by = Math.round(balde.y - Math.sin(voo / 0.7 * Math.PI) * 14);
+      const tombado = balde.t >= 0.7;
+      sombraNoChao(bx, balde.y + 4, 8);
+      if (tombado) {
+        ret(ctx, bx - 4, by - 2, 9, 6, ARTE.contorno);
+        ret(ctx, bx - 3, by - 1, 7, 4, "#94a3b8");
+        ret(ctx, bx - 3, by - 1, 7, 1, "#cbd5e1");
+        ret(ctx, bx + 3, by - 1, 1, 4, "#475569");
+        ctx.fillStyle = "rgba(56, 189, 248, 0.45)"; // água derramada
+        ctx.fillRect(bx + 4, by + 2, 8, 3);
+      } else {
+        ret(ctx, bx - 3, by - 6, 7, 8, ARTE.contorno);
+        ret(ctx, bx - 2, by - 5, 5, 6, "#94a3b8");
+        ret(ctx, bx - 2, by - 5, 5, 1, "#cbd5e1");
+        ret(ctx, bx - 3, by - 8, 7, 1, "#475569");
+      }
+    }
+
+    /* ---------- Sala do chefe: porta na parede de cima ---------- */
+    function desenharPortaEscritorio() {
+      const x = PORTA_ESCRITORIO.x - 11, y = 4;
+      const aberta = (ronda.ativo && Math.hypot(ronda.x - PORTA_ESCRITORIO.x, ronda.y - PORTA_ESCRITORIO.y) < 30) ||
+        npcs.some(n => n.saindo && !n.foiEmbora && Math.hypot(n.x - PORTA_ESCRITORIO.x, n.y - PORTA_ESCRITORIO.y) < 30);
+      ret(ctx, x - 1, y - 1, 24, 22, ARTE.contorno);
+      ret(ctx, x, y, 22, 20, aberta ? "#0b0f1a" : "#7c5a3a");
+      if (!aberta) {
+        ret(ctx, x, y, 22, 1, "#9a7350");
+        ret(ctx, x + 3, y + 3, 16, 6, "#a5c8e4");
+        ret(ctx, x + 3, y + 3, 16, 1, "#dbeafe");
+        ret(ctx, x + 17, y + 12, 2, 2, "#facc15");
+      }
+      desenharBitmap("CHEFE", PORTA_ESCRITORIO.x, y + 22, "#f8fafc", 1, "center");
+    }
+
+    /* ---------- Ronda do chefe ---------- */
+    const ronda = { ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, espera: 0, paradas: 0, voltando: false,
+                    falou: false, proxima: 40, parado: 0, speed: 34, vestColor: "#b91c1c", olharT: 0 };
+
+    function pontosDeRonda() {
+      return [
+        ...RUAS_CONFIG.map(r => ({ x: r.corridorX + 24, y: 120 + Math.random() * 360 })),
+        ...ESTACOES_EMBALAGEM.map(e => ({ x: e.x - 14, y: e.y + e.h + 14 })),
+        { x: 500, y: 300 }, { x: 690, y: 260 }, { x: 480, y: 200 }
+      ];
+    }
+
+    function resetarRonda() {
+      balde.ativo = false;
+      Object.assign(ronda, { ativo: false, rota: null, espera: 0, parado: 0, voltando: false, falou: false,
+                             proxima: 30 + Math.random() * 20 });
+    }
+
+    function proximoPontoRonda() {
+      if (ronda.paradas <= 0) {
+        ronda.voltando = true;
+        ronda.rota = [...rotaAte(ronda.x, ronda.y, PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8), { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4 }];
+        return;
+      }
+      ronda.paradas--;
+      const p = sortear(pontosDeRonda());
+      ronda.rota = rotaAte(ronda.x, ronda.y, p.x, p.y);
+    }
+
+    function atualizarRonda(dt) {
+      if (estadoJogo !== "JOGANDO" || !cronometroIniciado) return;
+      if (balde.ativo) balde.t += dt;
+      if (!ronda.ativo) {
+        if (tempoDecorrido >= ronda.proxima) {
+          Object.assign(ronda, { ativo: true, x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4, dir: "DOWN",
+                                 paradas: 2 + Math.floor(Math.random() * 2), voltando: false, falou: false, espera: 0, parado: 0 });
+          ronda.rota = [{ x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 8 }];
+        }
+        return;
+      }
+      // Ao passar perto da operadora, solta um comentário (uma vez por ronda)
+      const dJog = Math.hypot(player.x - ronda.x, player.y - ronda.y);
+      if (!ronda.falou && dJog < 56 && !veiculo.pilotando) {
+        ronda.falou = true;
+        mostrarBalaoNpc(ronda, sortearTexto("chefeRonda"));
+      }
+      if (!veiculo.pilotando && dJog < player.radius + 6) {
+        const px = (player.x - ronda.x) / (dJog || 1), py = (player.y - ronda.y) / (dJog || 1);
+        if (!checkCollision(player.x + px * 2, player.y, player.radius)) player.x += px * 2;
+        if (!checkCollision(player.x, player.y + py * 2, player.radius)) player.y += py * 2;
+      }
+      if (ronda.parado > 0) { ronda.parado -= dt; return; }
+      if (ronda.espera > 0) {
+        // Parado vigiando: olha pra um lado e pro outro
+        ronda.espera -= dt;
+        ronda.olharT += dt;
+        ronda.dir = ["LEFT", "DOWN", "RIGHT", "DOWN"][Math.floor(ronda.olharT / 0.7) % 4];
+        if (ronda.espera <= 0) proximoPontoRonda();
+        return;
+      }
+      if (seguirRota(ronda, dt)) {
+        if (ronda.voltando) {
+          ronda.ativo = false;
+          ronda.proxima = tempoDecorrido + 45 + Math.random() * 35;
+          return;
+        }
+        // Chegou num ponto (ou acabou de sair da sala): para e vigia
+        ronda.espera = ronda.y < 50 ? 0.01 : 2.2 + Math.random();
+        ronda.olharT = 0;
+      }
+    }
+
+    function desenharRonda() {
+      if (!ronda.ativo) return;
+      const passo = (ronda.espera > 0 || ronda.parado > 0) ? 0 : Math.floor(Date.now() / 170) % 4;
+      renderPixelCharacter(ronda.x, ronda.y, ronda.dir, passo, ronda.vestColor, false, false, 1, 1, false, false, APARENCIA_CHEFE);
     }
 
     /* ==========================================================================
@@ -8506,7 +8887,7 @@
       }
 
       // Pedestres
-      npcs.forEach(npc => {
+      pedestres().forEach(npc => {
         const perto = circulosVeiculo().some(c => Math.hypot(c.x - npc.x, c.y - npc.y) < c.r + 6);
         if (!perto) return;
         // Pedestre pula pro lado
@@ -8531,7 +8912,7 @@
     function buzinar() {
       SFX.buzina();
       falar("buzina", "#fbbf24");
-      npcs.forEach(npc => {
+      pedestres().forEach(npc => {
         if (Math.hypot(npc.x - veiculo.x, npc.y - veiculo.y) < 110) npc.parado = 1.6;
       });
     }
@@ -8993,6 +9374,7 @@
         return;
       }
       npcs.forEach((npc, i) => {
+        if (npc.foiEmbora) return;
         if (Math.hypot(npc.x - player.x, npc.y - player.y) < 24) {
           player.currentZone = { tipo: "npc", dados: npc };
           npc.parado = 0.6;
