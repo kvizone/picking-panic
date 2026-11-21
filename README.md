@@ -123,6 +123,8 @@ Pensando em sessões de 20 a 30 minutos:
 
 Numa simulação de 30 minutos vieram cerca de 42 eventos, com 4 ou 5 incêndios, 2 ou 3 descargas, 3 caminhões, 3 inventários e 1 visita.
 
+**📻 Rádio Peão:** durante a briga, a discussão aparece num chat próprio (fundo escuro, borda tracejada laranja, "AO VIVO" e "só ouvindo"), com rosto e nome de quem fala: os dois colegas e depois o RH. No computador fica no canto de cima à direita; no celular, logo abaixo da faixa da urgência. Mostra as últimas 4 falas (3 no celular), avisa quando trocam a rádio pra Casa dos Caipiras e quando ela volta, e some sozinho uns segundos depois da paz.
+
 Quem larga o emprego volta arrependido uns 2 minutos depois, pra não faltar gente pra brigar nem pra largar pedido.
 
 ## Hidratação

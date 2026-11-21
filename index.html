@@ -1543,6 +1543,43 @@
     html.toque .chefe-popup.visivel { transform: translate(-50%, 0); opacity: 1; }
 
     .briefing-obs:empty { display: none; }
+
+    /* Rádio Peão: chat da fofoca (escuro, tracejado, só pra ouvir) */
+    .radio-peao {
+      position: absolute;
+      right: calc(10px * var(--escala));
+      top: calc(62px * var(--escala));
+      z-index: 46;
+      width: min(calc(250px * var(--escala)), 46%);
+      background: #1c1917;
+      color: #f5f5f4;
+      border: 2px dashed #f59e0b;
+      box-shadow: 3px 3px 0 #000;
+      padding: calc(5px * var(--escala));
+      font-size: calc(7px * var(--escala));
+      line-height: 1.5;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .radio-peao.visivel { opacity: 1; transform: none; }
+    .rp-topo { display: flex; align-items: center; gap: calc(5px * var(--escala)); margin-bottom: calc(4px * var(--escala)); }
+    .rp-nome { background: #f59e0b; color: #1c1917; padding: 1px 5px; }
+    .rp-vivo { color: #ef4444; animation: rpPisca 1s steps(2) infinite; }
+    .rp-ouvindo { margin-left: auto; color: #a8a29e; }
+    @keyframes rpPisca { 50% { opacity: 0.2; } }
+    .rp-msgs { display: flex; flex-direction: column; gap: calc(3px * var(--escala)); }
+    .rp-msg { display: flex; gap: calc(4px * var(--escala)); align-items: flex-start; animation: rpEntra 0.2s ease-out; }
+    .rp-msg.velha { opacity: 0.5; }
+    .rp-msg canvas {
+      width: calc(18px * var(--escala)); height: calc(18px * var(--escala)); flex-shrink: 0;
+      image-rendering: pixelated; border: 1px solid #000;
+    }
+    .rp-msg b { font-weight: normal; display: block; }
+    .rp-msg.sistema { color: #fde047; justify-content: center; text-align: center; }
+    @keyframes rpEntra { from { opacity: 0; transform: translateY(4px); } }
+    html.toque .radio-peao { left: 3%; right: 3%; width: auto; top: var(--rp-topo, 70px); font-size: calc(7.5px * var(--escala)); }
 </style>
 </head>
 <body>
@@ -1607,6 +1644,11 @@
     <div id="balao-npc" class="balao balao-npc"><span id="balao-npc-texto"></span></div>
     <!-- Chamado da missão: fica na tela até o operador pegar o pedido -->
     <!-- Popup do chefe (3 pedidos atrasados) -->
+    <!-- Rádio Peão: a fofoca da briga, só pra ouvir -->
+    <div id="radio-peao" class="radio-peao" aria-live="polite">
+      <div class="rp-topo"><span class="rp-nome">📻 RÁDIO PEÃO</span><span class="rp-vivo">● AO VIVO</span><span class="rp-ouvindo">🎧 só ouvindo</span></div>
+      <div class="rp-msgs" id="rp-msgs"></div>
+    </div>
     <div id="chefe-popup" class="chefe-popup" title="Fechar">
       <canvas id="chefe-rosto" width="20" height="20"></canvas>
       <div class="chefe-fala"><b id="chefe-tag">GERALDO · CHEFE</b><span id="chefe-texto"></span></div>
@@ -7750,6 +7792,7 @@
     }
 
     function atualizarDicas(dt) {
+      atualizarRadioPeao();
       const jogando = estadoJogo === "JOGANDO";
       const elDica = document.getElementById("dica-jit");
       // O chamado do balcão é a orientação principal: enquanto ele aparece, as dicas esperam
@@ -8577,9 +8620,12 @@
         Object.assign(a, { brigoes: [n1, n2], x: n1.x + lado / 2, y: n1.y, chamado: false, falaT: 1.2, linha: 0,
                            dialogo: MISSAO_ATUAL.semFim && !emerg.brigaRadioFeita ? DIALOGOS_BRIGA.find(d => d.tema === "rádio") : sortear(DIALOGOS_BRIGA) });
         emerg.brigaRadioFeita = true; // a primeira briga do turno é sempre a da rádio caipira
+        abrirRadioPeao();
+        mensagemRadioPeao(null, `${bonito2(n1)} e ${bonito2(n2)} começaram a discutir...`);
         falaDaBriga(a, 0);
         if (a.dialogo.tema === "rádio" && RADIO_MUSICA.trocarTemporaria(RADIO_CAIPIRA.url)) {
           a.trocouRadio = true;
+          mensagemRadioPeao(null, "📻 Alguém trocou a rádio pra Casa dos Caipiras!");
           setTimeout(() => falarTexto("📻 Alguém trocou a rádio pra Casa dos Caipiras!", "#fde047"), 1500);
         }
         chefeReclama("chefeBriga");
@@ -9366,6 +9412,85 @@
                   V: "#10b981", c: "#1f3b4d", R: "#e8eef5" }
       }
     };
+
+    // Rostos que só aparecem no Rádio Peão (não entram no sorteio de quem larga o emprego)
+    const ROSTOS_PEAO = {
+      "KAUÃ": {
+        sobrancelha: "sbbbbssbbbbs", bochecha: false, cabeloLongo: false, fundo: "#ddd6fe", corTag: "#7c3aed",
+        paleta: { o: ARTE.contorno, H: "#fb923c", L: "#fed7aa", B: "#c2410c", h: "#2b2b2b", s: "#8a5a3c", S: "#6b4029",
+                  b: "#1f1a17", w: "#ffffff", e: "#111827", m: "#4a1d14", t: "#ffffff", d: "#7f1d1d", r: "#a8604a",
+                  V: "#8b5cf6", c: "#3b2f4f", R: "#e8eef5" }
+      },
+      "RH": {
+        sobrancelha: "ssbbbssbbbss", bochecha: true, cabeloLongo: true, fundo: "#e9d5ff", corTag: "#6d28d9",
+        paleta: { o: ARTE.contorno, H: "#f4f6fa", L: "#ffffff", B: "#b8c0cc", h: "#3b2416", s: "#d9a07a", S: "#b9805a",
+                  b: "#2a170d", w: "#ffffff", e: "#111827", m: "#7f1d1d", t: "#ffffff", d: "#9f1239", r: "#c9846a",
+                  V: "#a78bfa", c: "#6d28d9", R: "#e8eef5" }
+      }
+    };
+    const radioPeao = { aberto: false, fecharEm: 0 };
+    function abrirRadioPeao() {
+      document.getElementById("rp-msgs").innerHTML = "";
+      radioPeao.aberto = true;
+      radioPeao.fecharEm = 0;
+      document.getElementById("radio-peao").classList.add("visivel");
+      posicionarRadioPeao();
+    }
+    function mensagemRadioPeao(nome, texto) {
+      if (!radioPeao.aberto) abrirRadioPeao();
+      const box = document.getElementById("rp-msgs");
+      const linha = document.createElement("div");
+      if (!nome) {
+        linha.className = "rp-msg sistema";
+        linha.textContent = texto;
+      } else {
+        const info = ROSTOS_COLEGAS[nome] || ROSTOS_PEAO[nome];
+        linha.className = "rp-msg";
+        if (info) {
+          const cv = document.createElement("canvas");
+          cv.width = 20; cv.height = 20;
+          cv.style.background = info.fundo;
+          const g = cv.getContext("2d");
+          g.imageSmoothingEnabled = false;
+          g.drawImage(spriteDeTexto("rosto_" + nome + "0", linhasColega(info, 0), info.paleta), 0, 0);
+          linha.appendChild(cv);
+        }
+        const txt = document.createElement("div");
+        const b = document.createElement("b");
+        b.textContent = nome.length <= 2 ? nome : nome.charAt(0) + nome.slice(1).toLowerCase();
+        b.style.color = info ? (info.fundo) : "#fde047";
+        txt.appendChild(b);
+        txt.appendChild(document.createTextNode(texto));
+        linha.appendChild(txt);
+      }
+      box.appendChild(linha);
+      // Só as últimas falas: 4 no computador, 3 no celular
+      const max = EH_TOQUE ? 3 : 4;
+      while (box.children.length > max) box.removeChild(box.firstChild);
+      [...box.children].forEach((el, i) => el.classList.toggle("velha", i < box.children.length - 1));
+    }
+    // No celular, logo abaixo da faixa da urgência (ou do topo do HUD)
+    function posicionarRadioPeao() {
+      const stage = document.getElementById("stage");
+      const ref = [document.getElementById("emergencia-banner"), document.getElementById("hud-obj-box")]
+        .find(el => el && el.offsetParent !== null && el.getBoundingClientRect().height > 0);
+      const topo = ref ? ref.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 6 : 70;
+      document.documentElement.style.setProperty("--rp-topo", Math.max(0, Math.round(topo)) + "px");
+    }
+    function fecharRadioPeao() {
+      radioPeao.aberto = false;
+      radioPeao.fecharEm = 0;
+      document.getElementById("radio-peao").classList.remove("visivel");
+    }
+    // Fecha sozinho: depois do fim da briga, ou se a briga acabou de outro jeito (falha, reinício)
+    function atualizarRadioPeao() {
+      if (!radioPeao.aberto) return;
+      if (EH_TOQUE) posicionarRadioPeao();
+      const brigando = emerg.ativa && emerg.ativa.tipo === "briga";
+      if (estadoJogo === "MENU" || estadoJogo === "FALHOU") return fecharRadioPeao();
+      if (radioPeao.fecharEm) { if (tempoDecorrido >= radioPeao.fecharEm) fecharRadioPeao(); }
+      else if (!brigando) fecharRadioPeao();
+    }
 
     const chefe = { timerDigitar: null, timerBoca: null, timerSair: null };
 
@@ -10518,13 +10643,14 @@
       }
     ];
 
+    const bonito2 = (n) => n.nome.charAt(0) + n.nome.slice(1).toLowerCase();
     function falaDaBriga(a, i) {
       const quem = a.brigoes[i % 2], outro = a.brigoes[(i + 1) % 2];
       const bonito = (n) => n.nome.charAt(0) + n.nome.slice(1).toLowerCase();
       const linhas = a.dialogo.falas;
       // Acabou o roteiro: seguem resmungando até o RH chegar
       const texto = i < linhas.length ? linhas[i] : ["Hmpf!", "Nem olha pra mim.", "Tô de mal.", "Hmpf! Hmpf!"][i % 4];
-      mostrarBalaoNpc(quem, texto.replace(/\{eu\}/g, bonito(quem)).replace(/\{outro\}/g, bonito(outro)));
+      mensagemRadioPeao(quem.nome, texto.replace(/\{eu\}/g, bonito(quem)).replace(/\{outro\}/g, bonito(outro)));
       SFX.playTone(140 + Math.random() * 60, "square", 0.06, 0.05, 0.005);
     }
 
@@ -10563,7 +10689,8 @@
           rh.t = 3.6; // tempo de ler a solução do RH
           rh.dir = "UP";
           a.brigoes.forEach(n => { n.dir = "DOWN"; });
-          mostrarBalaoNpc(rh, a.dialogo ? a.dialogo.rh : sortearTexto("falasRH"));
+          mensagemRadioPeao(null, "O RH chegou.");
+          mensagemRadioPeao("RH", a.dialogo ? a.dialogo.rh : sortearTexto("falasRH"));
         }
       } else if (rh.fase === "conversando") {
         rh.t -= dt;
@@ -10576,7 +10703,9 @@
           if (a.trocouRadio) {
             RADIO_MUSICA.voltarDaTemporaria();
             falarTexto("📻 O RH devolveu a rádio pra 89 FM.", "#c4b5fd");
-          }
+            mensagemRadioPeao(null, "📻 Rádio de volta na 89 FM.");
+          } else mensagemRadioPeao(null, "Fizeram as pazes. Fim da fofoca.");
+          radioPeao.fecharEm = tempoDecorrido + 4.5;
         }
       }
     }
