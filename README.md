@@ -76,7 +76,7 @@ O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais
 | 🪣 Pedido abandonado | Robson ou Jéssica chuta o balde e vai embora, e aparece no rádio (com rosto, igual ao chefe) contando o que largou. Logo depois o chefe reage. O pedido cai no topo do balcão, com o primeiro item já separado: termine e entregue | 150s / 130s |
 | 🧹 Caixa derrubada | Alguém derrubou uma caixa numa das ruas. Vá até lá e segure a ação pra varrer (a bagunça some aos poucos) | 45s (turno sem fim) |
 | 🖥️ Tela roxa no WMS | O sistema trava: abre a tela roxa "ERRO NO SISTEMA" e o balcão para de liberar pedido. Vá ao balcão e chame a TI. Ao chamar, o relógio para e o técnico (colete azul) vem consertar. Quem já tem pedido na mão pode continuar | 40s / 35s |
-| 😡 Briga no galpão | Dois colegas param e começam a brigar, numa de 4 discussões com roteiro (marmita, rádio, vaga do carrinho e fita adesiva); a moça do RH responde sobre o assunto. Ligue pro RH no ramal da parede de cima (perto da placa EPI). Ao ligar, o relógio para e a moça do RH sai da sala, acalma os dois e volta | 40s / 35s |
+| 😡 Briga no galpão | Dois colegas param e começam a brigar, numa de 4 discussões com roteiro (marmita, rádio, vaga do carrinho e fita adesiva); a moça do RH responde sobre o assunto. Na briga da rádio, a música troca pra Casa dos Caipiras e volta pra 89 FM quando o RH resolve. Ligue pro RH no ramal da parede de cima (perto da placa EPI). Ao ligar, o relógio para e a moça do RH sai da sala, acalma os dois e volta | 40s / 35s |
 | 💥 Batida de empilhadeiras | Duas empilhadeiras levando carga pro caminhão batem de frente no corredor entre as bancadas e pega fogo. Apague com o extintor. A carga do último pedido entregue queima e volta pro balcão como "-R" pra refazer | 34s / 30s |
 
 O extintor e a empilhadeira ficam sempre no mapa, mas só funcionam na urgência deles. Os pedidos não param: enquanto você resolve a urgência, o prazo deles continua correndo.
@@ -100,7 +100,15 @@ Além dos problemas, o sorteio pode trazer uma demanda: uma tarefa sem cronômet
 
 Cai um pedido a cada 35 segundos (no máximo 6 esperando). Com 5 ou mais pedidos parados no balcão, o próximo demora o dobro (70 segundos), pra dar tempo de recuperar.
 
-Problemas e demandas são sorteados com peso: tela roxa e briga aparecem mais; coletor, descarga, abandono, caixa derrubada, caminhão e treino no meio; incêndio e batida menos. O primeiro problema do turno é sempre a tela roxa (aos 25 segundos). Depois disso, o sorteio nunca repete a mesma urgência em seguida nem coloca dois fogos seguidos.
+Problemas e demandas andam pela contagem de pedidos entregues (pedidos comuns; o de treino e o abandonado não contam):
+
+- A cada 3 pedidos entregues, vem uma demanda, alternando caminhão e treino do Enzo.
+- No meio de cada ciclo de 3 (depois do 1º ou do 2º pedido) estoura um problema, uns 8 a 20 segundos depois da entrega.
+- O primeiro problema do turno é sempre a tela roxa, aos 25 segundos.
+
+Exemplo: pedido 3 → caminhão; pedido 4 ou 5 → problema; pedido 6 → treino; pedido 7 ou 8 → problema; pedido 9 → caminhão...
+
+Os problemas são sorteados com peso (tela roxa e briga aparecem mais; incêndio e batida menos), sem repetir o mesmo em seguida nem colocar dois fogos seguidos.
 
 ## Hidratação
 

@@ -1829,6 +1829,9 @@
        Estações ao vivo. [R] passa por elas na ordem e, depois da última, desliga.
        Para adicionar outra: { nome, url (áudio direto do stream, mp3 ou aac), aoLigar }.
        ========================================================================== */
+    // Rádio que alguém coloca escondido na briga da rádio (não entra no ciclo do [R])
+    const RADIO_CAIPIRA = { nome: "Casa dos Caipiras", url: "https://8758.brasilstream.com.br/stream" };
+
     const RADIOS = [
       {
         nome: "89 FM A Rádio Rock",
@@ -3072,7 +3075,23 @@
       // Estações: lista RADIOS, no começo do script
       estacoes: RADIOS,
       estacaoAtual: 0,
-      get url() { return this.estacoes[this.estacaoAtual].url; },
+      urlTemporaria: null,   // estação trocada por um tempo (briga da rádio)
+      get url() { return this.urlTemporaria || this.estacoes[this.estacaoAtual].url; },
+
+      // Troca por um tempo (só se a rádio estiver ligada); volta com voltarDaTemporaria()
+      trocarTemporaria(url) {
+        if (!this.ligada) return false;
+        this.urlTemporaria = url;
+        this.descartarAudio();
+        this.tocar();
+        return true;
+      },
+      voltarDaTemporaria() {
+        if (!this.urlTemporaria) return;
+        this.urlTemporaria = null;
+        this.descartarAudio();
+        if (this.ligada) this.tocar();
+      },
       volume: 0.3,           // abaixo dos efeitos do jogo (com efeito AM)
       volumeSemEfeito: 0.3,  // volume se a rádio não permitir o efeito
       ligada: true,
@@ -3216,6 +3235,7 @@
 
       // [R]: desligada -> 1ª estação -> 2ª estação -> ... -> desligada
       alternar() {
+        this.urlTemporaria = null; // apertou R: a escolha dela vale mais que a briga
         if (!this.ligada) {
           this.ligada = true;
           this.estacaoAtual = 0;
@@ -7137,6 +7157,7 @@
       resetarRonda();
       rh.ativo = false;
       ti.ativo = false;
+      RADIO_MUSICA.voltarDaTemporaria();
       enzo.ativo = false;
       resetarHidratacao();
       cancelarBroncaAgendada();
@@ -7807,6 +7828,7 @@
       fila.vendo = null;
       fila.armazGeradas = 0;
       fila.finalizados = 0;
+      fila.ciclo = 0;
       atualizarContadorEntregues();
       fila.seq = MISSAO_ATUAL.geracao ? MISSAO_ATUAL.geracao.numeroInicial : 0;
       fila.proxGeracao = MISSAO_ATUAL.geracao ? MISSAO_ATUAL.geracao.intervalo * fatorTempo() : Infinity;
@@ -8080,6 +8102,7 @@
       const a = emerg.ativa;
       if (a && a.tipo === "abandono" && a.pedido === p) concluirEmergencia();
       if (a && a.tipo === "treino" && a.pedido === p) concluirTreino(a);
+      if (MISSAO_ATUAL.semFim && !p.def.treino && !p.def.urgente) contarPedidoNoCiclo();
     }
 
     function abrirPedidoOk() {
@@ -8212,7 +8235,13 @@
        O extintor e a empilhadeira ficam sempre no mapa, mas só servem na urgência deles.
        ========================================================================== */
     const EXTINTOR_POS = { x: 668, y: 30 }; // armário vermelho na parede, perto da consolidação
-    const emerg = { ativa: null, proxima: Infinity, ordem: [], ultimo: null, alarme: 0, hud: 0, extintorNaMao: false, spray: false };
+    const emerg = { ativa: null, proxima: Infinity, ordem: [], ultimo: null, alarme: 0, hud: 0, extintorNaMao: false, spray: false,
+                    // Turno sem fim: o que vem a seguir ("problema" = sorteio de problema; ou o tipo da demanda)
+                    pendentes: [], gatilhoProblema: Infinity, proxDemanda: 0 };
+    // Ritmo do turno sem fim: a cada 3 pedidos entregues vem uma demanda;
+    // no meio desses 3 pedidos (depois do 1º ou do 2º) estoura um problema
+    const PEDIDOS_POR_CICLO = 3;
+    const DEMANDAS_SEM_FIM = ["caminhao", "treino"];
 
     const URGENCIA_INFO = {
       incendio: { icone: "🔥", nome: "INCÊNDIO", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" },
@@ -8261,11 +8290,16 @@
       emerg.spray = false;
       const u = MISSAO_ATUAL.urgencias;
       emerg.proxima = u ? u.primeira * fatorTempo() : Infinity;
-      // Turno sem fim: o primeiro problema é sempre a tela roxa; depois segue o sorteio normal
-      if (MISSAO_ATUAL.semFim && u && u.tempos.telaRoxa) {
+      emerg.pendentes = [];
+      emerg.gatilhoProblema = Infinity;
+      // Turno sem fim: o primeiro problema é sempre a tela roxa (é o problema dos 3 primeiros pedidos);
+      // depois, tudo anda pela contagem de pedidos
+      if (MISSAO_ATUAL.semFim && u) {
+        emerg.pendentes = ["telaRoxa"];
         emerg.ultimo = "telaRoxa";
-        emerg.ordem = ["telaRoxa", ...sortearOrdemUrgencias()];
+        emerg.ordem = sortearOrdemUrgencias();
         emerg.ultimo = null;
+        emerg.proxDemanda = Math.floor(Math.random() * DEMANDAS_SEM_FIM.length);
       }
       document.documentElement.classList.remove("emergencia", "demanda");
       const b = document.getElementById("emergencia-banner");
@@ -8279,7 +8313,7 @@
     // Monta um "saco" com cada tipo repetido pelo peso e tira um por vez, sem repetir o anterior
     // e sem dois fogos seguidos
     function sortearOrdemUrgencias() {
-      const disponiveis = Object.keys(MISSAO_ATUAL.urgencias.tempos);
+      const disponiveis = Object.keys(MISSAO_ATUAL.urgencias.tempos).filter(t => !(URGENCIA_INFO[t] && URGENCIA_INFO[t].demanda));
       let melhor = null, menosErros = Infinity;
       // Tenta algumas ordens e fica com a que não repete nada (quase sempre sai de primeira)
       for (let tentativa = 0; tentativa < 30 && menosErros > 0; tentativa++) {
@@ -8299,13 +8333,36 @@
       return melhor;
     }
 
-    function iniciarEmergencia() {
+    // Pedido comum entregue no turno sem fim: avança o ciclo de 3
+    function contarPedidoNoCiclo() {
+      fila.ciclo = (fila.ciclo || 0) + 1;
+      const agendar = (vez, atraso) => {
+        emerg.pendentes.push(vez);
+        if (!emerg.ativa) emerg.proxima = Math.min(emerg.proxima, tempoDecorrido + atraso);
+      };
+      if (fila.ciclo === emerg.gatilhoProblema) {
+        // Problema no meio do ciclo: estoura enquanto a operadora já está no próximo pedido
+        agendar("problema", 8 + Math.random() * 12);
+      }
+      if (fila.ciclo % PEDIDOS_POR_CICLO === 0) {
+        // Fechou 3 pedidos: vem uma demanda (alternando caminhão e treino)
+        agendar(DEMANDAS_SEM_FIM[emerg.proxDemanda % DEMANDAS_SEM_FIM.length], 4);
+        emerg.proxDemanda++;
+        // O problema do próximo ciclo cai depois do 1º ou do 2º pedido dele
+        emerg.gatilhoProblema = fila.ciclo + 1 + Math.floor(Math.random() * 2);
+      }
+    }
+
+    function iniciarEmergencia(vez = "problema") {
       const u = MISSAO_ATUAL.urgencias;
-      if (!emerg.ordem.length) emerg.ordem = sortearOrdemUrgencias();
-      // Pula o que não dá pra acontecer agora (sem colega pra largar o pedido ou pra brigar)
-      const possivel = (t) => !(t === "abandono" && !colegasQuePodemLargar().length) && !(t === "briga" && colegasNoGalpao().length < 2);
-      const idx = emerg.ordem.findIndex(possivel);
-      let tipo = idx >= 0 ? emerg.ordem.splice(idx, 1)[0] : "telaRoxa";
+      let tipo = vez;
+      if (vez === "problema") {
+        if (!emerg.ordem.length) emerg.ordem = sortearOrdemUrgencias();
+        // Pula o que não dá pra acontecer agora (sem colega pra largar o pedido ou pra brigar)
+        const possivel = (t) => !(t === "abandono" && !colegasQuePodemLargar().length) && !(t === "briga" && colegasNoGalpao().length < 2);
+        const idx = emerg.ordem.findIndex(possivel);
+        tipo = idx >= 0 ? emerg.ordem.splice(idx, 1)[0] : "telaRoxa";
+      }
       emerg.ultimo = tipo;
       const limite = u.tempos[tipo] * fatorTempo();
       const a = { tipo, limite, restante: limite };
@@ -8349,6 +8406,10 @@
         Object.assign(a, { brigoes: [n1, n2], x: n1.x + lado / 2, y: n1.y, chamado: false, falaT: 1.2, linha: 0,
                            dialogo: sortear(DIALOGOS_BRIGA) });
         falaDaBriga(a, 0);
+        if (a.dialogo.tema === "rádio" && RADIO_MUSICA.trocarTemporaria(RADIO_CAIPIRA.url)) {
+          a.trocouRadio = true;
+          setTimeout(() => falarTexto("📻 Alguém trocou a rádio pra Casa dos Caipiras!", "#fde047"), 1500);
+        }
         chefeReclama("chefeBriga");
       } else if (tipo === "abandono") {
         const npc = sortear(colegasQuePodemLargar());
@@ -8408,7 +8469,9 @@
       emerg.ativa = null;
       emerg.extintorNaMao = false;
       emerg.spray = false;
-      emerg.proxima = tempoDecorrido + (u ? u.intervalo * fatorTempo() : Infinity);
+      emerg.proxima = MISSAO_ATUAL.semFim
+        ? (emerg.pendentes.length ? tempoDecorrido + 6 : Infinity)
+        : tempoDecorrido + (u ? u.intervalo * fatorTempo() : Infinity);
       document.documentElement.classList.remove("emergencia", "demanda");
       document.getElementById("emergencia-banner").classList.remove("visivel");
       SFX.minigameSucesso();
@@ -8423,7 +8486,12 @@
       if (!u || !cronometroIniciado) return;
       const a = emerg.ativa;
       if (!a) {
-        if (estadoJogo === "JOGANDO" && !filaConcluida() && !cargaDepositada && tempoDecorrido >= emerg.proxima) iniciarEmergencia();
+        if (estadoJogo === "JOGANDO" && !filaConcluida() && !cargaDepositada && tempoDecorrido >= emerg.proxima) {
+          if (!MISSAO_ATUAL.semFim) iniciarEmergencia();
+          else if (emerg.pendentes.length) {
+            iniciarEmergencia(emerg.pendentes.shift());
+          } else emerg.proxima = Infinity;
+        }
         return;
       }
       if (ehDemanda(a)) a.restante = a.limite; // sem pressa: o relógio não anda
@@ -9759,15 +9827,15 @@
         tema: "rádio",
         falas: [
           "Quem trocou a estação da rádio?! Eu tava ouvindo meu rock!",
-          "Rock às oito da manhã ninguém merece, {outro}!",
-          "E pagode merece? Toca a mesma música desde 2009!",
+          "Fui eu! Rock às oito da manhã ninguém merece, {outro}. Agora é moda de viola!",
+          "Moda de viola toca a mesma música desde 1970!",
           "É clássico! Clássico não enjoa!",
           "Vou esconder o controle do rádio.",
           "Rádio não tem controle, {outro}. É botão.",
           "Então vou esconder o botão!",
           "Como você esconde um botão?!"
         ],
-        rh: "Vamos fazer uma playlist da equipe: uma de rock, uma de pagode. Revezando. Sem esconder botão."
+        rh: "Vamos fazer uma playlist da equipe: rock e moda de viola, revezando. Por hoje, volta a 89."
       },
       {
         tema: "carrinho",
@@ -9854,6 +9922,10 @@
           rh.rota = [...rotaAte(rh.x, rh.y, PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8), { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4 }];
           JUICE.textoFlutuante(a.x, a.y - 30, "PAZ!", "#c4b5fd");
           concluirEmergencia();
+          if (a.trocouRadio) {
+            RADIO_MUSICA.voltarDaTemporaria();
+            falarTexto("📻 O RH devolveu a rádio pra 89 FM.", "#c4b5fd");
+          }
         }
       }
     }
@@ -10778,6 +10850,7 @@
 
     function falharFase(evento, titulo = "BATERIA ACABOU") {
       fecharChefe();
+      if (RADIO_MUSICA.urlTemporaria) { RADIO_MUSICA.urlTemporaria = null; RADIO_MUSICA.descartarAudio(); }
       hidra.seca = false;
       cancelarBroncaAgendada();
       document.getElementById("falha-titulo").textContent = titulo;
