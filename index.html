@@ -1393,6 +1393,8 @@
       pointer-events: none;
     }
     .emergencia-banner.visivel { display: block; }
+    html.toque .emergencia-banner { top: var(--topo-hud, 60px); padding: 3px 8px; box-shadow: 2px 2px 0 #000; }
+    html.toque .emerg-trilho { margin-top: 2px; height: 3px; }
     .emerg-linha { display: flex; justify-content: space-between; gap: calc(10px * var(--escala)); align-items: baseline; }
     #emergencia-tempo { font-size: calc(12px * var(--escala)); color: #fde047; }
     #emergencia-tempo.critico { color: #ffffff; animation: piscaFila 0.5s steps(2) infinite; }
@@ -5042,7 +5044,12 @@
       const pxPorBuffer = stageRect.height / VIEW_H;
       const topo = document.querySelector(".hud-top-bar").getBoundingClientRect();
       const base = document.querySelector(".hud-bottom-bar").getBoundingClientRect();
-      hudInset.top = Math.max(0, Math.ceil((topo.bottom - stageRect.top) / pxPorBuffer) + 4);
+      // No celular a faixa da urgência conta como HUD: a câmera desce e a parede de cima (com o extintor) fica à vista
+      let fundoTopo = topo.bottom;
+      const banner = document.getElementById("emergencia-banner");
+      if (EH_TOQUE) document.getElementById("stage").style.setProperty("--topo-hud", (topo.bottom - stageRect.top + 2) + "px");
+      if (EH_TOQUE && banner && banner.classList.contains("visivel")) fundoTopo = Math.max(fundoTopo, banner.getBoundingClientRect().bottom);
+      hudInset.top = Math.max(0, Math.ceil((fundoTopo - stageRect.top) / pxPorBuffer) + 4);
       hudInset.bottom = Math.max(0, Math.ceil((stageRect.bottom - base.top) / pxPorBuffer) + 4);
       // Nunca deixa o HUD comer mais da metade da tela
       const maxTotal = Math.floor(VIEW_H * 0.5);
