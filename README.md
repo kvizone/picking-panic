@@ -88,9 +88,15 @@ O chefe sai da sala (porta "CHEFE" na parede de cima) de tempos em tempos, passe
 
 O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido atrasado, cada urgência, esbarrão de empilhadeira e quando você fica parada com pedido esperando. Entre uma bronca e outra há pelo menos 18 segundos (fila cheia e urgências furam essa espera).
 
+## Ritmo do turno sem fim
+
+Cai um pedido a cada 35 segundos (no máximo 6 esperando). Com 5 ou mais pedidos parados no balcão, o próximo demora o dobro (70 segundos), pra dar tempo de recuperar.
+
+As urgências são sorteadas com peso: tela roxa e briga aparecem mais (21% cada), coletor, descarga e abandono no meio (14% cada), e incêndio e batida menos (7% cada). O sorteio nunca repete a mesma urgência em seguida nem coloca dois fogos seguidos.
+
 ## Hidratação
 
-No turno sem fim, embaixo do relógio tem uma gota com uma barra de água. Ela esvazia em cerca de 100 segundos andando (mais rápido correndo). Com 25% ela fica laranja e o rádio avisa. Zerou: a personagem desidrata e começa uma contagem de 20 segundos pra beber água no bebedouro (parede de cima, do lado da porta do Geraldo). A seta passa a apontar pra lá. Se não beber a tempo, o turno acaba com "VOCÊ DESIDRATOU".
+No turno sem fim, embaixo do relógio tem uma gota com uma barra de água. Ela esvazia em cerca de 3 minutos andando (um pouco mais rápido correndo). Com 25% ela fica laranja e o rádio avisa. Zerou: a personagem desidrata e começa uma contagem de 20 segundos pra beber água no bebedouro (parede de cima, do lado da porta do Geraldo). A seta passa a apontar pra lá. Se não beber a tempo, o turno acaba com "VOCÊ DESIDRATOU".
 
 ## Personagens
 

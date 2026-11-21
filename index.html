@@ -7803,7 +7803,9 @@
         if (parado && fila.proxGeracao - tempoDecorrido > 4) fila.proxGeracao = tempoDecorrido + 4;
         if (tempoDecorrido >= fila.proxGeracao) {
           if (pedidosEsperando().length < 6) gerarPedidoAleatorio();
-          fila.proxGeracao = tempoDecorrido + g.intervalo * fatorTempo();
+          // Fila cheia (5 ou mais parados): o próximo pedido demora o dobro, pra dar tempo de respirar
+          const folga = pedidosEsperando().length >= 5 ? 2 : 1;
+          fila.proxGeracao = tempoDecorrido + g.intervalo * fatorTempo() * folga;
         }
       }
       fila.pedidos.forEach(p => {
@@ -8186,24 +8188,40 @@
       if (b) b.classList.remove("visivel");
     }
 
+    // Peso de cada urgência no sorteio: tela roxa e briga aparecem mais; fogo (incêndio e batida) menos
+    const PESOS_URGENCIA = { telaRoxa: 3, briga: 3, coletor: 2, descarga: 2, abandono: 2, incendio: 1, batida: 1 };
+    const ehDeFogo = (t) => t === "incendio" || t === "batida";
+
+    // Monta um "saco" com cada tipo repetido pelo peso e tira um por vez, sem repetir o anterior
+    // e sem dois fogos seguidos
     function sortearOrdemUrgencias() {
-      const tipos = Object.keys(MISSAO_ATUAL.urgencias.tempos);
-      for (let i = tipos.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [tipos[i], tipos[j]] = [tipos[j], tipos[i]];
+      const disponiveis = Object.keys(MISSAO_ATUAL.urgencias.tempos);
+      let melhor = null, menosErros = Infinity;
+      // Tenta algumas ordens e fica com a que não repete nada (quase sempre sai de primeira)
+      for (let tentativa = 0; tentativa < 30 && menosErros > 0; tentativa++) {
+        const saco = [];
+        disponiveis.forEach(t => { for (let i = 0; i < (PESOS_URGENCIA[t] || 1); i++) saco.push(t); });
+        const ordem = [];
+        let anterior = emerg.ultimo, erros = 0;
+        while (saco.length) {
+          const ok = saco.map((t, i) => i).filter(i => saco[i] !== anterior && !(ehDeFogo(saco[i]) && ehDeFogo(anterior)));
+          if (!ok.length) erros++;
+          const idx = ok.length ? sortear(ok) : Math.floor(Math.random() * saco.length);
+          anterior = saco.splice(idx, 1)[0];
+          ordem.push(anterior);
+        }
+        if (erros < menosErros) { menosErros = erros; melhor = ordem; }
       }
-      if (tipos[0] === emerg.ultimo) tipos.push(tipos.shift()); // não repete a anterior
-      return tipos;
+      return melhor;
     }
 
     function iniciarEmergencia() {
       const u = MISSAO_ATUAL.urgencias;
       if (!emerg.ordem.length) emerg.ordem = sortearOrdemUrgencias();
-      let tipo = emerg.ordem.shift();
-      // Sem colega no galpão, ninguém tem como largar o pedido
-      if (tipo === "abandono" && !colegasQuePodemLargar().length) tipo = emerg.ordem.shift() || "incendio";
-      if (tipo === "briga" && colegasNoGalpao().length < 2) tipo = emerg.ordem.shift() || "incendio";
-      if (tipo === "abandono" && !colegasQuePodemLargar().length) tipo = "incendio";
+      // Pula o que não dá pra acontecer agora (sem colega pra largar o pedido ou pra brigar)
+      const possivel = (t) => !(t === "abandono" && !colegasQuePodemLargar().length) && !(t === "briga" && colegasNoGalpao().length < 2);
+      const idx = emerg.ordem.findIndex(possivel);
+      let tipo = idx >= 0 ? emerg.ordem.splice(idx, 1)[0] : "telaRoxa";
       emerg.ultimo = tipo;
       const limite = u.tempos[tipo] * fatorTempo();
       const a = { tipo, limite, restante: limite };
@@ -9179,7 +9197,7 @@
     /* ---------- Hidratação: bebedouro na parede de cima ----------
        A água vai baixando (mais rápido correndo). Zerou: 20s pra chegar no bebedouro. */
     const BEBEDOURO = { x: 566, y: 30 };
-    const DURACAO_AGUA = 100;      // segundos de 100% até 0% andando
+    const DURACAO_AGUA = 180;      // segundos de 100% até 0% andando (3 minutos)
     const TEMPO_DESIDRATADA = 20;  // prazo pra beber depois de zerar
     const hidra = { nivel: 100, seca: false, restante: 0, avisouBaixa: false };
     const temHidratacao = () => !!MISSAO_ATUAL.semFim;
@@ -9193,7 +9211,7 @@
       if (!temHidratacao() || estadoJogo !== "JOGANDO" || !cronometroIniciado) return;
       if (!hidra.seca) {
         const correndo = keys["ShiftLeft"] || keys["ShiftRight"] || (toque.ativo && vetorToque().mag > TOQUE_CORRER);
-        hidra.nivel -= dt * (100 / DURACAO_AGUA) * (correndo ? 1.5 : 1);
+        hidra.nivel -= dt * (100 / DURACAO_AGUA) * (correndo ? 1.25 : 1);
         if (hidra.nivel <= 25 && !hidra.avisouBaixa) {
           hidra.avisouBaixa = true;
           falarTexto("Tá batendo sede. Passa no bebedouro, do lado da porta do Geraldo.", "#38bdf8");
