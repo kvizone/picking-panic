@@ -92,7 +92,7 @@ O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido 
 
 Cai um pedido a cada 35 segundos (no máximo 6 esperando). Com 5 ou mais pedidos parados no balcão, o próximo demora o dobro (70 segundos), pra dar tempo de recuperar.
 
-As urgências são sorteadas com peso: tela roxa e briga aparecem mais (21% cada), coletor, descarga e abandono no meio (14% cada), e incêndio e batida menos (7% cada). O sorteio nunca repete a mesma urgência em seguida nem coloca dois fogos seguidos.
+As urgências são sorteadas com peso: tela roxa e briga aparecem mais (21% cada), coletor, descarga e abandono no meio (14% cada), e incêndio e batida menos (7% cada). O primeiro problema do turno é sempre a tela roxa (aos 25 segundos). Depois disso, o sorteio nunca repete a mesma urgência em seguida nem coloca dois fogos seguidos.
 
 ## Hidratação
 

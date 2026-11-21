@@ -8183,6 +8183,12 @@
       emerg.spray = false;
       const u = MISSAO_ATUAL.urgencias;
       emerg.proxima = u ? u.primeira * fatorTempo() : Infinity;
+      // Turno sem fim: o primeiro problema é sempre a tela roxa; depois segue o sorteio normal
+      if (MISSAO_ATUAL.semFim && u && u.tempos.telaRoxa) {
+        emerg.ultimo = "telaRoxa";
+        emerg.ordem = ["telaRoxa", ...sortearOrdemUrgencias()];
+        emerg.ultimo = null;
+      }
       document.documentElement.classList.remove("emergencia");
       const b = document.getElementById("emergencia-banner");
       if (b) b.classList.remove("visivel");
