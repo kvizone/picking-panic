@@ -810,6 +810,19 @@
     }
 
     /* Boneco comemorando em canvas pequeno */
+    /* Ações secundárias do relatório: menores e sem peso visual */
+    .botoes-discretos { display: flex; gap: 8px; }
+    .btn-discreto {
+      flex: 1;
+      font-family: inherit;
+      font-size: 8px;
+      padding: 8px;
+      background: transparent;
+      color: #374151;
+      border: 2px solid #9ca3af;
+      cursor: pointer;
+    }
+    .btn-discreto:hover, .btn-discreto:focus-visible { border-color: #374151; color: #111827; }
     #celeb-canvas {
       display: block;
       width: 72px;
@@ -1719,10 +1732,10 @@
         <!-- Bonequinho comemorando em pixel art -->
         <canvas id="celeb-canvas" width="24" height="34"></canvas>
 
-        <div style="display: flex; gap: 10px; margin-top: 4px;">
-          <button class="btn" id="btn-next-phase" style="flex: 1;">PRÓXIMA</button>
-          <button class="btn btn-secondary" id="btn-play-again" style="flex: 1;">REPETIR</button>
-          <button class="btn btn-secondary" id="btn-back-menu" style="flex: 1;">INÍCIO</button>
+        <button class="btn" id="btn-next-phase" style="width: 100%; margin-top: 4px;">PRÓXIMA</button>
+        <div class="botoes-discretos">
+          <button class="btn-discreto" id="btn-play-again">REPETIR</button>
+          <button class="btn-discreto" id="btn-back-menu">INÍCIO</button>
         </div>
       </div>
     </div>
@@ -3817,9 +3830,7 @@
         feedback.style.color = "#fbbf24";
         feedback.textContent = EH_TOQUE ? `Passo ${Math.min(minigameIndex + 1, minigameLabels.length)} de ${minigameLabels.length}` : `PRESSIONE: [ ${minigameLabels[minigameIndex]} ]`;
       }
-      // No celular, acende o botão da próxima tecla da sequência
-      const prox = minigameSequence[minigameIndex];
-      document.querySelectorAll("#packing-touch button").forEach(b => b.classList.toggle("proxima", !!prox && b.dataset.tecla === prox.code));
+
     }
 
     document.querySelectorAll("#packing-touch button").forEach(b => { b.innerHTML = iconeTecla(b.textContent.trim()); });
