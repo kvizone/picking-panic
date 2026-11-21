@@ -1487,6 +1487,19 @@
     .emergencia-banner.demanda #emergencia-tempo { color: #bfdbfe; font-size: calc(10px * var(--escala)); }
     html.toque .emergencia-banner { top: var(--topo-hud, 60px); padding: 3px 8px; box-shadow: 2px 2px 0 #000; }
     html.toque .emerg-trilho { margin-top: 2px; height: 3px; }
+    /* Computador: o alerta mora dentro da barra de cima, sem faixa extra sobre o mapa */
+    .hud-top-bar > .emergencia-banner {
+      position: static;
+      transform: none;
+      align-self: center;
+      flex-shrink: 0;
+      min-width: calc(190px * var(--escala));
+      max-width: 34%;
+      padding: calc(3px * var(--escala)) calc(7px * var(--escala));
+      font-size: calc(8px * var(--escala));
+      box-shadow: 2px 2px 0 #000;
+    }
+    .hud-top-bar > .emergencia-banner .emerg-trilho { margin-top: 2px; height: 3px; }
     .emerg-linha { display: flex; justify-content: space-between; gap: calc(10px * var(--escala)); align-items: baseline; }
     #emergencia-tempo { font-size: calc(12px * var(--escala)); color: #fde047; }
     #emergencia-tempo.critico { color: #ffffff; animation: piscaFila 0.5s steps(2) infinite; }
@@ -3735,6 +3748,11 @@
     let VIEW_W = 560;
     let VIEW_H = 315;
     const TOQUE_DISPOSITIVO = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || ("ontouchstart" in window);
+    // No computador, o alerta de urgência fica dentro da barra de cima (antes do contador de pedidos)
+    if (!TOQUE_DISPOSITIVO) {
+      const barra = document.querySelector(".hud-top-bar"), alerta = document.getElementById("emergencia-banner");
+      if (barra && alerta) barra.insertBefore(alerta, document.querySelector(".hud-right-group"));
+    }
 
     // No celular o controle é mais lento: estrelas e bateria ganham 35% a mais de tempo,
     // e o recorde do celular fica separado do recorde do computador.
