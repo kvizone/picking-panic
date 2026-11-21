@@ -849,9 +849,9 @@
     html.toque .btn-toque.visivel { display: flex; }
     .btn-toque.apertado { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #000; background: #fde047; }
     .btn-toque-carrinho {
-      left: auto;
-      right: 3%;
-      bottom: 22%;
+      left: 3%;
+      right: auto;
+      bottom: calc(6% + 112px); /* em cima do botão de ação, longe do minimapa */
       min-width: 64px;
       height: 64px;
       font-size: 24px;
@@ -1394,8 +1394,11 @@
     }
     .chefe-fala { display: flex; flex-direction: column; gap: calc(4px * var(--escala)); font-size: calc(8px * var(--escala)); line-height: 1.6; }
     .chefe-fala b { font-weight: normal; background: #b91c1c; color: #ffffff; padding: 1px 5px; align-self: flex-start; }
-    html.toque .chefe-popup { left: 50%; bottom: calc(120px * var(--escala)); transform: translate(-50%, 260%); max-width: 92%; }
-    html.toque .chefe-popup.visivel { transform: translate(-50%, 0); }
+    .chefe-popup:not(.visivel) { visibility: hidden; pointer-events: none; transition: transform 0.18s ease-out, visibility 0s 0.18s; }
+    html.toque .chefe-popup { left: 50%; bottom: calc(120px * var(--escala)); transform: translate(-50%, 40px); opacity: 0; max-width: 92%; }
+    html.toque .chefe-popup.visivel { transform: translate(-50%, 0); opacity: 1; }
+
+    .briefing-obs:empty { display: none; }
 </style>
 </head>
 <body>
@@ -1801,7 +1804,7 @@
         ],
         controles: "↑ acelera · ↓ freia e dá ré · ← → vira · E pega/solta · H buzina",
         controlesToque: "Deslize para onde quer ir · para trás = ré · botão amarelo pega/solta · 📯 buzina",
-        obs: "OBS: faixa de pedestre tem limite de velocidade. A multa é em segundos."
+        obs: "Faixa de pedestre tem limite de velocidade. A multa é em segundos."
       },
       etapas: [
         { id: "ENTRAR_EMP", titulo: "ASSUMIR O VOLANTE", descricaoCurta: "Suba na Empilhadeira 04 [E]." },
@@ -1843,7 +1846,7 @@
         ],
         controles: "Setas andam · SHIFT corre · E pega/pergunta · C carrinho · barra SINAL no topo",
         controlesToque: "Deslize para andar · botão amarelo pega/pergunta · barra SINAL no topo",
-        obs: "OBS: A BATERIA DELE ESTÁ ACABANDO. TIPO, AGORA."
+        obs: "A bateria está acabando, anda logo!"
       },
       etapas: [
         { id: "ACHAR_COLETOR", titulo: "ACHAR O COLETOR", descricaoCurta: "Siga o bip e o SINAL. Colegas ajudam [E]." },
@@ -1913,7 +1916,7 @@
         ],
         controles: "↑ acelera · ↓ freia e dá ré · ← → vira · E pega/guarda · H buzina",
         controlesToque: "Deslize para onde quer ir · para trás = ré · botão amarelo pega/guarda · 📯 buzina",
-        obs: "OBS: O MOTORISTA QUER IR EMBORA. ELE SEMPRE QUER."
+        obs: "O motorista quer ir embora. Ele sempre quer."
       },
       etapas: [
         { id: "ENTRAR_EMP", titulo: "ASSUMIR O VOLANTE", descricaoCurta: "Suba na Empilhadeira 04 [E]." },
@@ -6990,7 +6993,8 @@
     }
 
     function perto_doCarrinho() {
-      return carrinho.ativo && !carrinho.pego && Math.hypot(carrinho.x - player.x, carrinho.y - player.y) < 24;
+      const alcance = EH_TOQUE ? 40 : 24; // no celular o dedo é menos preciso
+      return carrinho.ativo && !carrinho.pego && Math.hypot(carrinho.x - player.x, carrinho.y - player.y) < alcance;
     }
 
     function alternarCarrinho() {
@@ -7019,6 +7023,9 @@
     function desenharCarrinho() {
       if (!carrinho.ativo || veiculo.pilotando) return;
       const c = posicaoCarrinho();
+      if (EH_TOQUE && perto_doCarrinho() && estadoJogo === "JOGANDO") {
+        desenharPainelBitmap("TOQUE NO CARRINHO", c.x, c.y - 20, "#0b1326", "#38bdf8", "#bae6fd");
+      }
       const horizontal = Math.abs(carrinho.fx) > Math.abs(carrinho.fy);
       const w = horizontal ? 15 : 11;
       const h = horizontal ? 11 : 15;
@@ -8209,8 +8216,9 @@
       document.getElementById("brief-selo").textContent = b.selo;
       document.getElementById("brief-linhas").innerHTML = b.linhas
         .map(([k, v]) => `<div><b>${k}</b><span>${v}</span></div>`).join("");
-      document.getElementById("brief-controles").textContent = (EH_TOQUE && b.controlesToque) ? b.controlesToque : b.controles;
-      document.getElementById("brief-obs").textContent = b.obs;
+      // A caixa escura traz o aviso da missão (os controles aparecem como dica na hora de usar)
+      document.getElementById("brief-controles").textContent = b.obs.replace(/^OBS:\s*/i, "");
+      document.getElementById("brief-obs").textContent = "";
       document.getElementById("modal-briefing").style.display = "flex";
       SFX.terminal();
     }
