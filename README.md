@@ -86,6 +86,10 @@ O chefe sai da sala (porta "CHEFE" na parede de cima) de tempos em tempos, passe
 
 O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido atrasado, cada urgência, esbarrão de empilhadeira e quando você fica parada com pedido esperando. Entre uma bronca e outra há pelo menos 18 segundos (fila cheia e urgências furam essa espera).
 
+## Progresso salvo
+
+O navegador guarda em que fase da campanha você está (e os tempos das fases que já passou). Fechou o jogo no meio da fase 4? Na próxima vez a tela inicial mostra "CONTINUAR · FASE 4" e você volta no começo dela. "RECOMEÇAR DA FASE 1" apaga o progresso. Zerou a campanha, o progresso some. Fica salvo por navegador e aparelho (localStorage), sem login.
+
 ## Turno sem fim
 
 Botão na tela inicial. Pedidos caem a cada 35 segundos e urgências a cada 45, sem meta. O turno acaba quando uma urgência dá errado, e a tela final mostra quantos pedidos você entregou e em quanto tempo.

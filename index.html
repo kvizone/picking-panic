@@ -1543,6 +1543,7 @@
           [ PRESSIONE ENTER PARA JOGAR ]
         </div>
 
+        <button class="btn" id="btn-continuar" style="font-size: 11px; padding: 14px; display: none;"></button>
         <button class="btn" id="btn-start-game" style="font-size: 11px; padding: 14px;">
           INICIAR
         </button>
@@ -3748,7 +3749,7 @@
         if (estadoJogo === "MENU") {
           SFX.menuEnter();
           RADIO_MUSICA.tocar();
-          comecarCampanha();
+          continuarCampanha(); // sem progresso salvo, começa da fase 1
           return;
         } else if (estadoJogo === "CARD_PEDIDO") {
           SFX.menuBlip();
@@ -6557,6 +6558,10 @@
       // Campanha: guarda o resultado da fase e prepara o botão de seguir
       campanha.tempos[faseIndex] = tempoFinal;
       campanha.estrelas[faseIndex] = estrelas;
+      // Venceu: o progresso já aponta pra próxima fase (ou some, se zerou)
+      if (MISSAO_ATUAL !== FASE_SEM_FIM) {
+        if (faseIndex + 1 < FASES.length) salvarProgresso(faseIndex + 1); else apagarProgresso();
+      }
       const ultimaFase = faseIndex + 1 >= FASES.length;
       document.getElementById("res-fase").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ${MISSAO_ATUAL.nomeFase}` +
         (TOQUE_DISPOSITIVO ? ` · CELULAR (3★ ATÉ ${Math.round(lim.tres)}s)` : "");
@@ -8882,6 +8887,57 @@
       faseIndex = i;
       MISSAO_ATUAL = FASES[i];
       empAtivas = MISSAO_ATUAL.empilhadeirasAtivas.map(n => empilhadeiras[n]);
+      salvarProgresso(i);
+    }
+
+    /* ---------- Progresso salvo no navegador ----------
+       Guarda a fase da campanha em que a pessoa está (e os tempos das anteriores).
+       Fechou no meio da fase 4? Volta no começo da fase 4. */
+    const CHAVE_PROGRESSO = "pickingpanic_progresso";
+    function salvarProgresso(fase) {
+      try {
+        localStorage.setItem(CHAVE_PROGRESSO, JSON.stringify({
+          fase, tempos: campanha.tempos, estrelas: campanha.estrelas, em: Date.now()
+        }));
+      } catch (e) {}
+    }
+    function lerProgresso() {
+      try {
+        const p = JSON.parse(localStorage.getItem(CHAVE_PROGRESSO));
+        if (p && Number.isInteger(p.fase) && p.fase > 0 && p.fase < FASES.length) return p;
+      } catch (e) {}
+      return null;
+    }
+    function apagarProgresso() {
+      try { localStorage.removeItem(CHAVE_PROGRESSO); } catch (e) {}
+    }
+    function continuarCampanha() {
+      const p = lerProgresso();
+      if (!p) { comecarCampanha(); return; }
+      campanha.tempos = (p.tempos || []).map(t => t ?? undefined);
+      campanha.estrelas = (p.estrelas || []).map(t => t ?? undefined);
+      carregarFase(p.fase);
+      reiniciarJogo();
+    }
+    // Tela inicial: com progresso salvo, CONTINUAR vira o botão principal
+    function atualizarMenuInicial() {
+      const p = lerProgresso();
+      const cont = document.getElementById("btn-continuar");
+      const novo = document.getElementById("btn-start-game");
+      if (p) {
+        cont.style.display = "";
+        cont.textContent = `CONTINUAR · FASE ${p.fase + 1}: ${FASES[p.fase].nomeFase}`;
+        novo.textContent = "RECOMEÇAR DA FASE 1";
+        novo.classList.add("btn-secondary");
+        novo.style.fontSize = "10px";
+        novo.style.padding = "12px";
+      } else {
+        cont.style.display = "none";
+        novo.textContent = "INICIAR";
+        novo.classList.remove("btn-secondary");
+        novo.style.fontSize = "11px";
+        novo.style.padding = "14px";
+      }
     }
 
     function comecarSemFim() {
@@ -8894,6 +8950,7 @@
     function comecarCampanha() {
       campanha.tempos = [];
       campanha.estrelas = [];
+      apagarProgresso();
       carregarFase(0);
       reiniciarJogo();
     }
@@ -8920,6 +8977,7 @@
       document.getElementById("modal-start").style.display = "flex";
       estadoJogo = "MENU";
       carregarMelhorTempoInicial();
+      atualizarMenuInicial();
     }
 
     function abrirBriefing() {
@@ -9901,6 +9959,14 @@
       RADIO_MUSICA.tocar();
       comecarCampanha();
     });
+    document.getElementById("btn-continuar").addEventListener("click", () => {
+      entrarModoCelular();
+      initAudio();
+      SFX.menuEnter();
+      RADIO_MUSICA.tocar();
+      continuarCampanha();
+    });
+    atualizarMenuInicial();
     document.getElementById("btn-sem-fim").addEventListener("click", () => {
       entrarModoCelular();
       initAudio();
