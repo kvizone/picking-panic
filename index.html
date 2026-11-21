@@ -693,6 +693,8 @@
       transition: transform 0.12s;
     }
 
+    .icone-tecla { width: 21px; height: 21px; display: block; }
+    #packing-touch button { display: inline-flex; align-items: center; justify-content: center; }
     .key-box.pop {
       transform: scale(1.22);
     }
@@ -1699,7 +1701,7 @@
         <canvas id="celeb-canvas" width="24" height="34"></canvas>
 
         <div style="display: flex; gap: 10px; margin-top: 4px;">
-          <button class="btn" id="btn-next-phase" style="flex: 1;">PRÓXIMA FASE</button>
+          <button class="btn" id="btn-next-phase" style="flex: 1;">PRÓXIMA</button>
           <button class="btn btn-secondary" id="btn-play-again" style="flex: 1;">REPETIR</button>
           <button class="btn btn-secondary" id="btn-back-menu" style="flex: 1;">INÍCIO</button>
         </div>
@@ -3711,6 +3713,23 @@
       { code: "KeyE", alt: null, label: "E" }
     ];
 
+    // Ícones das teclas em pixel (todos 7x7, mesma grossura), pra ficarem iguais em qualquer celular
+    const PIXEL_ICONE = {
+      "↑": ["...#...", "..###..", ".#####.", "#######", "..###..", "..###..", "..###.."],
+      "↓": ["..###..", "..###..", "..###..", "#######", ".#####.", "..###..", "...#..."],
+      "←": ["...#...", "..##...", ".######", "#######", ".######", "..##...", "...#..."],
+      "→": ["...#...", "...##..", "######.", "#######", "######.", "...##..", "...#..."],
+      "E": ["#######", "#######", "##.....", "######.", "##.....", "#######", "#######"],
+      "✓": [".......", "......#", ".....##", "#...##.", "##.##..", ".###...", "..#...."]
+    };
+    function iconeTecla(t) {
+      const g = PIXEL_ICONE[t];
+      if (!g) return t;
+      let r = "";
+      g.forEach((l, y) => [...l].forEach((c, x) => { if (c === "#") r += `<rect x="${x}" y="${y}" width="1" height="1"/>`; }));
+      return `<svg class="icone-tecla" viewBox="0 0 7 7" aria-label="${t}" shape-rendering="crispEdges" fill="currentColor">${r}</svg>`;
+    }
+
     function sortearSequenciaMinigame() {
       minigameSequence = [];
       minigameLabels = [];
@@ -3741,11 +3760,11 @@
       minigameLabels.forEach((lbl, idx) => {
         const box = document.createElement("div");
         box.className = "key-box";
-        box.textContent = lbl;
+        box.innerHTML = iconeTecla(lbl);
 
         if (idx < minigameIndex) {
           box.classList.add("done");
-          box.innerHTML = "✓";
+          box.innerHTML = iconeTecla("✓");
         } else if (idx === minigameIndex) {
           box.classList.add("current");
           if (isError) box.classList.add("error");
@@ -3770,6 +3789,8 @@
         feedback.textContent = `PRESSIONE: [ ${minigameLabels[minigameIndex]} ]`;
       }
     }
+
+    document.querySelectorAll("#packing-touch button").forEach(b => { b.innerHTML = iconeTecla(b.textContent.trim()); });
 
     function tratarTeclaMinigame(keyCode) {
       if (minigameConcluido) return;
@@ -6370,7 +6391,7 @@
       const ultimaFase = faseIndex + 1 >= FASES.length;
       document.getElementById("res-fase").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ${MISSAO_ATUAL.nomeFase}` +
         (TOQUE_DISPOSITIVO ? ` · CELULAR (3★ ATÉ ${Math.round(lim.tres)}s)` : "");
-      document.getElementById("btn-next-phase").textContent = ultimaFase ? "INÍCIO" : "PRÓXIMA FASE";
+      document.getElementById("btn-next-phase").textContent = ultimaFase ? "INÍCIO" : "PRÓXIMA";
       // Na última fase o botão principal já leva ao menu
       document.getElementById("btn-back-menu").style.display = ultimaFase ? "none" : "";
       const tituloEl = document.getElementById("res-titulo");
