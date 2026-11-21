@@ -8839,6 +8839,7 @@
 
     // Quem está falando no popup: o chefe ou um colega
     let quemFala = null;
+    const colegaFalando = () => !!quemFala && document.getElementById("chefe-popup").classList.contains("visivel");
     function desenharRostoChefe(boca) {
       const cv = document.getElementById("chefe-rosto");
       const g = cv.getContext("2d");
@@ -8875,7 +8876,13 @@
           clearInterval(chefe.timerDigitar);
           clearInterval(chefe.timerBoca);
           desenharRostoChefe(0);
-          chefe.timerSair = setTimeout(fecharChefe, opcoes.duracao || 8800); // tempo pra ler com calma
+          // Tempo pra ler com calma. Fala de colega só conta com o jogo na tela (modal aberto segura o popup)
+          let falta = opcoes.duracao || 8800;
+          const passo = () => {
+            if (!info || estadoJogo === "JOGANDO") falta -= 250;
+            if (falta <= 0) fecharChefe(); else chefe.timerSair = setTimeout(passo, 250);
+          };
+          chefe.timerSair = setTimeout(passo, 250);
         }
       }, 38);
       return fala.length * 38 + (opcoes.duracao || 8800);
@@ -8886,6 +8893,7 @@
     function cancelarBroncaAgendada() { clearTimeout(broncaAgendada); broncaAgendada = null; }
 
     function fecharChefe() {
+      quemFala = null;
       clearInterval(chefe.timerDigitar);
       clearInterval(chefe.timerBoca);
       clearTimeout(chefe.timerSair);
@@ -8902,6 +8910,12 @@
       const prioridade = ["chefeAgua", "chefeBravo", "chefeIncendio", "chefeColetor", "chefeDescarga", "chefeAbandono", "chefeBatida"].includes(evento);
       if (tempoDecorrido - ultimaBronca < INTERVALO_CHEFE && !prioridade) return;
       if (estadoJogo !== "JOGANDO" && estadoJogo !== "MINIGAME" && estadoJogo !== "CARD_PEDIDO") return;
+      // Colega falando no rádio: o Geraldo espera (o que é urgente entra logo depois; o resto fica pra próxima)
+      if (colegaFalando()) {
+        // Se já tem uma reação marcada (ex.: ao abandono), ela vem primeiro
+        if (prioridade && !broncaAgendada) broncaAgendada = setTimeout(() => { broncaAgendada = null; chefeReclama(evento, n); }, 1500);
+        return;
+      }
       ultimaBronca = tempoDecorrido;
       popupRadio(sortearTexto(evento).replace("{n}", String(n ?? "")));
     }
@@ -9079,12 +9093,14 @@
       // Ele aparece no rádio explicando o que largou; o chefe reage logo depois
       const nomeBonito = npc.nome.charAt(0) + npc.nome.slice(1).toLowerCase();
       const ms = popupRadio(sortearTexto("despedida" + npc.nome).replace("{p}", numero),
-        { colega: npc.nome, tag: `${npc.nome} · LARGOU O PEDIDO`, duracao: 4500 });
+        { colega: npc.nome, tag: `${npc.nome} · LARGOU O PEDIDO`, duracao: 6500 });
       cancelarBroncaAgendada();
-      broncaAgendada = setTimeout(() => {
+      const depoisDoColega = () => {
+        if (colegaFalando()) { broncaAgendada = setTimeout(depoisDoColega, 500); return; }
         broncaAgendada = null;
         if (emerg.ativa && emerg.ativa.tipo === "abandono") chefeReclama("chefeAbandono", nomeBonito);
-      }, ms + 400);
+      };
+      broncaAgendada = setTimeout(depoisDoColega, ms + 400);
     }
 
     function desenharBalde() {
