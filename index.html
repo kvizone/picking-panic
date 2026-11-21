@@ -1279,7 +1279,19 @@
     }
     .chamado-balcao.visivel { display: block; }
     .chamado-balcao kbd { font-family: inherit; background: #111827; color: #fff; padding: 0 4px; }
-    html.toque .chamado-balcao { bottom: auto; top: var(--topo-livre, 70px); max-width: 88%; }
+    /* No celular vira uma faixa fina de uma linha, logo abaixo do HUD, pra não tampar o mapa */
+    html.toque .chamado-balcao {
+      bottom: auto;
+      top: var(--topo-livre, 70px);
+      max-width: 92%;
+      padding: 3px 8px;
+      font-size: 11px;
+      line-height: 1.4;
+      white-space: nowrap;
+      border-width: 2px;
+      box-shadow: 2px 2px 0 #000;
+    }
+    html.toque .chamado-balcao .balao-tag { display: none; }
     @keyframes chamadoPulsa { 50% { transform: translateX(-50%) scale(1.04); } }
     #btn-acao.chamando { animation: botaoChama 0.7s ease-in-out infinite; }
     @keyframes botaoChama { 50% { transform: scale(1.12); box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.45); } }
@@ -7135,7 +7147,7 @@
       const qtd = n > 1 ? `${n} na fila · ` : "";
       const setas = faseIndex === 0 ? `<kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> ` : "";
       const txt = EH_TOQUE
-        ? (noBalcao ? `${qtd}Toque em PEGAR PEDIDO` : `${qtd}Vá ao balcão WMS (siga a seta)`)
+        ? (noBalcao ? `${qtd}Toque em PEGAR PEDIDO` : `${qtd}Siga a seta até o balcão WMS`)
         : (noBalcao ? `${qtd}<kbd>E</kbd> pega o pedido` : `${qtd}${setas}Vá ao balcão WMS e aperte <kbd>E</kbd>`);
       const span = document.getElementById("chamado-texto");
       if (span.innerHTML !== txt) span.innerHTML = txt;
