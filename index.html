@@ -487,6 +487,7 @@
       background: #f59e0b;
     }
     .et-atrasado { color: #b91c1c; font-weight: bold; }
+    .et-item.mudou { background: #fde68a; outline: 1px dashed #92400e; }
     .balao-nome { display: block; font-size: 0.8em; color: #475569; margin-bottom: 2px; letter-spacing: 0.04em; }
     /* Aviso de demanda */
     #modal-demanda { background: rgba(15, 23, 42, 0.55); }
@@ -509,6 +510,14 @@
     .aviso-demanda li { margin-bottom: 4px; }
     .aviso-demanda .dm-nota { color: #1d4ed8; margin: 0; }
     .aviso-demanda .dm-btn { width: 100%; margin-top: 10px; }
+    .inv-linha { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+    .inv-linha .inv-end { flex: 1; font-size: 12px; color: #1e3a8a; }
+    .inv-btn {
+      width: 44px; height: 44px; font-family: inherit; font-size: 18px;
+      background: #ffffff; color: #111827; border: 2px solid #111827; box-shadow: 2px 2px 0 #111827; cursor: pointer;
+    }
+    .inv-num { width: 34px; text-align: center; font-size: 16px; color: #111827; }
+    .inv-erro { color: #b91c1c; min-height: 14px; margin: 4px 0 0; }
     #hud .hud-fila.congelado, #hud .hud-fila.tem.congelado { background: #1e3a8a; color: #bfdbfe; animation: none; }
     #hud .hud-fila.congelado::after { content: " ❄"; }
     /* Tela roxa do WMS */
@@ -943,6 +952,9 @@
       background: #e2e8f0;
     }
     .btn-toque-carrinho.ligado { background: #38bdf8; }
+    .btn-toque-emp.ligado { background: #fbbf24; }
+    .btn-toque-emp.empilhado { bottom: calc(6% + 122px); }
+    html.retrato .btn-toque-emp.empilhado { bottom: calc(4% + 122px); }
     .btn-toque-buzina {
       left: auto;
       right: 3%;
@@ -1546,6 +1558,7 @@
     <button id="btn-acao" class="btn-toque" type="button">AÇÃO</button>
     <button id="btn-buzina" class="btn-toque btn-toque-buzina" type="button">📯</button>
     <button id="btn-carrinho" class="btn-toque btn-toque-carrinho" type="button">🛒</button>
+    <button id="btn-empilhadeira" class="btn-toque btn-toque-carrinho btn-toque-emp" type="button" aria-label="Empilhadeira">🚜</button>
 
     <!-- Camada de Interface HUD (mesmo retângulo do canvas) -->
     <div id="hud" style="display: none;">
@@ -1749,6 +1762,17 @@
         <p class="tr-codigo">CÓDIGO: <span id="tr-codigo">WMS_PICKING_EXCEPTION 0x0000CAIXA</span></p>
         <p class="tr-codigo">Coletando informações do erro: <span id="tr-pct">0</span>%</p>
         <button class="btn tr-btn" id="btn-tela-roxa">ENTENDI</button>
+      </div>
+    </div>
+
+    <!-- MODAL: Digitar o inventário no WMS -->
+    <div id="modal-inventario" class="modal-overlay">
+      <div class="aviso-demanda" role="dialog" aria-labelledby="inv-titulo">
+        <h2 id="inv-titulo">📋 WMS · INVENTÁRIO</h2>
+        <p class="dm-nota" id="inv-notas"></p>
+        <div id="inv-linhas"></div>
+        <p class="inv-erro" id="inv-erro"></p>
+        <button class="btn dm-btn" id="btn-inv-enviar">ENVIAR CONTAGEM</button>
       </div>
     </div>
 
@@ -2141,7 +2165,7 @@
       estrelas: { tres: 99999, duas: 99999 },
       tempoColetaPorVolume: 1.0,
       geracao: { intervalo: 35, meta: Infinity, armazenagem: false, numeroInicial: 2000 },
-      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 38, telaRoxa: 38, limpeza: 45, caminhao: 999, treino: 999 } },
+      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 38, telaRoxa: 38, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -2474,6 +2498,23 @@
       // ---------- Urgências ----------
       fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
       descargaAtrasou: ["A descarga travou a doca e o fornecedor foi embora.", "O pallet ficou no recebimento e a doca parou."],
+      ligacaoFalhou: ["Ninguém atendeu o telefone e o cliente cancelou o pedido.", "O telefone tocou, tocou... e o cliente foi comprar no concorrente."],
+      visitaFalhou: ["O diretor viu a bagunça no corredor. O Geraldo vai ter que explicar. E você também.", "Bagunça na visita da diretoria. O Geraldo ficou da cor do colete."],
+      falasCliente: [
+        "Oi, é da expedição? Troca o {de} por {para}, por favor? Ah, e continua urgente.",
+        "Alô? Mudei de ideia: em vez de {de}, manda {para}. Obrigado, você é um anjo!",
+        "Desculpa incomodar! Esqueci de avisar: não é {de}, é {para}. Mesmo prazo, tá?"
+      ],
+      falasClienteMais: [
+        "Oi! Dá pra mandar mais uma unidade de {item}? Só mais uma! Juro que é a última.",
+        "Alô, expedição? Aumenta o {item} pra {qtd}, por favor. Meu chefe pediu."
+      ],
+      falasDiretor: [
+        "Hm. Chão limpo. Gosto.",
+        "Esse é o famoso galpão? Organizado. Muito organizado.",
+        "Geraldo, que time bom você tem aqui.",
+        "Quero ver esse ritmo no relatório do mês, hein."
+      ],
       limpezaFalhou: ["Ninguém limpou a caixa e a rua foi interditada. Os pedidos de lá travaram.", "A bagunça ficou no corredor e a segurança fechou a rua."],
       chefeLimpeza: [
         "Caixa no chão da rua?! Pega a vassoura antes que alguém escorregue!",
@@ -2519,6 +2560,12 @@
         "Bebe água! Não quero ninguém passando mal no meu turno.",
         "Desidratou?! O bebedouro tá ali do lado da minha porta, vai!",
         "Hidratação também é segurança do trabalho. Bebedouro, agora!"
+      ],
+      falasTIChegou: [
+        "Chegou a TI. Ninguém encosta no teclado.",
+        "Deixa eu ver... hm. Roxo. Bem roxo.",
+        "Opa! Quem chamou? Ah, é a tela roxa de novo.",
+        "Calma, calma. Já vi coisa pior. Ontem, inclusive."
       ],
       falasTI: [
         "Já tentou desligar e ligar de novo? Brincadeira, já resolvi.",
@@ -3946,6 +3993,11 @@
         if (e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape") { SFX.menuEnter(); fecharPedidoOk(); }
         return;
       }
+      if (estadoJogo === "INVENTARIO") {
+        if (e.code === "Escape") { document.getElementById("modal-inventario").style.display = "none"; estadoJogo = "JOGANDO"; limparInputs(); }
+        if (e.code === "Enter" && !e.repeat && performance.now() - inventarioAbertoEm > 600) enviarInventario();
+        return;
+      }
       if (estadoJogo === "DEMANDA_AVISO") {
         const fechar = e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape";
         if (fechar) e.preventDefault();
@@ -3998,6 +4050,12 @@
       if (e.code === "KeyE" && estadoJogo === "CARD_PEDIDO") {
         SFX.menuBlip();
         fecharCardPedido();
+        return;
+      }
+
+      // F: sobe/desce da empilhadeira
+      if (e.code === "KeyF" && estadoJogo === "JOGANDO" && !e.repeat) {
+        alternarEmpilhadeira();
         return;
       }
 
@@ -4287,7 +4345,7 @@
       MISSAO_ATUAL.itens.forEach(it => {
         const feito = it.coletados >= it.qtd;
         const linha = document.createElement("div");
-        linha.className = "et-item" + (feito ? " feito" : "");
+        linha.className = "et-item" + (feito ? " feito" : "") + (it.mudou ? " mudou" : ""); // mudou: o cliente ligou e alterou
         linha.innerHTML =
           `<span>${feito ? "[X]" : "[ ]"}</span>` +
           `<span class="et-end">${it.rua}-${it.posicao}</span>` +
@@ -4547,7 +4605,7 @@
     let stepSoundTimer = 0;
 
     function update(dt) {
-      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU" || estadoJogo === "PEDIDO_OK" || estadoJogo === "TELA_ROXA" || estadoJogo === "DEMANDA_AVISO") {
+      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU" || estadoJogo === "PEDIDO_OK" || estadoJogo === "TELA_ROXA" || estadoJogo === "DEMANDA_AVISO" || estadoJogo === "INVENTARIO") {
         return;
       }
 
@@ -5432,6 +5490,7 @@
       desenharRH();
       desenharTI();
       desenharEnzo();
+      desenharDiretor();
       desenharBalde();
 
       // 9b. Carrinho de picking
@@ -7231,7 +7290,7 @@
       resetarEmergencias();
       fecharChefe();
       resetarDicasDaPartida();
-      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok", "modal-tela-roxa", "modal-demanda"]
+      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok", "modal-tela-roxa", "modal-demanda", "modal-inventario"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
 
       encaixarCameraNoJogador();
@@ -7358,6 +7417,7 @@
     ligarBotaoTecla(document.getElementById("btn-acao"), "KeyE");
     ligarBotaoTecla(document.getElementById("btn-buzina"), "KeyH");
     ligarBotaoTecla(document.getElementById("btn-carrinho"), "KeyC");
+    ligarBotaoTecla(document.getElementById("btn-empilhadeira"), "KeyF");
     ligarBotaoTecla(document.getElementById("btn-erguer-toque"), "KeyE");
     (function segurarParaErguer() {
       const area = document.getElementById("modal-erguer");
@@ -7422,7 +7482,8 @@
       pulmao_alinhar: "ENCAIXE", zona_ok: "BAIXAR", zona_devagar: "PARE",
       zona_fora: "ENTRE", coletor: "PEGAR", npc: "PERGUNTAR",
       receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
-      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER"
+      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER",
+      atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR"
     };
     let rotuloAcaoAtual = "";
     function atualizarBotoesToque() {
@@ -7444,6 +7505,11 @@
       const mostrarCarrinho = estadoJogo === "JOGANDO" && !veiculo.pilotando && carrinho.ativo && (carrinho.pego || perto_doCarrinho());
       car.classList.toggle("visivel", mostrarCarrinho);
       car.classList.toggle("ligado", carrinho.pego);
+      const emp = document.getElementById("btn-empilhadeira");
+      emp.classList.toggle("visivel", estadoJogo === "JOGANDO" && (veiculo.pilotando || pertoDaEmpilhadeira()));
+      emp.classList.toggle("ligado", veiculo.pilotando);
+      // Os dois juntos: a empilhadeira sobe uma casa
+      emp.classList.toggle("empilhado", mostrarCarrinho && !veiculo.pilotando);
       if (estadoJogo !== "JOGANDO" && estadoJogo !== "ERGUER" && toque.ativo && estadoJogo !== "PAUSADO") {
         // Abriu uma tela por cima: solta o dedo que estava andando
         toque.ativo = false;
@@ -7614,6 +7680,8 @@
     }
 
     function mostrarBalaoNpc(npc, texto) {
+      // Fala de colega aleatório não atropela quem veio resolver algo (TI, RH, diretor, Enzo)
+      if (balaoNpc.timer > 1 && balaoNpc.npc && balaoNpc.npc !== npc && !npcs.includes(balaoNpc.npc) && npcs.includes(npc)) return;
       balaoNpc.npc = npc;
       balaoNpc.timer = 3.5 + texto.length * 0.04;
       const el = document.getElementById("balao-npc-texto");
@@ -7765,6 +7833,9 @@
         if (npcPerto) {
           tentarDica("buzina", `${K("H")} buzina`, "📯 buzina", { dur: 3 });
         }
+      }
+      if (pertoDaEmpilhadeira() && !descargaAtiva()) {
+        tentarDica("subirEmp", `${K("F")} sobe na empilhadeira`, "🚜 sobe na empilhadeira", { dur: 3 });
       }
       if (empPerto && dicasVistas.has("andar") && memoria.tempoNaEtapa > 2) {
         tentarDica("empilhadeira", "Empilhadeira tem preferência: encostar custa +5s",
@@ -8295,7 +8366,7 @@
     const emerg = { ativa: null, proxima: Infinity, ordem: [], ultimo: null, alarme: 0, hud: 0, extintorNaMao: false, spray: false,
                     // Turno sem fim: o que vem a seguir ("problema" = sorteio de problema; ou o tipo da demanda)
                     pendentes: [], gatilhoProblema: Infinity, proxDemanda: 0,
-                    demandaPendente: null, semEvento: 0 };
+                    demandaPendente: null, semEvento: 0, visitaEm: Infinity, vistos: {} };
     // Turno sem fim: problemas por TEMPO (o jogador se enrola), demandas pela quantidade de pedidos.
     // Começa com ~45s entre um problema e outro e vai apertando 2s por minuto, até ~28s.
     function intervaloProblema() {
@@ -8306,7 +8377,7 @@
     // Ritmo do turno sem fim: a cada 3 pedidos entregues vem uma demanda;
     // no meio desses 3 pedidos (depois do 1º ou do 2º) estoura um problema
     const PEDIDOS_POR_CICLO = 3;
-    const DEMANDAS_SEM_FIM = ["caminhao", "treino"];
+    const DEMANDAS_SEM_FIM = ["caminhao", "treino", "inventario"];
 
     const URGENCIA_INFO = {
       incendio: { icone: "🔥", nome: "INCÊNDIO", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" },
@@ -8315,6 +8386,9 @@
       abandono: { icone: "🪣", nome: "PEDIDO ABANDONADO", falha: "abandonoAtrasou", tituloFalha: "O PEDIDO FICOU PRA TRÁS" },
       limpeza: { icone: "🧹", nome: "CAIXA DERRUBADA", falha: "limpezaFalhou", tituloFalha: "A RUA FOI INTERDITADA" },
       caminhao: { icone: "🚛", nome: "CAMINHÃO", demanda: true },
+      inventario: { icone: "📋", nome: "INVENTÁRIO", demanda: true },
+      ligacao: { icone: "📞", nome: "CLIENTE NA LINHA", falha: "ligacaoFalhou", tituloFalha: "O CLIENTE CANCELOU" },
+      visita: { icone: "🏢", nome: "VISITA DA DIRETORIA", falha: "visitaFalhou", tituloFalha: "O DIRETOR VIU A BAGUNÇA", especial: true },
       treino: { icone: "🎓", nome: "TREINANDO O ENZO", demanda: true, semCongelar: true },
       telaRoxa: { icone: "🖥️", nome: "TELA ROXA NO WMS", falha: "telaRoxaFalhou", tituloFalha: "O SISTEMA FICOU FORA DO AR" },
       briga: { icone: "😡", nome: "BRIGA NO GALPÃO", falha: "brigaSaiu", tituloFalha: "A BRIGA PAROU O GALPÃO" },
@@ -8361,12 +8435,19 @@
       emerg.gatilhoProblema = Infinity;
       emerg.demandaPendente = null;
       emerg.semEvento = 0;
+      emerg.vistos = {};
+      emerg.visitaEm = MISSAO_ATUAL.semFim ? 540 + Math.random() * 120 : Infinity; // entre 9 e 11 minutos
       // Turno sem fim: o primeiro problema é sempre a tela roxa (é o problema dos 3 primeiros pedidos);
       // depois, tudo anda pela contagem de pedidos
       if (MISSAO_ATUAL.semFim && u) {
         emerg.pendentes = ["telaRoxa"];
         emerg.ultimo = "telaRoxa";
         emerg.ordem = sortearOrdemUrgencias();
+        // Entre os 5 primeiros: tela roxa (1º), incêndio e a briga da rádio, misturados com outros dois
+        const resto = emerg.ordem.filter(t => !["telaRoxa", "incendio", "briga"].includes(t));
+        const inicio = ["incendio", "briga", resto.shift(), resto.shift()].filter(Boolean).sort(() => Math.random() - 0.5);
+        emerg.ordem = [...inicio, ...resto];
+        emerg.brigaRadioFeita = false;
         emerg.ultimo = null;
         emerg.proxDemanda = Math.floor(Math.random() * DEMANDAS_SEM_FIM.length);
       }
@@ -8376,13 +8457,13 @@
     }
 
     // Peso de cada urgência no sorteio: tela roxa e briga aparecem mais; fogo (incêndio e batida) menos
-    const PESOS_URGENCIA = { incendio: 3, telaRoxa: 3, briga: 3, limpeza: 2, coletor: 2, abandono: 2, batida: 2, descarga: 1 };
+    const PESOS_URGENCIA = { incendio: 3, telaRoxa: 3, briga: 3, ligacao: 2, limpeza: 2, coletor: 2, abandono: 2, batida: 2, descarga: 1 };
     const ehDeFogo = (t) => t === "incendio" || t === "batida";
 
     // Monta um "saco" com cada tipo repetido pelo peso e tira um por vez, sem repetir o anterior
     // e sem dois fogos seguidos
     function sortearOrdemUrgencias() {
-      const disponiveis = Object.keys(MISSAO_ATUAL.urgencias.tempos).filter(t => !(URGENCIA_INFO[t] && URGENCIA_INFO[t].demanda));
+      const disponiveis = Object.keys(MISSAO_ATUAL.urgencias.tempos).filter(t => !(URGENCIA_INFO[t] && (URGENCIA_INFO[t].demanda || URGENCIA_INFO[t].especial)));
       let melhor = null, menosErros = Infinity;
       // Tenta algumas ordens e fica com a que não repete nada (quase sempre sai de primeira)
       for (let tentativa = 0; tentativa < 30 && menosErros > 0; tentativa++) {
@@ -8423,12 +8504,20 @@
       if (vez === "problema") {
         if (!emerg.ordem.length) emerg.ordem = sortearOrdemUrgencias();
         // Pula o que não dá pra acontecer agora (sem colega pra largar o pedido ou pra brigar)
-        const possivel = (t) => !(t === "abandono" && !colegasQuePodemLargar().length) && !(t === "briga" && colegasNoGalpao().length < 2);
+        const possivel = (t) => !(t === "abandono" && !colegasQuePodemLargar().length) && !(t === "briga" && colegasNoGalpao().length < 2) &&
+          !(t === "ligacao" && !podeLigarCliente());
+        // Garantias pra quem joga 20-30 min: pelo menos um incêndio cedo e uma descarga com empilhadeira
+        if (MISSAO_ATUAL.semFim) {
+          const forcar = !emerg.vistos.incendio && tempoDecorrido > 300 ? "incendio"
+            : !emerg.vistos.descarga && tempoDecorrido > 720 ? "descarga" : null;
+          if (forcar && emerg.ultimo !== forcar) emerg.ordem.unshift(forcar);
+        }
         let idx = emerg.ordem.findIndex(possivel);
         if (idx < 0) { emerg.ordem = sortearOrdemUrgencias(); idx = emerg.ordem.findIndex(possivel); }
         tipo = idx >= 0 ? emerg.ordem.splice(idx, 1)[0] : "incendio";
       }
       emerg.ultimo = tipo;
+      emerg.vistos[tipo] = true;
       const limite = u.tempos[tipo] * fatorTempo();
       const a = { tipo, limite, restante: limite };
       if (tipo === "incendio") {
@@ -8442,6 +8531,12 @@
           colisao: TEMPO_BATIDA,
           emps: [{ x0: cx - 130, y0: cy, x1: cx - 42, y1: cy, dir: "RIGHT" },
                  { x0: cx + 130, y0: cy, x1: cx + 42, y1: cy, dir: "LEFT" }] });
+      } else if (tipo === "ligacao") {
+        Object.assign(a, { x: TERMINAL_INICIAL.x + 15, y: TERMINAL_INICIAL.y, toque: 0, pedido: fila.ativo });
+      } else if (tipo === "inventario") {
+        iniciarInventario(a);
+      } else if (tipo === "visita") {
+        iniciarVisita(a);
       } else if (tipo === "limpeza") {
         // Caixa estourada no meio de uma rua
         const rua = sortear(RUAS_CONFIG);
@@ -8473,7 +8568,8 @@
         n2.olharBriga = lado > 0 ? "LEFT" : "RIGHT";
         n2.rota = rotaAte(n2.x, n2.y, n1.x + lado, n1.y);
         Object.assign(a, { brigoes: [n1, n2], x: n1.x + lado / 2, y: n1.y, chamado: false, falaT: 1.2, linha: 0,
-                           dialogo: sortear(DIALOGOS_BRIGA) });
+                           dialogo: MISSAO_ATUAL.semFim && !emerg.brigaRadioFeita ? DIALOGOS_BRIGA.find(d => d.tema === "rádio") : sortear(DIALOGOS_BRIGA) });
+        emerg.brigaRadioFeita = true; // a primeira briga do turno é sempre a da rádio caipira
         falaDaBriga(a, 0);
         if (a.dialogo.tema === "rádio" && RADIO_MUSICA.trocarTemporaria(RADIO_CAIPIRA.url)) {
           a.trocouRadio = true;
@@ -8519,6 +8615,9 @@
         batida: "Cuidado! Duas empilhadeiras vindo de frente no corredor...",
         telaRoxa: "O WMS deu tela roxa! Vá ao balcão e chame a TI.",
         limpeza: `Alguém derrubou uma caixa na ${a.rua ? a.rua.id : "rua"}! Vá limpar antes que alguém escorregue.`,
+        ligacao: "Telefone tocando no balcão! É o cliente do pedido que você está separando. Vá atender.",
+        inventario: "Inventário rápido: conte as caixas de 3 endereços e digite no WMS. Os pedidos ficam congelados.",
+        visita: "A DIRETORIA VEM AÍ! Limpe a bagunça antes do diretor chegar.",
         caminhao: "Chegou caminhão! Sem pressa: leve os 3 pallets do recebimento pro estoque. Os pedidos ficam congelados.",
         treino: "O Enzo vai te seguir nos próximos 3 pedidos. Cada passo só conta com ele do lado. Não deixe ele se perder!",
         briga: `${a.brigoes ? a.brigoes[0].nome + " e " + a.brigoes[1].nome : "Dois colegas"} estão brigando! Ligue pro RH no ramal da parede.`,
@@ -8573,6 +8672,12 @@
             if (emerg.ativa) return; // o treino corre em paralelo e não ocupa a vez
           }
         }
+        // Visita da diretoria: uma vez por turno, perto dos 10 minutos (sem pedido pela metade de pressa)
+        if (MISSAO_ATUAL.semFim && estadoJogo === "JOGANDO" && tempoDecorrido >= emerg.visitaEm && !cargaDepositada) {
+          emerg.visitaEm = Infinity;
+          iniciarEmergencia("visita");
+          return;
+        }
         if (estadoJogo === "JOGANDO" && !filaConcluida() && !cargaDepositada && tempoDecorrido >= emerg.proxima) {
           // No turno sem fim, o primeiro é a tela roxa (pendente); depois, sorteio de problema
           if (!MISSAO_ATUAL.semFim) iniciarEmergencia();
@@ -8583,6 +8688,16 @@
       if (ehDemanda(a)) a.restante = a.limite; // sem pressa: o relógio não anda
       else if (a.tipo === "coletor") a.restante = coletor.bateria; // a bateria é o relógio
       else if (!((a.tipo === "briga" || a.tipo === "telaRoxa") && a.chamado)) a.restante -= dt; // ajuda a caminho: o relógio para
+      if (a.tipo === "visita" && a.fase === "tour") a.restante += dt; // limpou tudo: não tem mais pressa
+      if (a.tipo === "visita") atualizarVisita(a, dt);
+      if (a.tipo === "ligacao") {
+        a.toque -= dt;
+        if (a.toque <= 0) {
+          a.toque = 1.6;
+          // Trim-trim de telefone antigo
+          [0, 0.09, 0.3, 0.39].forEach(d => setTimeout(() => SFX.playTone(1180, "square", 0.06, 0.05, 0.004), d * 1000));
+        }
+      }
       if (a.tipo === "briga") atualizarBriga(a, dt);
       if (a.tipo === "telaRoxa") atualizarTI(a, dt);
       // Batida: as duas empilhadeiras chegam, batem e o pallet pega fogo
@@ -8633,13 +8748,16 @@
       if (!a) { b.classList.remove("visivel"); return; }
       const info = URGENCIA_INFO[a.tipo];
       const onde = a.tipo === "incendio" ? ` · ${a.pallet.label}` : (a.tipo === "descarga" || a.tipo === "caminhao") ? ` · ${a.pos.idCompleto} N${a.nivel}`
-        : a.tipo === "abandono" ? ` · ${a.pedido.def.numero}` : a.tipo === "limpeza" ? ` · ${a.rua.id}` : "";
+        : a.tipo === "abandono" ? ` · ${a.pedido.def.numero}` : a.tipo === "limpeza" ? ` · ${a.rua.id}`
+        : a.tipo === "visita" ? (a.fase === "tour" ? " · CHEGOU" : ` · ${a.sujeiras.filter(x => x.limpo >= 1).length}/${a.sujeiras.length} LIMPO`) : "";
       document.getElementById("emergencia-titulo").textContent = `${info.icone} ${info.nome}${onde}`;
       b.classList.toggle("demanda", ehDemanda(a));
       const rel = document.getElementById("emergencia-tempo");
       if (ehDemanda(a)) {
         // Sem cronômetro: mostra o progresso da tarefa
-        const [feito, total, rotulo] = a.tipo === "caminhao" ? [a.feito, a.total, `${a.feito}/${a.total}`] : progressoTreino(a);
+        const [feito, total, rotulo] = a.tipo === "caminhao" ? [a.feito, a.total, `${a.feito}/${a.total}`]
+          : a.tipo === "inventario" ? [a.contados, 4, a.contados < 3 ? `CONTADOS ${a.contados}/3` : "DIGITAR NO WMS"]
+          : progressoTreino(a);
         rel.textContent = rotulo;
         rel.classList.remove("critico");
         document.getElementById("emergencia-barra").style.width = (feito / total * 100).toFixed(1) + "%";
@@ -8665,6 +8783,13 @@
       const E = EH_TOQUE ? "o botão" : "[E]";
       const fimE = EH_TOQUE ? "" : " [E]"; // no fim da frase: no celular o botão amarelo já diz a ação
       if (a.tipo === "batida" && a.colisao > 0) return "Saia da frente: tem empilhadeira vindo!";
+      if (a.tipo === "ligacao") return `Atenda o telefone no balcão do WMS${fimE}.`;
+      if (a.tipo === "inventario") return a.contados < 3
+        ? `Conte as caixas em ${a.posicoes[a.contados].pos.idCompleto} (segure ${E}). ${anotacoesInventario(a)}`
+        : `Vá ao balcão e digite a contagem no WMS${fimE}. ${anotacoesInventario(a)}`;
+      if (a.tipo === "visita") return a.fase === "tour"
+        ? "O diretor chegou! Só sorria e continua trabalhando."
+        : `Limpe a bagunça antes do diretor chegar: falta${a.sujeiras.filter(x => x.limpo < 1).length > 1 ? "m" : ""} ${a.sujeiras.filter(x => x.limpo < 1).length}. Segure ${E} em cada uma.`;
       if (a.tipo === "limpeza") return a.limpo > 0 ? `Continue varrendo: segure ${E}.` : `Vá até a caixa derrubada na ${a.rua.id} e segure ${E} pra limpar.`;
       if (a.tipo === "caminhao" && !veiculo.pilotando) return `Pallet ${a.feito + 1} de ${a.total}: suba na empilhadeira${fimE}.`;
       if (a.tipo === "caminhao" && a.etapa === "PEGAR") return `Pallet ${a.feito + 1} de ${a.total}: pegue no recebimento${fimE}.`;
@@ -8687,6 +8812,18 @@
       const a = emerg.ativa;
       if (a.tipo === "coletor") return null; // sem coletor, sem seta
       if (a.tipo === "limpeza") return { x: a.x, y: a.y };
+      if (a.tipo === "ligacao") return { x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y + 16 };
+      if (a.tipo === "inventario") {
+        if (a.contados >= 3) return { x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y + 16 };
+        const p = a.posicoes[a.contados].pos;
+        return { x: p.zoneX + p.zoneW / 2, y: p.zoneY + p.zoneH / 2 };
+      }
+      if (a.tipo === "visita") {
+        if (a.fase === "tour") return null;
+        const sujas = a.sujeiras.filter(x => x.limpo < 1);
+        if (!sujas.length) return null;
+        return sujas.reduce((m, x) => Math.hypot(x.x - player.x, x.y - player.y) < Math.hypot(m.x - player.x, m.y - player.y) ? x : m);
+      }
       if (temFogo(a)) return emerg.extintorNaMao ? { x: a.x, y: a.y } : { x: EXTINTOR_POS.x, y: EXTINTOR_POS.y + 16 };
       if (a.tipo === "briga") return a.chamado ? null : { x: RH_RAMAL.x, y: RH_RAMAL.y + 12 };
       if (a.tipo === "telaRoxa") return a.chamado ? null : { x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y + 16 };
@@ -8823,40 +8960,65 @@
       const a = emerg.ativa;
       if (veiculo.pilotando) { tratarDescarga(); return true; }
       player.currentZone = null;
-      // Empilhadeira estacionada: só liga na descarga urgente
-      if (Math.hypot(player.x - veiculo.x, player.y - veiculo.y) < 40) {
-        if (descargaAtiva()) {
-          player.currentZone = { tipo: "veiculo" };
-          if (interactPressedThisFrame) {
-            veiculo.pilotando = true;
-            veiculo.vx = veiculo.vy = veiculo.vel = 0;
-            carrinho.pego = false;
-            SFX.terminal();
-            falar("subiuEmpilhadeira", "#fbbf24");
-            a.etapa = veiculo.comPallet ? "LEVAR" : "PEGAR";
-            atualizarHUD();
-          }
-          return true;
-        }
-        if (interactPressedThisFrame) {
-          falarTexto("Empilhadeira só para descarga urgente.", "#94a3b8");
-          return true;
-        }
+      // Empilhadeira estacionada: dá pra subir a qualquer hora (E perto, botão no celular ou F)
+      if (pertoDaEmpilhadeira() && descargaAtiva()) {
+        player.currentZone = { tipo: "veiculo" };
+        if (interactPressedThisFrame) subirNaEmpilhadeira();
+        return true;
       }
-      // Caixa derrubada: segurar E perto pra varrer
-      if (a && a.tipo === "limpeza" && Math.hypot(player.x - a.x, player.y - a.y) < 28) {
+      // Bagunça no chão (caixa derrubada ou sujeira da visita): segurar E perto pra varrer
+      const suja = sujeirasAtivas().find(x => Math.hypot(player.x - x.x, player.y - x.y) < 28);
+      if (suja) {
         player.currentZone = { tipo: "limpar" };
         if (keys["KeyE"]) {
-          a.limpo += dt / 2.6;
+          suja.limpo += dt / (a.tipo === "visita" ? 1.6 : 2.6);
           a.varrendo = 0.15;
-          if (Math.random() < 0.4) JUICE.particulas(a.x + (Math.random() - 0.5) * 20, a.y + (Math.random() - 0.5) * 14, "poeira", 1);
+          if (Math.random() < 0.4) JUICE.particulas(suja.x + (Math.random() - 0.5) * 20, suja.y + (Math.random() - 0.5) * 14, "poeira", 1);
           if (Math.random() < 0.12) SFX.playTone(90 + Math.random() * 60, "sawtooth", 0.05, 0.03, 0.005);
-          if (a.limpo >= 1) {
-            JUICE.textoFlutuante(a.x, a.y - 20, "LIMPINHO!", "#34d399");
-            concluirEmergencia();
+          if (suja.limpo >= 1) {
+            suja.limpo = 1;
+            JUICE.textoFlutuante(suja.x, suja.y - 20, "LIMPINHO!", "#34d399");
+            if (a.tipo === "limpeza") concluirEmergencia();
+            else if (a.sujeiras.every(x => x.limpo >= 1)) comecarTourDiretor(a);
+            else { SFX.notificacao(); atualizarHUD(); atualizarBannerEmergencia(); }
           }
         }
         return true;
+      }
+      // Telefone do balcão: atender o cliente
+      const noBalcao = player.x >= TERMINAL_INICIAL.x - 12 && player.x <= TERMINAL_INICIAL.x + TERMINAL_INICIAL.w + 12 &&
+        player.y >= TERMINAL_INICIAL.y - 12 && player.y <= TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 12;
+      if (a && a.tipo === "ligacao" && noBalcao) {
+        player.currentZone = { tipo: "atender" };
+        if (interactPressedThisFrame) atenderCliente(a);
+        return true;
+      }
+      // Inventário: contar nas posições e digitar no balcão
+      if (a && a.tipo === "inventario") {
+        if (a.contados < 3) {
+          const alvo = a.posicoes[a.contados];
+          const p = alvo.pos;
+          if (player.x >= p.zoneX && player.x <= p.zoneX + p.zoneW && player.y >= p.zoneY && player.y <= p.zoneY + p.zoneH) {
+            player.currentZone = { tipo: "contar" };
+            if (keys["KeyE"]) {
+              alvo.prog += dt / 1.2;
+              if (Math.random() < 0.2) SFX.playTone(900 + alvo.prog * 400, "square", 0.02, 0.03, 0.003);
+              if (alvo.prog >= 1) {
+                a.contados++;
+                JUICE.textoFlutuante(player.x, player.y - 18, `${alvo.qtd} CAIXAS`, "#93c5fd");
+                falarTexto(`${p.idCompleto}: ${alvo.qtd} caixas. Anotado!`, "#93c5fd");
+                SFX.notificacao();
+                atualizarHUD();
+                atualizarBannerEmergencia();
+              }
+            } else alvo.prog = Math.max(0, alvo.prog - dt);
+            return true;
+          }
+        } else if (noBalcao) {
+          player.currentZone = { tipo: "digitar" };
+          if (interactPressedThisFrame) abrirInventario(a);
+          return true;
+        }
       }
       // Bebedouro: sempre dá pra beber
       if (temHidratacao() && Math.hypot(player.x - BEBEDOURO.x, player.y - (BEBEDOURO.y + 12)) < 22) {
@@ -8924,8 +9086,8 @@
     function tratarDescarga() {
       const a = emerg.ativa;
       player.currentZone = null;
-      if (!descargaAtiva()) return;
-      if (a.etapa === "PEGAR") {
+      if (!descargaAtiva()) { /* passeio livre: só a opção de descer */ }
+      else if (a.etapa === "PEGAR") {
         const al = alinhamentoReceb();
         if (al.perto) {
           player.currentZone = { tipo: al.alinhado ? "receb_ok" : "receb_alinhar" };
@@ -8962,6 +9124,26 @@
       }
     }
 
+    function pertoDaEmpilhadeira() {
+      return !veiculo.pilotando && Math.hypot(player.x - veiculo.x, player.y - veiculo.y) < (EH_TOQUE ? 46 : 40);
+    }
+    function subirNaEmpilhadeira() {
+      veiculo.pilotando = true;
+      veiculo.vx = veiculo.vy = veiculo.vel = 0;
+      carrinho.pego = false;
+      SFX.terminal();
+      falar("subiuEmpilhadeira", "#fbbf24");
+      const a = emerg.ativa;
+      if (descargaAtiva() && a) a.etapa = veiculo.comPallet ? "LEVAR" : "PEGAR";
+      atualizarHUD();
+    }
+    // Botão da empilhadeira (e tecla F): sobe quando está perto, desce quando está pilotando
+    function alternarEmpilhadeira() {
+      if (veiculo.pilotando) {
+        if (Math.abs(veiculo.vel) > 15) falarTexto("Pare a empilhadeira antes de descer.", "#fbbf24");
+        else descerDaEmpilhadeira();
+      } else if (pertoDaEmpilhadeira()) subirNaEmpilhadeira();
+    }
     function descerDaEmpilhadeira() {
       const saidas = [[-30, 0], [30, 0], [0, -34], [0, 34], [-30, -30], [30, 30], [-30, 30], [30, -30]];
       for (const [dx, dy] of saidas) {
@@ -9158,6 +9340,12 @@
                   b: "#1f1a17", w: "#ffffff", e: "#111827", m: "#4a1d14", t: "#ffffff", d: "#7f1d1d", r: "#c9705a",
                   V: "#ea580c", c: "#334155", R: "#e8eef5" }
       },
+      "CLIENTE": {
+        sobrancelha: "ssbbbssbbbss", bochecha: true, cabeloLongo: true, voz: 165, fundo: "#fde68a", pronome: "dele", corTag: "#92400e",
+        paleta: { o: ARTE.contorno, H: "#3b2416", L: "#5b3a24", B: "#2a170d", h: "#3b2416", s: "#e0ac85", S: "#c08a63",
+                  b: "#2a170d", w: "#ffffff", e: "#111827", m: "#7f1d1d", t: "#ffffff", d: "#9f1239", r: "#ee9a86",
+                  V: "#7c3aed", c: "#f8fafc", R: "#7c3aed" }
+      },
       "ENZO": {
         sobrancelha: "sbbssssssbbs", bochecha: true, cabeloLongo: false, voz: 190, fundo: "#d9f99d", pronome: "dele", corTag: "#3f6212",
         paleta: { o: ARTE.contorno, H: "#84cc16", L: "#d9f99d", B: "#4d7c0f", h: "#e5c07b", s: "#f1c8a5", S: "#d4a382",
@@ -9243,6 +9431,7 @@
     // evento: chave de TEXTOS (ou um número = pedidos na fila, o caso clássico); n: o que entra no {n}
     function chefeReclama(evento, n) {
       if (typeof evento === "number") { n = evento; evento = "chefeBravo"; }
+      if (ronda.escoltando) return; // o Geraldo está ocupado sorrindo pro diretor
       // Fila cheia e urgências sempre passam; o resto respeita o intervalo
       const prioridade = ["chefeAgua", "chefeBravo", "chefeIncendio", "chefeColetor", "chefeDescarga", "chefeAbandono", "chefeBatida"].includes(evento);
       if (tempoDecorrido - ultimaBronca < INTERVALO_CHEFE && !prioridade) return;
@@ -9425,6 +9614,7 @@
       if (rh.ativo) l.push(rh);
       if (ti.ativo) l.push(ti);
       if (enzo.ativo) l.push(enzo);
+      if (diretor.ativo) l.push(diretor);
       return l;
     }
 
@@ -9486,6 +9676,7 @@
         (rh.ativo && Math.hypot(rh.x - PORTA_ESCRITORIO.x, rh.y - PORTA_ESCRITORIO.y) < 30) ||
         (ti.ativo && Math.hypot(ti.x - PORTA_ESCRITORIO.x, ti.y - PORTA_ESCRITORIO.y) < 30) ||
         (enzo.ativo && Math.hypot(enzo.x - PORTA_ESCRITORIO.x, enzo.y - PORTA_ESCRITORIO.y) < 30) ||
+        (diretor.ativo && Math.hypot(diretor.x - PORTA_ESCRITORIO.x, diretor.y - PORTA_ESCRITORIO.y) < 30) ||
         npcs.some(n => n.saindo && !n.foiEmbora && Math.hypot(n.x - PORTA_ESCRITORIO.x, n.y - PORTA_ESCRITORIO.y) < 30);
       ret(ctx, x - 1, y - 1, 24, 22, ARTE.contorno);
       ret(ctx, x, y, 22, 20, aberta ? "#0b0f1a" : "#7c5a3a");
@@ -9529,6 +9720,7 @@
 
     function atualizarRonda(dt) {
       if (estadoJogo !== "JOGANDO" || !cronometroIniciado) return;
+      if (ronda.escoltando) return; // acompanhando o diretor na visita
       if (balde.ativo) balde.t += dt;
       if (!ronda.ativo) {
         if (tempoDecorrido >= ronda.proxima) {
@@ -9577,9 +9769,27 @@
     }
 
     /* ---------- Caixa derrubada na rua ---------- */
-    function desenharSujeira() {
+    // Bagunças no chão agora: a caixa derrubada ou as sujeiras da visita
+    function sujeirasAtivas() {
       const a = emerg.ativa;
-      if (!a || a.tipo !== "limpeza") return;
+      if (!a) return [];
+      if (a.tipo === "limpeza") return a.limpo < 1 ? [a] : [];
+      if (a.tipo === "visita" && a.fase !== "tour") return a.sujeiras.filter(x => x.limpo < 1);
+      return [];
+    }
+    function desenharSujeira() {
+      const a0 = emerg.ativa;
+      sujeirasAtivas().forEach(x => desenharUmaSujeira(x));
+      if (a0 && a0.varrendo > 0) {
+        a0.varrendo -= 1 / 60;
+        const t = Math.sin(Date.now() / 70) * 4;
+        ret(ctx, Math.round(player.x + 6 + t), Math.round(player.y - 6), 1, 12, "#92400e");
+        ret(ctx, Math.round(player.x + 4 + t), Math.round(player.y + 5), 5, 3, "#facc15");
+      }
+      desenharTelefoneBalcao();
+      desenharInventario();
+    }
+    function desenharUmaSujeira(a) {
       const sobra = 1 - a.limpo;
       // Pedaços espalhados (sempre no mesmo lugar, somem conforme limpa)
       let r = a.semente;
@@ -9603,13 +9813,189 @@
         ret(ctx, a.x - 13, a.y - 18, 26, 4, ARTE.contorno);
         ret(ctx, a.x - 12, a.y - 17, Math.round(24 * a.limpo), 2, "#34d399");
       }
-      if (a.varrendo > 0) {
-        a.varrendo -= 1 / 60;
-        // Vassoura na mão
-        const t = Math.sin(Date.now() / 70) * 4;
-        ret(ctx, Math.round(player.x + 6 + t), Math.round(player.y - 6), 1, 12, "#92400e");
-        ret(ctx, Math.round(player.x + 4 + t), Math.round(player.y + 5), 5, 3, "#facc15");
+    }
+
+    /* ---------- Cliente ligando pra mudar o pedido ---------- */
+    function podeLigarCliente() {
+      return !!fila.ativo && !fila.ativo.def.urgente && !pacoteEmbalado && !cargaDepositada && fila.ativo.def.tipo !== "armazenagem";
+    }
+    function desenharTelefoneBalcao() {
+      const a = emerg.ativa;
+      if (!a || a.tipo !== "ligacao") return;
+      const x = TERMINAL_INICIAL.x + 36, y = TERMINAL_INICIAL.y - 10;
+      const tremor = Math.floor(Date.now() / 60) % 2;
+      ret(ctx, x - 1 + tremor, y - 1, 10, 7, ARTE.contorno);
+      ret(ctx, x + tremor, y, 8, 5, "#ef4444");
+      ret(ctx, x + 2 + tremor, y + 1, 4, 1, "#fecaca");
+      if (Math.floor(Date.now() / 400) % 2 === 0) desenharBitmap("TRIM!", x + 4, y - 9, "#fde047", 1, "center");
+    }
+    function atenderCliente(a) {
+      const m = MISSAO_ATUAL;
+      const cliente = (fila.ativo && fila.ativo.def.cliente) || "Cliente";
+      let fala;
+      // Trocar um item que ainda não começou, ou pedir mais uma unidade
+      const trocaveis = m.itens.filter(it => it.coletados === 0);
+      if (trocaveis.length && Math.random() < 0.65) {
+        const it = sortear(trocaveis);
+        const usados = new Set(m.itens.map(i => i.rua + "-" + i.posicao));
+        const novaPos = sortear(posicoesWMS.filter(p => !usados.has(p.rua + "-" + p.posicao)));
+        const nomeNovo = sortear(CATALOGO.filter(n => !m.itens.some(i => i.nome === n)));
+        fala = sortearTexto("falasCliente").replace("{de}", it.nome).replace("{para}", nomeNovo);
+        Object.assign(it, { rua: novaPos.rua, posicao: novaPos.posicao, nome: nomeNovo, mudou: true });
+      } else {
+        const it = sortear(m.itens);
+        it.qtd++;
+        it.mudou = true;
+        fala = sortearTexto("falasClienteMais").replace("{item}", it.nome).replace("{qtd}", String(it.qtd));
       }
+      m.quantidadeVolumes = m.itens.reduce((t, i) => t + i.qtd, 0);
+      fila.ativo.def.itens = m.itens.map(i => ({ ...i }));
+      fila.ativo.def.quantidadeVolumes = m.quantidadeVolumes;
+      if (volumesColetados < m.quantidadeVolumes) irParaEtapa("COLETAR");
+      SFX.terminal();
+      concluirEmergencia();
+      popupRadio(fala, { colega: "CLIENTE", tag: `${cliente.toUpperCase()} · AO TELEFONE`, duracao: 6000 });
+      falarTexto("Pedido alterado! Confira a etiqueta nova.", "#fde047");
+      abrirCardPedido(true);
+    }
+
+    /* ---------- Inventário rápido ---------- */
+    function iniciarInventario(a) {
+      const escolhidas = [...posicoesWMS].sort(() => Math.random() - 0.5).slice(0, 3);
+      Object.assign(a, { contados: 0, posicoes: escolhidas.map(pos => ({ pos, qtd: 3 + Math.floor(Math.random() * 10), prog: 0 })) });
+      abrirAvisoDemanda("📋", "INVENTÁRIO RÁPIDO", [
+        "Vá até os 3 endereços que a seta mostra (aparecem na faixa azul).",
+        "Em cada um, segure a ação pra contar as caixas. O número fica anotado.",
+        "Volte ao balcão do WMS e digite as 3 contagens."
+      ], "Os pedidos ficam congelados enquanto isso.");
+    }
+    function anotacoesInventario(a) {
+      const feitos = a.posicoes.slice(0, a.contados);
+      return feitos.length ? "Anotado: " + feitos.map(x => `${x.pos.rua}-${x.pos.posicao} = ${x.qtd}`).join(" · ") : "";
+    }
+    function desenharInventario() {
+      const a = emerg.ativa;
+      if (!a || a.tipo !== "inventario" || a.contados >= 3) return;
+      const alvo = a.posicoes[a.contados];
+      const p = alvo.pos;
+      const pisca = Math.floor(Date.now() / 300) % 2 === 0;
+      ctx.strokeStyle = pisca ? "#93c5fd" : "#1d4ed8";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(p.zoneX + 1, p.zoneY + 1, p.zoneW - 2, p.zoneH - 2);
+      if (alvo.prog > 0) {
+        ret(ctx, p.zoneX, p.zoneY - 6, p.zoneW, 4, ARTE.contorno);
+        ret(ctx, p.zoneX + 1, p.zoneY - 5, Math.round((p.zoneW - 2) * alvo.prog), 2, "#93c5fd");
+      }
+    }
+    let inventarioAbertoEm = 0;
+    function abrirInventario(a) {
+      estadoJogo = "INVENTARIO";
+      inventarioAbertoEm = performance.now();
+      limparInputs();
+      const box = document.getElementById("inv-linhas");
+      box.innerHTML = "";
+      a.digitado = a.posicoes.map(() => 0);
+      a.posicoes.forEach((x, i) => {
+        const linha = document.createElement("div");
+        linha.className = "inv-linha";
+        linha.innerHTML = `<span class="inv-end">${x.pos.rua}-${x.pos.posicao}</span>
+          <button type="button" class="inv-btn" data-i="${i}" data-d="-1" aria-label="Menos">−</button>
+          <span class="inv-num" id="inv-num-${i}">0</span>
+          <button type="button" class="inv-btn" data-i="${i}" data-d="1" aria-label="Mais">+</button>`;
+        box.appendChild(linha);
+      });
+      box.querySelectorAll(".inv-btn").forEach(b => b.addEventListener("click", () => {
+        const i = +b.dataset.i;
+        a.digitado[i] = Math.max(0, Math.min(20, a.digitado[i] + (+b.dataset.d)));
+        document.getElementById("inv-num-" + i).textContent = String(a.digitado[i]);
+        SFX.menuBlip();
+      }));
+      document.getElementById("inv-notas").textContent = anotacoesInventario(a);
+      document.getElementById("inv-erro").textContent = "";
+      document.getElementById("modal-inventario").style.display = "flex";
+    }
+    function enviarInventario() {
+      const a = emerg.ativa;
+      if (!a || a.tipo !== "inventario") return;
+      const errados = a.posicoes.filter((x, i) => a.digitado[i] !== x.qtd);
+      if (errados.length) {
+        SFX.enderecoErrado();
+        document.getElementById("inv-erro").textContent = `Não bate: confira ${errados.map(x => x.pos.rua + "-" + x.pos.posicao).join(", ")}.`;
+        return;
+      }
+      document.getElementById("modal-inventario").style.display = "none";
+      estadoJogo = "JOGANDO";
+      limparInputs();
+      JUICE.textoFlutuante(player.x, player.y - 18, "INVENTÁRIO OK!", "#93c5fd");
+      concluirEmergencia();
+    }
+
+    /* ---------- Visita da diretoria (uma vez por turno, perto dos 10 minutos) ---------- */
+    const APARENCIA_DIRETOR = {
+      id: "diretor", capacete: "#f4f6fa", cabelo: "#9ca3af", pele: "#c8906a", bochecha: "#b47a5a",
+      camisa: "#111827", colete: "#1f2937", calca: "#111827", cabeloLongo: false
+    };
+    const diretor = { nome: "DIRETOR", ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 42, parado: 0, vestColor: "#1f2937", paradas: [] };
+    function iniciarVisita(a) {
+      // Três bagunças espalhadas: ruas e área das bancadas
+      const pontos = [
+        ...RUAS_CONFIG.map(r => ({ x: r.corridorX + 24, y: 140 + Math.floor(Math.random() * 320) })),
+        { x: 470, y: 230 }, { x: 470, y: 370 }, { x: 640, y: 480 }, { x: 700, y: 300 }
+      ].sort(() => Math.random() - 0.5).slice(0, 3);
+      Object.assign(a, { fase: "limpar", sujeiras: pontos.map(p => ({ ...p, limpo: 0, semente: Math.random() * 1000 })) });
+      popupRadio("A DIRETORIA VEM AÍ! Daqui a pouco o diretor passa no galpão. Tem bagunça em três lugares, limpa TUDO antes dele chegar!",
+        { tag: "GERALDO · NERVOSO", duracao: 7000 });
+    }
+    function comecarTourDiretor(a) {
+      a.fase = "tour";
+      SFX.minigameSucesso();
+      falarTexto("Tudo limpo! O diretor está chegando com o Geraldo.", "#34d399");
+      Object.assign(diretor, { ativo: true, x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4, parado: 0, falou: 0 });
+      diretor.paradas = [{ x: 500, y: 300 }, { x: 610, y: 230 }];
+      diretor.rota = [{ x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 8 }];
+      ronda.ativo = true;
+      ronda.escoltando = true;
+      ronda.x = PORTA_ESCRITORIO.x; ronda.y = PORTA_ESCRITORIO.y - 4;
+      atualizarHUD();
+      atualizarBannerEmergencia();
+    }
+    function atualizarVisita(a, dt) {
+      if (a.fase !== "tour" || !diretor.ativo) return;
+      // O Geraldo vai colado atrás do diretor
+      const gx = diretor.x - 16, gy = diretor.y - 4;
+      const d = Math.hypot(gx - ronda.x, gy - ronda.y);
+      if (d > 1) { const k = Math.min(1, (diretor.speed * 1.3 * dt) / d); ronda.x += (gx - ronda.x) * k; ronda.y += (gy - ronda.y) * k; }
+      ronda.dir = diretor.dir;
+      if (diretor.parado > 0) { diretor.parado -= dt; return; }
+      if (seguirRota(diretor, dt)) {
+        const prox = diretor.paradas.shift();
+        if (prox) {
+          if (diretor.y > PORTA_ESCRITORIO.y + 4) {
+            diretor.parado = 2.2;
+            diretor.dir = "DOWN";
+            mostrarBalaoNpc(diretor, sortearTexto("falasDiretor"));
+          }
+          diretor.rota = rotaAte(diretor.x, diretor.y, prox.x, prox.y);
+        } else if (!a.voltando) {
+          a.voltando = true;
+          diretor.parado = 2.2;
+          mostrarBalaoNpc(diretor, sortearTexto("falasDiretor"));
+          diretor.rota = [...rotaAte(diretor.x, diretor.y, PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8), { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4 }];
+        } else {
+          diretor.ativo = false;
+          ronda.ativo = false;
+          ronda.escoltando = false;
+          ronda.proxima = tempoDecorrido + 60;
+          concluirEmergencia();
+          popupRadio("Ufa... ele disse que o galpão está 'aceitável'. Na língua de diretor isso é elogio! Bom trabalho.",
+            { tag: "GERALDO · ALIVIADO", duracao: 6500 });
+        }
+      }
+    }
+    function desenharDiretor() {
+      if (!diretor.ativo) return;
+      const passo = diretor.parado > 0 ? 0 : Math.floor(Date.now() / 170) % 4;
+      renderPixelCharacter(diretor.x, diretor.y, diretor.dir, passo, diretor.vestColor, false, false, 1, 1, false, false, APARENCIA_DIRETOR);
     }
 
     /* ---------- O Enzo, funcionário novo ----------
@@ -10025,7 +10411,10 @@
     function atualizarTI(a, dt) {
       if (!ti.ativo) return;
       if (ti.fase === "indo") {
-        if (seguirRota(ti, dt)) { ti.fase = "consertando"; ti.t = 3.2; ti.dir = "UP"; }
+        if (seguirRota(ti, dt)) {
+          ti.fase = "consertando"; ti.t = 3.6; ti.dir = "UP";
+          mostrarBalaoNpc(ti, sortearTexto("falasTIChegou"));
+        }
       } else if (ti.fase === "consertando") {
         ti.t -= dt;
         if (Math.random() < 0.35) SFX.playTone(1500 + Math.random() * 600, "square", 0.015, 0.025, 0.002); // teclado
@@ -10306,7 +10695,7 @@
       limparTimersVitoria();
       SFX.pararColetaTom();
       calarRadio();
-      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing", "modal-pedido-ok", "modal-tela-roxa", "modal-demanda"]
+      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing", "modal-pedido-ok", "modal-tela-roxa", "modal-demanda", "modal-inventario"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
       document.getElementById("hud").style.display = "none";
       resetarEmergencias();
@@ -11276,6 +11665,9 @@
         chamar_ti: ["[E] CHAMAR A TI", "#4c1d95", "#ddd6fe", "#ffffff"],
         bebedouro: ["[E] BEBER ÁGUA", "#0c4a6e", "#bae6fd", "#ffffff"],
         limpar: ["SEGURE [E] LIMPAR", "#422006", "#fde68a", "#ffffff"],
+        atender: ["[E] ATENDER O TELEFONE", "#422006", "#fde68a", "#ffffff"],
+        contar: ["SEGURE [E] CONTAR", "#172554", "#bfdbfe", "#ffffff"],
+        digitar: ["[E] DIGITAR NO WMS", "#172554", "#bfdbfe", "#ffffff"],
         fogo: ["SEGURE [E] APAGAR", "#7f1d1d", "#fecaca", "#ffffff"],
         rua_ok: ["[E] GUARDAR", "#052e16", "#34d399", "#bbf7d0"],
         rua_alinhar: ["PARE NA MARCA", "#422006", "#facc15", "#fef08a"],
@@ -11309,6 +11701,7 @@
       continuarCampanha();
     });
     atualizarMenuInicial();
+    document.getElementById("btn-inv-enviar").addEventListener("click", () => { SFX.menuEnter(); enviarInventario(); });
     document.getElementById("btn-demanda").addEventListener("click", () => {
       if (performance.now() - avisoDemandaAbertoEm < 500) return;
       SFX.menuEnter();

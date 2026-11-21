@@ -93,7 +93,9 @@ O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido 
 
 **🚛 Caminhão (demanda):** começa assim que você fecha a janela do pedido entregue. Abre uma janela explicando o passo a passo (subir na empilhadeira, pegar no recebimento, guardar no endereço da faixa azul, 3 vezes). Enquanto dura, os pedidos congelam: não cai pedido novo, o prazo de quem espera para, o balcão não libera pedido e o chip da fila fica azul com ❄.
 
-**Descer da empilhadeira:** pilotando, longe do recebimento e da posição, a ação vira DESCER (precisa estar quase parada). O pallet fica no garfo e, ao subir de novo, você continua de onde parou. Serve pra ir beber água, por exemplo.
+**Empilhadeira livre:** dá pra subir e descer da empilhadeira a qualquer hora. Perto dela aparece o botão 🚜 (igual ao do carrinho), que fica amarelo enquanto você pilota; no teclado é a tecla F. Na descarga, a ação também sobe (E) e, longe do recebimento e da posição, vira DESCER. Precisa estar quase parada pra descer. O pallet fica no garfo e, ao subir de novo, você continua de onde parou.
+
+**📋 Inventário rápido (demanda):** conte as caixas de 3 endereços (segure a ação em cada posição piscando em azul) e digite os números no WMS do balcão, com botões de + e −. Se algum número não bater, o WMS avisa qual conferir. Pedidos congelados enquanto isso.
 
 **🎓 Treino do Enzo:** o Enzo te segue nos próximos 3 pedidos normais. Cada passo (pegar no balcão, coletar, embalar, entregar) só conta com ele do lado. Ele se distrai de vez em quando e some; é só chegar perto que ele volta. O treino corre em paralelo: os problemas continuam aparecendo no meio. Os 3 pedidos do treino não contam pro ciclo de demandas.
 
@@ -108,9 +110,18 @@ Cai um pedido a cada 35 segundos (no máximo 6 esperando). Com 5 ou mais pedidos
 Problemas vêm por TEMPO e demandas pela quantidade de pedidos:
 
 - **Problemas:** o primeiro é sempre a tela roxa, aos 25 segundos. Depois, um novo uns 45 segundos depois de resolver o anterior (com 6 segundos pra mais ou pra menos de imprevisto). O intervalo aperta 2 segundos por minuto de turno, até uns 28 segundos. Depois de uma demanda, 20 segundos de respiro.
-- **Demandas:** a cada 3 pedidos entregues, alternando caminhão e treino do Enzo. Começam ao fechar a janela do pedido entregue. O treino corre em paralelo, então os problemas continuam caindo no meio dele.
+- **Demandas:** a cada 3 pedidos entregues, alternando caminhão, treino do Enzo e inventário. Começam ao fechar a janela do pedido entregue. O treino corre em paralelo, então os problemas continuam caindo no meio dele.
 
-Os problemas são sorteados com peso: incêndio, tela roxa e briga aparecem mais; caixa derrubada, coletor, abandono e batida no meio; descarga urgente menos (o caminhão já usa a empilhadeira). O sorteio nunca repete o mesmo problema em seguida nem coloca dois fogos seguidos. Numa simulação de 20 minutos vieram 24 problemas, 7 deles de fogo.
+Os problemas são sorteados com peso: incêndio, tela roxa e briga aparecem mais; cliente ao telefone, caixa derrubada, coletor, abandono e batida no meio; descarga urgente menos (o caminhão já usa a empilhadeira). O sorteio nunca repete o mesmo problema em seguida nem coloca dois fogos seguidos.
+
+Pensando em sessões de 20 a 30 minutos:
+
+- Entre os 5 primeiros problemas sempre vêm a tela roxa (a primeira), um incêndio e a briga da rádio caipira (a primeira briga do turno é sempre essa).
+- Se até os 5 minutos não houve incêndio, o próximo problema é fogo; se até os 12 minutos não houve descarga urgente, ela é forçada.
+- **🏢 Visita da diretoria:** uma vez por turno, entre 9 e 11 minutos. O Geraldo avisa nervoso e aparecem 3 bagunças pelo galpão. Limpe todas (segure a ação) antes do tempo acabar, senão "O DIRETOR VIU A BAGUNÇA". Limpou tudo: o diretor entra com o Geraldo colado atrás, passeia comentando e vai embora. O Geraldo não dá bronca enquanto acompanha o diretor.
+- **📞 Cliente ao telefone:** só toca com um pedido em separação. Atenda no balcão: o cliente troca um item que você ainda não pegou ou pede mais uma unidade. A etiqueta é reimpressa com a mudança marcada em amarelo.
+
+Numa simulação de 30 minutos vieram cerca de 42 eventos, com 4 ou 5 incêndios, 2 ou 3 descargas, 3 caminhões, 3 inventários e 1 visita.
 
 Quem larga o emprego volta arrependido uns 2 minutos depois, pra não faltar gente pra brigar nem pra largar pedido.
 
@@ -120,7 +131,7 @@ No turno sem fim, embaixo do relógio tem uma gota com uma barra de água. Ela e
 
 ## Personagens
 
-Geraldo é o chefe (popup do rádio e ronda pelo galpão). Vini é o técnico da TI que conserta a tela roxa. Os balões de fala mostram o nome de quem está falando.
+Geraldo é o chefe (popup do rádio e ronda pelo galpão). Vini é o técnico da TI que conserta a tela roxa: fala quando chega e quando termina, e a conversa dos colegas não atropela o balão dele. O diretor aparece na visita da diretoria. Os balões de fala mostram o nome de quem está falando.
 
 ## Pedidos entregues
 
