@@ -74,19 +74,25 @@ O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais
 | 📟 Coletor perdido | Sem coletor, sem WMS: siga o bip e a barra SINAL, pergunte aos colegas | 60s / 55s |
 | 🚚 Descarga urgente | Suba na empilhadeira, pegue o pallet no recebimento e guarde na posição sorteada da rua (R0X-PYY), no nível pedido | 120s / 100s |
 | 🪣 Pedido abandonado | Um colega chuta o balde e vai embora. O pedido dele cai no topo do balcão, com o primeiro item já separado: termine e entregue | 150s / 130s |
-| 💥 Batida na doca | Duas empilhadeiras batem no pallet da doca e pega fogo. Apague com o extintor. Os pedidos que estavam naquele pallet queimam e voltam pro balcão como "-R" pra refazer | 34s / 30s |
+| 💥 Batida de empilhadeiras | Duas empilhadeiras levando carga pro caminhão batem de frente no corredor entre as bancadas e pega fogo. Apague com o extintor. A carga do último pedido entregue queima e volta pro balcão como "-R" pra refazer | 34s / 30s |
 
 O extintor e a empilhadeira ficam sempre no mapa, mas só funcionam na urgência deles. Os pedidos não param: enquanto você resolve a urgência, o prazo deles continua correndo.
 
 ## Galpão vivo
 
-Os colegas (Robson, Jéssica e Kauã) trabalham de verdade: pegam caixa na rua, embalam numa bancada e levam pro pallet da doca, em loop. Eles saem das ruas pelo corredor de cima, pra deixar livre a área do pulmão onde a empilhadeira manobra.
+Os colegas (Robson, Jéssica e Kauã) trabalham de verdade: pegam caixa na rua, embalam numa bancada livre (de frente pra ela, com a caixa no tampo e a fita sendo passada) e levam pro pallet da doca, em loop. Eles não usam a bancada em que você está e esperam o fogo apagar antes de passar. Eles saem das ruas pelo corredor de cima, pra deixar livre a área do pulmão onde a empilhadeira manobra.
 
 O chefe sai da sala (porta "CHEFE" na parede de cima) de tempos em tempos, passeia por dois ou três pontos do galpão, para pra vigiar e volta. Se passar perto de você, solta um comentário.
 
+O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido atrasado, cada urgência, esbarrão de empilhadeira e quando você fica parada com pedido esperando. Entre uma bronca e outra há pelo menos 18 segundos (fila cheia e urgências furam essa espera).
+
+## Turno sem fim
+
+Botão na tela inicial. Pedidos caem a cada 35 segundos e urgências a cada 45, sem meta. O turno acaba quando uma urgência dá errado, e a tela final mostra quantos pedidos você entregou e em quanto tempo.
+
 ## Fase 4: Fila no Balcão
 
-Pedidos aleatórios a cada minuto (itens, endereços, doca e cliente mudam a cada partida) e a primeira urgência aos 35 segundos, depois uma a cada 75. Fecha com 3 entregas.
+Pedidos aleatórios a cada 40 segundos (itens, endereços, doca e cliente mudam a cada partida) e a primeira urgência aos 25 segundos, depois uma a cada 50. Fecha com 3 entregas.
 
 ## Fase 5: Chegou Carga
 
@@ -94,7 +100,7 @@ O caminhão do fornecedor encostou na DOCA 2. Suba na empilhadeira, encaixe o ga
 
 ## Fase 6: Black Friday
 
-Começa com 2 pedidos na fila, um novo por minuto e uma urgência a cada minuto. Fecha com 5 entregas.
+Começa com 2 pedidos na fila, um novo a cada 35 segundos e uma urgência a cada 45. Fecha com 5 entregas.
 
 ## Rádio
 

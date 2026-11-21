@@ -1546,6 +1546,9 @@
         <button class="btn" id="btn-start-game" style="font-size: 11px; padding: 14px;">
           INICIAR
         </button>
+        <button class="btn btn-secondary" id="btn-sem-fim" style="font-size: 10px; padding: 12px;">
+          TURNO SEM FIM
+        </button>
       </div>
     </div>
 
@@ -1918,9 +1921,9 @@
       estrelas: { tres: 200, duas: 260 },
       tempoColetaPorVolume: 1.0,
       // Começa com um pedido; depois cai um aleatório a cada minuto. Fecha ao entregar a meta.
-      geracao: { intervalo: 60, meta: 3, armazenagem: false, numeroInicial: 1100 },
+      geracao: { intervalo: 40, meta: 3, armazenagem: false, numeroInicial: 1100 },
       // Urgências: a primeira cai aos 35s, depois uma a cada 75s. Tempos para resolver cada uma.
-      urgencias: { primeira: 35, intervalo: 75, tempos: { incendio: 30, coletor: 60, descarga: 120, abandono: 150, batida: 34 } },
+      urgencias: { primeira: 25, intervalo: 50, tempos: { incendio: 30, coletor: 60, descarga: 120, abandono: 150, batida: 34 } },
       bateriaSegundos: 60,
       pedidos: [
         {
@@ -1986,8 +1989,8 @@
       falaInicio: "inicioBlackFriday",
       estrelas: { tres: 310, duas: 390 },
       tempoColetaPorVolume: 1.0,
-      geracao: { intervalo: 60, meta: 5, armazenagem: false, numeroInicial: 1200 },
-      urgencias: { primeira: 25, intervalo: 60, tempos: { incendio: 26, coletor: 55, descarga: 100, abandono: 130, batida: 30 } },
+      geracao: { intervalo: 35, meta: 5, armazenagem: false, numeroInicial: 1200 },
+      urgencias: { primeira: 20, intervalo: 45, tempos: { incendio: 26, coletor: 55, descarga: 100, abandono: 130, batida: 30 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -2010,9 +2013,37 @@
       etapas: ETAPAS_PICKING
     };
 
+    // Turno sem fim: pedidos caindo e urgências estourando até uma delas dar errado
+    const FASE_SEM_FIM = {
+      fase: 7,
+      tipo: "picking",
+      semFim: true,
+      nomeFase: "TURNO SEM FIM",
+      resumo: "Pedido atrás de pedido. Problema atrás de problema. Até onde você vai?",
+      empilhadeirasAtivas: [0, 1, 2],
+      id: "turno_sem_fim",
+      falaInicio: "inicioSemFim",
+      estrelas: { tres: 99999, duas: 99999 },
+      tempoColetaPorVolume: 1.0,
+      geracao: { intervalo: 35, meta: Infinity, armazenagem: false, numeroInicial: 2000 },
+      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32 } },
+      bateriaSegundos: 55,
+      pedidos: [
+        {
+          numero: "#2000", cliente: "Primeiro Cliente do Dia", docaSaida: "DOCA 1",
+          chegada: 1, prazo: 50,
+          itens: [
+            { rua: "R02", posicao: "P05", nome: "FITA ADESIVA", qtd: 1 },
+            { rua: "R03", posicao: "P11", nome: "ETIQUETADORA", qtd: 1 }
+          ]
+        }
+      ],
+      etapas: ETAPAS_PICKING
+    };
+
     const FASES = [FASE_1, FASE_2, FASE_3, FASE_4, FASE_5, FASE_6];
     const somaVolumes = (itens) => itens.reduce((s, it) => s + it.qtd, 0);
-    FASES.forEach(f => {
+    [...FASES, FASE_SEM_FIM].forEach(f => {
       if (f.pedidos) {
         // Fases de picking: o pedido em andamento é copiado para cá quando o operador aceita
         f.pedidos.forEach(p => { p.quantidadeVolumes = somaVolumes(p.itens); });
@@ -2225,6 +2256,11 @@
         "Balcão ligado. Daqui a pouco começa a chover pedido.",
         "O WMS acordou. E ele acorda com fome."
       ],
+      inicioSemFim: [
+        "Turno sem fim. O balcão não fecha e o chefe não dorme.",
+        "Hoje não tem hora pra acabar. Bora ver até onde dá.",
+        "Pedido caindo, problema estourando. Normal de um galpão."
+      ],
       inicioBlackFriday: [
         "Black Friday. Metade do preço, o dobro de pedido.",
         "Hoje o balcão não dorme. Nem você.",
@@ -2278,6 +2314,47 @@
         "{n} na fila! Se fosse fila de banco eu até entendia. Bora separar!",
         "A diretoria acabou de perguntar dos {n} pedidos parados. Eu disse que você tava resolvendo. Tá, né?"
       ],
+      chefeAtraso: [
+        "O {n} atrasou. O cliente já mandou e-mail com CAIXA ALTA.",
+        "Atrasou o {n}? Eu prometi esse pedido pra hoje. De manhã.",
+        "O {n} passou do prazo. Vou ter que ligar pro cliente e inventar um trânsito.",
+        "Pedido {n} atrasado. Meu celular já tá vibrando, e não é de alegria."
+      ],
+      chefeIncendio: [
+        "FOGO?! No MEU galpão?! Pega esse extintor agora!",
+        "Tá cheirando a queimado e não é o meu almoço. Corre!",
+        "Incêndio de novo? O seguro vai me ligar, e eu vou te ligar."
+      ],
+      chefeColetor: [
+        "Sumiu o coletor?! Aquilo custa mais que a minha cadeira!",
+        "Ninguém sabe onde tá o coletor? Que galpão organizado, hein.",
+        "Sem coletor não tem WMS, sem WMS não tem pedido, sem pedido não tem bônus. Acha!"
+      ],
+      chefeDescarga: [
+        "Pallet parado na doca! O motorista tá buzinando na minha janela!",
+        "Descarga urgente é urgente. Tá no nome, inclusive.",
+        "O fornecedor quer o caminhão de volta. Guarda esse pallet!"
+      ],
+      chefeAbandono: [
+        "Como assim o {n} foi embora?! Quem vai terminar o pedido dele? Adivinha.",
+        "O {n} pediu as contas no meio do turno. Parabéns, você foi promovida a dois.",
+        "Saiu chutando balde? Ele que limpe! Mas antes, alguém termina aquele pedido."
+      ],
+      chefeBatida: [
+        "Duas empilhadeiras batendo de FRENTE?! Isso aqui não é carrinho de bate-bate!",
+        "Quem tirou carta de empilhadeira em sorteio?! Apaga esse fogo!",
+        "Bateram e pegou fogo. Ótimo. Meu dia tava muito tranquilo mesmo."
+      ],
+      chefeParado: [
+        "Tem pedido no balcão e você aí paradinha? O WMS não se separa sozinho.",
+        "Tô vendo daqui da sala. Parada. Com pedido esperando. Interessante.",
+        "Pausa pro café é às três. São {n}. Bora!"
+      ],
+      chefePenalidade: [
+        "Cuidado com essa empilhadeira! O plano de saúde agradece.",
+        "Olha por onde anda! Galpão não é pista de corrida.",
+        "Mais um esbarrão e eu coloco placa de PARE em cada corredor."
+      ],
 
       // ---------- Urgências ----------
       fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
@@ -2290,7 +2367,17 @@
         "Bom ritmo, hein. Continua assim.",
         "Capacete no lugar? Ótimo.",
         "Só passando. O balcão tá andando?",
-        "Esse corredor tá bonito. Gosto de ver."
+        "Esse corredor tá bonito. Gosto de ver.",
+        "Hm. Hm. Tá. Continua.",
+        "Aquela bancada ali tá organizada? Tô perguntando por perguntar.",
+        "Lembra: endereço certo, quantidade certa, doca certa. Só isso.",
+        "Meu chefe também me vigia, viu? É uma corrente.",
+        "Esse pallet tá meio torto ou é impressão minha?",
+        "O cliente ligou elogiando. Não você especificamente. Mas elogiou.",
+        "Tô fazendo minha caminhada. O médico mandou.",
+        "Bom dia. Ou boa tarde. Aqui dentro eu perco a noção.",
+        "Vi uma caixa sem etiqueta ali atrás. Brincadeira. Ou não.",
+        "Se o Robson aparecer, fala que eu quero conversar."
       ],
       urgenciaResolvida: ["Resolvido. Pode voltar pro pedido.", "Crise controlada. Bora que o balcão não para.", "Apagou o incêndio, literalmente ou não."],
 
@@ -4042,6 +4129,7 @@
 
     function adicionarPenalidade(segundos, motivo) {
       tempoPenalidades += segundos;
+      if (motivo === "PEDESTRE" || /EMPILHADEIRA/.test(motivo || "")) chefeReclama("chefePenalidade");
       const penEl = document.getElementById("hud-penalty");
       penEl.style.display = "block";
       penEl.textContent = `+${tempoPenalidades.toFixed(1)}s`;
@@ -5056,7 +5144,9 @@
       npcs.forEach((npc, i) => {
         if (npc.foiEmbora) return;
         const passo = (npc.parado > 0 || npc.esperando > 0) ? 0 : Math.floor(Date.now() / 140 + i * 3) % 4;
-        renderPixelCharacter(npc.x, npc.y, npc.dir, passo, npc.vestColor, npc.caixa === "aberta", npc.caixa === "selada");
+        const embalando = npc.esperando > 0 && npc.alvo && npc.alvo.faz === "embalar";
+        if (embalando) desenharCaixaNaBancada(npc);
+        renderPixelCharacter(npc.x, npc.y, npc.dir, passo, npc.vestColor, !embalando && npc.caixa === "aberta", !embalando && npc.caixa === "selada");
       });
       desenharRonda();
       desenharBalde();
@@ -5483,6 +5573,13 @@
       ctx.drawImage(spriteTingido(chave, spr, "#121422"), ox + 2, oy + 3);
       ctx.globalAlpha = 1;
       ctx.drawImage(spr, ox, oy);
+    }
+
+    let MAPA_EMP_CARGA = null;
+    function renderForkliftComCarga(x, y, dir) {
+      if (!MAPA_EMP_CARGA) MAPA_EMP_CARGA = pixelsEmpilhadeira("#eab308", "#a16207", true);
+      const chave = "empCarga|" + dir;
+      desenharEmpilhadeiraCanvas(canvasEmpilhadeiraGirada(chave, MAPA_EMP_CARGA, DIR_THETA[dir] ?? 0), chave, x, y);
     }
 
     let MAPA_EMP_NPC = null;
@@ -6344,7 +6441,8 @@
         if (ehFila()) {
           const total = metaFila();
           const atual = pedidosEntregues().length + (cargaDepositada ? 0 : 1);
-          prefixo += ` · PEDIDO ${Math.max(1, Math.min(total, atual))}/${total} · ${etapa.titulo}`;
+          prefixo += MISSAO_ATUAL.semFim ? ` · PEDIDO ${atual} · ${etapa.titulo}`
+            : ` · PEDIDO ${Math.max(1, Math.min(total, atual))}/${total} · ${etapa.titulo}`;
         } else if (ehArmazenagem()) {
           const total = recebimento.pallets.length;
           prefixo += ` · PALLET ${Math.min(total, palletsGuardados() + 1)}/${total} · ${etapa.titulo}`;
@@ -6422,6 +6520,7 @@
     }
 
     function finalizarMissaoComVitoria() {
+      fecharChefe();
       estadoJogo = "VITORIA";
       const tempoFinal = tempoFinalRegistrado;
 
@@ -6796,6 +6895,8 @@
         resetarColega(npc);
       });
       resetarRonda();
+      ultimaBronca = -Infinity;
+      tempoParada = 0;
 
       // Estado próprio de cada fase
       resetarVeiculo();
@@ -7464,8 +7565,20 @@
       atualizarChipFila();
     }
 
+    let tempoParada = 0;
     function atualizarFila(dt) {
       if (!ehFila() || !cronometroIniciado) return;
+      // Parada muito tempo com pedido esperando e nada na mão: o chefe vê da sala
+      const andando = keys["ArrowUp"] || keys["ArrowDown"] || keys["ArrowLeft"] || keys["ArrowRight"] ||
+        keys["KeyW"] || keys["KeyA"] || keys["KeyS"] || keys["KeyD"] || (typeof toque !== "undefined" && toque.ativo);
+      if (estadoJogo === "JOGANDO" && !andando && !fila.ativo && pedidosEsperando().length && !emerg.ativa) {
+        tempoParada += dt;
+        if (tempoParada > 15) {
+          tempoParada = 0;
+          const h = new Date();
+          chefeReclama("chefeParado", `${h.getHours()}h${String(h.getMinutes()).padStart(2, "0")}`);
+        }
+      } else tempoParada = 0;
       // Chefe reclama quando a fila do balcão chega a 3 pedidos esperando (de novo só se a fila baixar)
       const naFila = pedidosEsperando().length;
       if (naFila >= 3 && !fila.chefeAvisou) {
@@ -7493,6 +7606,7 @@
         }
         if (!p.atrasoAvisado && estaAtrasado(p)) {
           p.atrasoAvisado = true;
+          chefeReclama("chefeAtraso", p.def.numero);
           SFX.estrelaPerdida();
           falarTexto(sortearTexto("pedidoAtrasado").replace("{n}", p.def.numero), "#ef4444");
           atualizarChipFila();
@@ -7671,7 +7785,8 @@
       calarRadio();
       const armaz = p.def.tipo === "armazenagem";
       const destino = armaz ? `${p.def.palete.baia} N${p.def.palete.nivel}` : p.def.docaSaida;
-      document.getElementById("pok-sub").textContent = `PEDIDO ${pedidosEntregues().length}/${metaFila()} · ${p.def.cliente.toUpperCase()} · ${destino}`;
+      const contagem = MISSAO_ATUAL.semFim ? `${pedidosEntregues().length}º PEDIDO DO TURNO` : `PEDIDO ${pedidosEntregues().length}/${metaFila()}`;
+      document.getElementById("pok-sub").textContent = `${contagem} · ${p.def.cliente.toUpperCase()} · ${destino}`;
       const titulo = document.getElementById("pok-titulo");
       titulo.textContent = `${p.def.numero} ${armaz ? "GUARDADO" : "ENTREGUE"}${r.atrasou ? " (ATRASADO)" : "!"}`;
       titulo.style.color = r.atrasou ? "#92400e" : "#065f46";
@@ -7685,6 +7800,7 @@
       const atrasados = esperando.filter(estaAtrasado).length;
       document.getElementById("pok-fila").textContent = esperando.length
         ? `📥 ${esperando.length} pedido(s) esperando no balcão${atrasados ? ` · ${atrasados} já atrasado(s)` : ""}. Corre!`
+        : MISSAO_ATUAL.semFim ? "Balcão vazio por enquanto. Aproveita que logo cai mais."
         : `Balcão vazio por enquanto. Faltam ${metaFila() - pedidosEntregues().length} para fechar o turno.`;
       for (let s = 1; s <= 3; s++) {
         const el = document.getElementById("pok-star-" + s);
@@ -7797,9 +7913,15 @@
       coletor: { icone: "📟", nome: "COLETOR PERDIDO", falha: "bateriaAcabou", tituloFalha: "BATERIA ACABOU" },
       descarga: { icone: "🚚", nome: "DESCARGA URGENTE", falha: "descargaAtrasou", tituloFalha: "A DOCA TRAVOU" },
       abandono: { icone: "🪣", nome: "PEDIDO ABANDONADO", falha: "abandonoAtrasou", tituloFalha: "O PEDIDO FICOU PRA TRÁS" },
-      batida: { icone: "💥", nome: "BATIDA NA DOCA", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" }
+      batida: { icone: "💥", nome: "BATIDA DE EMPILHADEIRAS", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" }
     };
     const TEMPO_BATIDA = 1.6; // segundos das empilhadeiras vindo até a batida
+    // Onde a batida acontece: faixas entre as bancadas, longe dos pallets das docas
+    const PONTOS_BATIDA = [
+      { x: 500, y: 230, nome: "CORREDOR ENTRE AS BANCADAS 1 E 2" },
+      { x: 500, y: 370, nome: "CORREDOR ENTRE AS BANCADAS 2 E 3" },
+      { x: 500, y: 480, nome: "CORREDOR DA BANCADA 3" }
+    ];
     // Urgências que não param o pedido: o jogador segue no fluxo normal do balcão
     const urgenciaNoFluxo = () => !!emerg.ativa && emerg.ativa.tipo === "abandono";
     const urgenciaQueGuia = () => !!emerg.ativa && !urgenciaNoFluxo();
@@ -7848,13 +7970,13 @@
         const p = sortear(PALLETS_CONSOLIDACAO);
         Object.assign(a, { pallet: p, x: p.x + p.w / 2, y: p.y + p.h / 2, fogo: 1 });
       } else if (tipo === "batida") {
-        // Duas empilhadeiras vêm de lados opostos e batem no pallet da doca
-        const doca = fila.ultimo && fila.ultimo.def.docaSaida ? fila.ultimo.def.docaSaida : sortear(["DOCA 1", "DOCA 2"]);
-        const p = PALLETS_CONSOLIDACAO.find(pl => pl.id === doca);
-        const cx = p.x + p.w / 2;
-        Object.assign(a, { pallet: p, x: cx, y: p.y + p.h / 2, fogo: 0, colisao: TEMPO_BATIDA,
-          emps: [{ x0: cx, y0: p.y - 110, x1: cx, y1: p.y - 18, dir: "DOWN" },
-                 { x0: cx, y0: p.y + p.h + 110, x1: cx, y1: p.y + p.h + 18, dir: "UP" }] });
+        // Duas empilhadeiras levando carga pro caminhão batem de frente no corredor, longe das docas
+        const ponto = sortear(PONTOS_BATIDA);
+        const cx = ponto.x, cy = ponto.y;
+        Object.assign(a, { pallet: { x: cx - 16, y: cy - 22, w: 32, h: 32, label: ponto.nome }, x: cx, y: cy, fogo: 0,
+          colisao: TEMPO_BATIDA,
+          emps: [{ x0: cx - 130, y0: cy, x1: cx - 42, y1: cy, dir: "RIGHT" },
+                 { x0: cx + 130, y0: cy, x1: cx + 42, y1: cy, dir: "LEFT" }] });
       } else if (tipo === "abandono") {
         const npc = sortear(colegasNoGalpao());
         colegaLargaOEmprego(npc);
@@ -7883,12 +8005,14 @@
       JUICE.shake(5, 0.35);
       const texto = {
         incendio: `Fogo no pallet ${a.pallet ? a.pallet.label : ""}! Pegue o extintor.`,
-        batida: `Cuidado! Duas empilhadeiras vindo pra ${a.pallet ? a.pallet.label : "doca"}...`,
+        batida: "Cuidado! Duas empilhadeiras vindo de frente no corredor...",
         abandono: `${a.colega} chutou o balde e foi embora! Termine o pedido ${a.pedido ? a.pedido.def.numero : ""} dele.`,
         coletor: "O coletor sumiu! Sem ele, sem WMS. Siga o bip.",
         descarga: `Descarga urgente: leve o pallet até a ${a.pos ? a.pos.idCompleto : ""}.`
       }[tipo];
       falarTexto(texto, "#ef4444");
+      if (tipo !== "batida") chefeReclama({ incendio: "chefeIncendio", coletor: "chefeColetor", descarga: "chefeDescarga", abandono: "chefeAbandono" }[tipo],
+        tipo === "abandono" ? a.colega.charAt(0) + a.colega.slice(1).toLowerCase() : undefined);
       atualizarBannerEmergencia();
       atualizarHUD();
     }
@@ -7925,13 +8049,12 @@
         a.colisao -= dt;
         if (a.colisao <= 0) {
           a.fogo = 1;
-          a.pallet.boxes = 0;
           SFX.empilhadeiraCrash();
           JUICE.shake(8, 0.45);
-          JUICE.particulas(a.x, a.pallet.y - 4, "faisca", 18);
-          JUICE.particulas(a.x, a.pallet.y + a.pallet.h + 4, "faisca", 18);
-          JUICE.textoFlutuante(a.x, a.pallet.y - 24, "CRASH!", "#f97316");
-          falarTexto(`Bateram na ${a.pallet.label} e pegou fogo! Pegue o extintor.`, "#ef4444");
+          JUICE.particulas(a.x, a.y, "faisca", 30);
+          JUICE.textoFlutuante(a.x, a.y - 30, "CRASH!", "#f97316");
+          falarTexto("Duas empilhadeiras bateram de frente e a carga pegou fogo! Pegue o extintor.", "#ef4444");
+          chefeReclama("chefeBatida");
           atualizarHUD();
         }
       }
@@ -7968,7 +8091,7 @@
       const b = document.getElementById("emergencia-banner");
       if (!a) { b.classList.remove("visivel"); return; }
       const info = URGENCIA_INFO[a.tipo];
-      const onde = temFogo(a) ? ` · ${a.pallet.label}` : a.tipo === "descarga" ? ` · ${a.pos.idCompleto} N${a.nivel}`
+      const onde = a.tipo === "incendio" ? ` · ${a.pallet.label}` : a.tipo === "descarga" ? ` · ${a.pos.idCompleto} N${a.nivel}`
         : a.tipo === "abandono" ? ` · ${a.pedido.def.numero}` : "";
       document.getElementById("emergencia-titulo").textContent = `${info.icone} ${info.nome}${onde}`;
       const t = Math.max(0, a.restante);
@@ -7986,17 +8109,18 @@
     function textoUrgencia() {
       const a = emerg.ativa;
       const E = EH_TOQUE ? "o botão" : "[E]";
+      const fimE = EH_TOQUE ? "" : " [E]"; // no fim da frase: no celular o botão amarelo já diz a ação
       if (a.tipo === "batida" && a.colisao > 0) return "Saia da frente: tem empilhadeira vindo!";
       if (a.tipo === "abandono") return `Pegue o ${a.pedido.def.numero} no balcão e entregue antes do tempo acabar.`;
       if (temFogo(a)) {
         return emerg.extintorNaMao
           ? `Chegue perto do fogo e segure ${E} para apagar.`
-          : `Pegue o extintor na parede (armário vermelho) ${E}.`;
+          : `Pegue o extintor na parede (armário vermelho)${fimE}.`;
       }
-      if (a.tipo === "coletor") return "Siga o bip e a barra SINAL. Colegas ajudam [E].";
-      if (!veiculo.pilotando) return `Suba na empilhadeira ${E}.`;
-      if (a.etapa === "PEGAR") return `Encaixe o garfo no pallet do recebimento ${E}.`;
-      if (a.etapa === "LEVAR") return `Leve até a ${a.pos.idCompleto}: pare no corredor, ao lado da posição ${E}.`;
+      if (a.tipo === "coletor") return `Siga o bip e a barra SINAL. Colegas ajudam${fimE}.`;
+      if (!veiculo.pilotando) return `Suba na empilhadeira${fimE}.`;
+      if (a.etapa === "PEGAR") return `Encaixe o garfo no pallet do recebimento${fimE}.`;
+      if (a.etapa === "LEVAR") return `Leve até a ${a.pos.idCompleto}: pare no corredor, ao lado da posição${fimE}.`;
       return `Segure ${E}, solte no NÍVEL ${a.nivel}.`;
     }
 
@@ -8028,17 +8152,18 @@
       JUICE.particulas(a.x, a.y, "poeira", 22);
       JUICE.textoFlutuante(a.x, a.y - 20, "APAGADO!", "#e0f2fe");
       concluirEmergencia();
-      if (a.tipo === "batida") refazerPedidosQueimados(a.pallet);
+      if (a.tipo === "batida") refazerPedidosQueimados();
     }
 
-    // Depois da batida: o que estava no pallet da doca queimou e volta pro balcão
-    function refazerPedidosQueimados(pallet) {
+    // Depois da batida: a carga que as empilhadeiras levavam pro caminhão queimou e volta pro balcão
+    function refazerPedidosQueimados() {
+      // Só a carga mais recente (e nunca um pedido que já foi refeito)
       const queimados = pedidosEntregues()
-        .filter(p => p.def.docaSaida === pallet.id)
+        .filter(p => !p.def.refazer)
         .sort((x, y) => y.entregueEm - x.entregueEm)
-        .slice(0, 2);
+        .slice(0, 1);
       if (!queimados.length) {
-        falarTexto(`Fogo apagado. Sorte que a ${pallet.label} estava vazia.`, "#34d399");
+        falarTexto("Fogo apagado. Sorte que as empilhadeiras estavam levando pallet vazio.", "#34d399");
         return;
       }
       queimados.forEach(o => {
@@ -8051,7 +8176,7 @@
       atualizarChipFila(true);
       atualizarHUD();
       const nums = queimados.map(o => o.def.numero).join(" e ");
-      falarTexto(`Fogo apagado, mas o ${nums} queimou no pallet. Refaça no balcão.`, "#fde047");
+      falarTexto(`Fogo apagado, mas a carga do ${nums} queimou. Refaça no balcão.`, "#fde047");
     }
 
     // Pedido largado pelo colega: cai no topo do balcão, já com o primeiro item separado
@@ -8078,7 +8203,7 @@
         let x = m.x0 + (m.x1 - m.x0) * e;
         let y = m.y0 + (m.y1 - m.y0) * e;
         if (a.colisao <= 0) { x += Math.sin(Date.now() / 40 + i) * 0.6; }
-        renderPixelForklift(x, y, m.dir, Date.now() / 300 + i);
+        renderForkliftComCarga(x, y, m.dir);
         if (a.colisao <= 0) {
           // Fumaça saindo do motor batido
           const f = ((Date.now() / 900) + i * 0.5) % 1;
@@ -8351,11 +8476,20 @@
       if (el) el.classList.remove("visivel");
     }
 
-    function chefeReclama(qtd) {
+    const INTERVALO_CHEFE = 18; // segundos de jogo entre uma bronca e outra
+    let ultimaBronca = -Infinity;
+    // evento: chave de TEXTOS (ou um número = pedidos na fila, o caso clássico); n: o que entra no {n}
+    function chefeReclama(evento, n) {
+      if (typeof evento === "number") { n = evento; evento = "chefeBravo"; }
+      // Fila cheia e urgências sempre passam; o resto respeita o intervalo
+      const prioridade = ["chefeBravo", "chefeIncendio", "chefeColetor", "chefeDescarga", "chefeAbandono", "chefeBatida"].includes(evento);
+      if (tempoDecorrido - ultimaBronca < INTERVALO_CHEFE && !prioridade) return;
+      if (estadoJogo !== "JOGANDO" && estadoJogo !== "MINIGAME" && estadoJogo !== "CARD_PEDIDO") return;
+      ultimaBronca = tempoDecorrido;
       fecharChefe();
       const el = document.getElementById("chefe-popup");
       const span = document.getElementById("chefe-texto");
-      const fala = sortearTexto("chefeBravo").replace("{n}", String(qtd));
+      const fala = sortearTexto(evento).replace("{n}", String(n ?? ""));
       span.textContent = "";
       el.classList.add("visivel");
       desenharRostoChefe(2);
@@ -8384,9 +8518,14 @@
     const PORTA_ESCRITORIO = { x: 520, y: 30 };
     const FAIXA_TOPO = 36;                   // corredor de cima, entre a parede e o começo das ruas
     const SAIDA_RUAS_X = 380;                // passagem entre a R04 e o balcão
-    const FAIXAS_ABERTAS = [230, 370];       // faixas livres entre bancadas e pallets
+    const FAIXAS_ABERTAS = [230, 370, 480];  // faixas livres entre bancadas e pallets
+    const COLUNA_LIVRE_X = 684;              // passagem vertical entre bancadas e pallets
     const naRua = (x) => x < 368;
-    const faixaPerto = (y) => FAIXAS_ABERTAS.reduce((a, b) => Math.abs(b - y) < Math.abs(a - y) ? b : a);
+    // Qual faixa serve um ponto: na coluna das bancadas, a primeira faixa logo abaixo (pra não atravessar a bancada)
+    function faixaPara(x, y) {
+      if (x >= 560 && x <= 660) return FAIXAS_ABERTAS.find(L => L >= y - 2) || FAIXAS_ABERTAS[FAIXAS_ABERTAS.length - 1];
+      return FAIXAS_ABERTAS.slice(0, 2).reduce((a, b) => Math.abs(b - y) < Math.abs(a - y) ? b : a);
+    }
 
     // Caminho que não atravessa racks, bancadas nem pallets, e deixa livre
     // a parte de baixo do galpão (pulmão e recebimento, onde a empilhadeira manobra)
@@ -8397,15 +8536,18 @@
         return [{ x: x0, y: FAIXA_TOPO }, { x: x1, y: FAIXA_TOPO }, { x: x1, y: y1 }];
       }
       if (ruaA) {
-        const L = faixaPerto(y1);
+        const L = faixaPara(x1, y1);
         return [{ x: x0, y: FAIXA_TOPO }, { x: SAIDA_RUAS_X, y: FAIXA_TOPO }, { x: SAIDA_RUAS_X, y: L }, { x: x1, y: L }, { x: x1, y: y1 }];
       }
       if (ruaB) {
-        const L = faixaPerto(y0);
+        const L = faixaPara(x0, y0);
         return [{ x: x0, y: L }, { x: SAIDA_RUAS_X, y: L }, { x: SAIDA_RUAS_X, y: FAIXA_TOPO }, { x: x1, y: FAIXA_TOPO }, { x: x1, y: y1 }];
       }
-      const L = faixaPerto((y0 + y1) / 2);
-      return [{ x: x0, y: L }, { x: x1, y: L }, { x: x1, y: y1 }];
+      const L0 = faixaPara(x0, y0), L1 = faixaPara(x1, y1);
+      if (L0 === L1) return [{ x: x0, y: L0 }, { x: x1, y: L0 }, { x: x1, y: y1 }];
+      // Troca de faixa pela coluna livre (ou pela passagem das ruas, se estiver mais perto)
+      const cx = Math.abs(x0 - COLUNA_LIVRE_X) < Math.abs(x0 - SAIDA_RUAS_X) ? COLUNA_LIVRE_X : SAIDA_RUAS_X;
+      return [{ x: x0, y: L0 }, { x: cx, y: L0 }, { x: cx, y: L1 }, { x: x1, y: L1 }, { x: x1, y: y1 }];
     }
 
     // Anda pela rota; devolve true quando chegou no fim
@@ -8433,6 +8575,7 @@
       npc.caixa = [null, "aberta", "selada"][i % 3];
       npc.saindo = false;
       npc.foiEmbora = false;
+      npc.bancada = null;
     }
 
     // Ciclo de trabalho: rua → bancada → doca → rua
@@ -8443,8 +8586,19 @@
         npc.alvo = { x: rua.corridorX + (pos.isImpar ? 13 : 35), y: pos.zoneY + pos.zoneH / 2,
                      olhar: pos.isImpar ? "LEFT" : "RIGHT", espera: 1.6, faz: "pegar" };
       } else if (npc.caixa === "aberta") {
-        const est = sortear(ESTACOES_EMBALAGEM);
-        npc.alvo = { x: est.x - 10, y: est.y + est.h / 2, olhar: "RIGHT", espera: 2.8, faz: "embalar" };
+        // Bancada livre: sem outro colega e sem a operadora usando
+        const livres = ESTACOES_EMBALAGEM.filter(e => !npcs.some(o => o !== npc && o.bancada === e) &&
+          !zonaRetangular(player.x, player.y, e, 24));
+        if (!livres.length) {
+          // Todas ocupadas: espera um pouco no corredor e tenta de novo
+          npc.alvo = { x: npc.x, y: npc.y, olhar: npc.dir, espera: 1.5, faz: "aguardar" };
+          npc.rota = [];
+          return;
+        }
+        const est = sortear(livres);
+        npc.bancada = est;
+        // De frente pra bancada, pelo lado de baixo (o lado de cima fica pra operadora)
+        npc.alvo = { x: est.x + 44, y: est.y + est.h + 9, olhar: "UP", espera: 3.2, faz: "embalar", est };
       } else {
         // Só nas docas: o lado dos STAGES fica livre pra empilhadeira manobrar
         const pl = sortear(PALLETS_CONSOLIDACAO.filter(x => x.id.startsWith("DOCA")));
@@ -8455,11 +8609,16 @@
 
     function moverColega(npc, dt) {
       if (npc.parado > 0) { npc.parado -= dt; return; } // buzina, conversa, susto
+      const fogo = emerg.ativa;
+      if (temFogo(fogo) && Math.hypot(npc.x - fogo.x, npc.y - fogo.y) < 60 && !npc.saindo) return; // espera o fogo apagar
       if (npc.esperando > 0) {
         npc.esperando -= dt;
         npc.dir = npc.alvo.olhar;
         if (npc.esperando <= 0) {
-          npc.caixa = { pegar: "aberta", embalar: "selada", expedir: null }[npc.alvo.faz];
+          const faz = npc.alvo.faz;
+          if (faz !== "aguardar") npc.caixa = { pegar: "aberta", embalar: "selada", expedir: null }[faz];
+          if (faz === "embalar") SFX.playTone(880, "square", 0.03, 0.03, 0.005);
+          npc.bancada = null;
           proximaTarefa(npc);
         }
         return;
@@ -8470,6 +8629,17 @@
         npc.rota = null;
         npc.esperando = npc.alvo ? npc.alvo.espera : 0.5;
       }
+    }
+
+    function desenharCaixaNaBancada(npc) {
+      const est = npc.alvo.est;
+      const bx = Math.round(npc.x - 5), by = Math.round(est.y + est.h - 13);
+      const caixa = spriteDeTexto("caixa", CAIXA_COLO, PALETA_CAIXA);
+      ctx.drawImage(caixa, bx, by);
+      // Fita passando de um lado pro outro, até lacrar
+      const prog = 1 - Math.max(0, npc.esperando) / npc.alvo.espera;
+      ret(ctx, bx + 1, by + 2, Math.max(1, Math.round(8 * prog)), 2, "#e9c46a");
+      if (Math.floor(Date.now() / 160) % 2 === 0) ret(ctx, bx + 1 + Math.round(7 * prog), by + 1, 2, 1, "#f8fafc");
     }
 
     function colegasNoGalpao() { return npcs.filter(n => !n.foiEmbora && !n.saindo); }
@@ -8486,6 +8656,7 @@
 
     function colegaLargaOEmprego(npc) {
       npc.saindo = true;
+      npc.bancada = null;
       npc.esperando = 0;
       npc.caixa = null;
       npc.parado = 1.3; // chuta o balde, fala e só depois vai embora
@@ -8626,6 +8797,13 @@
       empAtivas = MISSAO_ATUAL.empilhadeirasAtivas.map(n => empilhadeiras[n]);
     }
 
+    function comecarSemFim() {
+      faseIndex = FASES.length - 1;
+      MISSAO_ATUAL = FASE_SEM_FIM;
+      empAtivas = MISSAO_ATUAL.empilhadeirasAtivas.map(n => empilhadeiras[n]);
+      reiniciarJogo();
+    }
+
     function comecarCampanha() {
       campanha.tempos = [];
       campanha.estrelas = [];
@@ -8643,6 +8821,7 @@
     }
 
     function voltarAoMenu() {
+      fecharChefe();
       limparTimersVitoria();
       SFX.pararColetaTom();
       calarRadio();
@@ -9443,6 +9622,7 @@
     }
 
     function falharFase(evento, titulo = "BATERIA ACABOU") {
+      fecharChefe();
       document.getElementById("falha-titulo").textContent = titulo;
       document.documentElement.classList.remove("emergencia");
       document.getElementById("emergencia-banner").classList.remove("visivel");
@@ -9452,7 +9632,9 @@
       SFX.pararColetaTom();
       SFX.estrelaPerdida();
       calarRadio();
-      document.getElementById("falha-texto").textContent = sortearTexto(evento) + " " + sortearTexto("falha");
+      document.getElementById("falha-texto").textContent = MISSAO_ATUAL.semFim
+        ? `${sortearTexto(evento)} Fim do turno: ${pedidosEntregues().length} pedido(s) entregue(s) em ${mmss(tempoDecorrido)}.`
+        : sortearTexto(evento) + " " + sortearTexto("falha");
       document.getElementById("modal-falha").style.display = "flex";
     }
 
@@ -9629,6 +9811,13 @@
       SFX.menuEnter();
       RADIO_MUSICA.tocar();
       comecarCampanha();
+    });
+    document.getElementById("btn-sem-fim").addEventListener("click", () => {
+      entrarModoCelular();
+      initAudio();
+      SFX.menuEnter();
+      RADIO_MUSICA.tocar();
+      comecarSemFim();
     });
     document.getElementById("btn-next-phase").addEventListener("click", () => {
       SFX.menuEnter();
