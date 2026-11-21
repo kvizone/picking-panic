@@ -8346,8 +8346,9 @@
         n1.olharBriga = lado > 0 ? "RIGHT" : "LEFT";
         n2.olharBriga = lado > 0 ? "LEFT" : "RIGHT";
         n2.rota = rotaAte(n2.x, n2.y, n1.x + lado, n1.y);
-        Object.assign(a, { brigoes: [n1, n2], x: n1.x + lado / 2, y: n1.y, chamado: false, falaT: 0.3, vez: 1 });
-        mostrarBalaoNpc(n1, sortearTexto("falasBriga"));
+        Object.assign(a, { brigoes: [n1, n2], x: n1.x + lado / 2, y: n1.y, chamado: false, falaT: 1.2, linha: 0,
+                           dialogo: sortear(DIALOGOS_BRIGA) });
+        falaDaBriga(a, 0);
         chefeReclama("chefeBriga");
       } else if (tipo === "abandono") {
         const npc = sortear(colegasQuePodemLargar());
@@ -9737,16 +9738,86 @@
     };
     const rh = { nome: "RH", ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 62, fase: "", t: 0, parado: 0, vestColor: "#7c3aed" };
 
+    /* Discussões da briga: falas em ordem, alternando (quem começa é o que ficou parado).
+       {eu} = nome de quem fala, {outro} = nome de quem ouve. O RH responde sobre o mesmo assunto. */
+    const DIALOGOS_BRIGA = [
+      {
+        tema: "marmita",
+        falas: [
+          "Quem comeu minha marmita?! Tava escrito {eu} na tampa!",
+          "Eu achei que {eu} era o nome do restaurante!",
+          "Era o strogonoff da minha mãe, {outro}! Com batata palha!",
+          "Tava uma delícia, inclusive. Manda meus parabéns pra ela.",
+          "Agora é pessoal.",
+          "Calma! Amanhã eu trago uma coxinha pra você. Duas!",
+          "Coxinha não paga strogonoff, {outro}!",
+          "Paga sim, se for de catupiry."
+        ],
+        rh: "Ninguém mexe na comida de ninguém. E amanhã tem bolo de pote pra equipe, combinado?"
+      },
+      {
+        tema: "rádio",
+        falas: [
+          "Quem trocou a estação da rádio?! Eu tava ouvindo meu rock!",
+          "Rock às oito da manhã ninguém merece, {outro}!",
+          "E pagode merece? Toca a mesma música desde 2009!",
+          "É clássico! Clássico não enjoa!",
+          "Vou esconder o controle do rádio.",
+          "Rádio não tem controle, {outro}. É botão.",
+          "Então vou esconder o botão!",
+          "Como você esconde um botão?!"
+        ],
+        rh: "Vamos fazer uma playlist da equipe: uma de rock, uma de pagode. Revezando. Sem esconder botão."
+      },
+      {
+        tema: "carrinho",
+        falas: [
+          "Você estacionou o carrinho na minha vaga de novo!",
+          "Vaga? Desde quando corredor tem dono, {outro}?",
+          "Desde que eu cheguei primeiro hoje. Às seis e meia!",
+          "Eu cheguei seis e vinte! Só fui no banheiro!",
+          "Banheiro não conta! Saiu, perdeu!",
+          "Isso não tá escrito em lugar nenhum, {outro}!",
+          "Tá escrito no meu coração.",
+          "Que coisa mais brega."
+        ],
+        rh: "Carrinho não tem vaga fixa, gente. Quem chegar, usa. E cada um guarda o seu no fim do turno."
+      },
+      {
+        tema: "fita",
+        falas: [
+          "Quem pegou minha fita adesiva? Deixei bem aqui na bancada!",
+          "Fita é da bancada, {outro}. É de todo mundo!",
+          "Essa era especial! Tinha um coraçãozinho desenhado na ponta!",
+          "Ah... aquela. Usei pra lacrar três caixas.",
+          "TRÊS?!",
+          "Foi por uma boa causa! Os pedidos saíram no prazo!",
+          "Meu coraçãozinho foi pra Minas Gerais, {outro}.",
+          "Pelo menos ele viajou. Eu nunca fui pra Minas."
+        ],
+        rh: "Fita é material da bancada, mas entendi o valor sentimental. Vou trazer uma pra cada um."
+      }
+    ];
+
+    function falaDaBriga(a, i) {
+      const quem = a.brigoes[i % 2], outro = a.brigoes[(i + 1) % 2];
+      const bonito = (n) => n.nome.charAt(0) + n.nome.slice(1).toLowerCase();
+      const linhas = a.dialogo.falas;
+      // Acabou o roteiro: seguem resmungando até o RH chegar
+      const texto = i < linhas.length ? linhas[i] : ["Hmpf!", "Nem olha pra mim.", "Tô de mal.", "Hmpf! Hmpf!"][i % 4];
+      mostrarBalaoNpc(quem, texto.replace(/\{eu\}/g, bonito(quem)).replace(/\{outro\}/g, bonito(outro)));
+      SFX.playTone(140 + Math.random() * 60, "square", 0.06, 0.05, 0.005);
+    }
+
     function atualizarBriga(a, dt) {
-      // Os dois se xingando, um de cada vez
+      // Os dois discutindo, um de cada vez, na ordem do roteiro
       const chegaram = a.brigoes.every(n => !(n.rota && n.rota.length));
       if (chegaram && rh.fase !== "conversando") {
         a.falaT -= dt;
         if (a.falaT <= 0) {
-          a.falaT = 2.4;
-          a.vez = 1 - a.vez;
-          mostrarBalaoNpc(a.brigoes[a.vez], sortearTexto("falasBriga"));
-          SFX.playTone(140 + Math.random() * 60, "square", 0.06, 0.05, 0.005);
+          a.falaT = 2.8;
+          a.linha++;
+          falaDaBriga(a, a.linha);
         }
       }
       atualizarRH(a, dt);
@@ -9770,10 +9841,10 @@
       if (rh.fase === "indo") {
         if (seguirRota(rh, dt)) {
           rh.fase = "conversando";
-          rh.t = 2.2;
+          rh.t = 3.6; // tempo de ler a solução do RH
           rh.dir = "UP";
           a.brigoes.forEach(n => { n.dir = "DOWN"; });
-          mostrarBalaoNpc(rh, sortearTexto("falasRH"));
+          mostrarBalaoNpc(rh, a.dialogo ? a.dialogo.rh : sortearTexto("falasRH"));
         }
       } else if (rh.fase === "conversando") {
         rh.t -= dt;
