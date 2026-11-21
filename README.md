@@ -74,6 +74,7 @@ O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais
 | 📟 Coletor perdido | Sem coletor, sem WMS: siga o bip e a barra SINAL, pergunte aos colegas | 60s / 55s |
 | 🚚 Descarga urgente | Suba na empilhadeira, pegue o pallet no recebimento e guarde na posição sorteada da rua (R0X-PYY), no nível pedido | 120s / 100s |
 | 🪣 Pedido abandonado | Robson ou Jéssica chuta o balde e vai embora, e aparece no rádio (com rosto, igual ao chefe) contando o que largou. Logo depois o chefe reage. O pedido cai no topo do balcão, com o primeiro item já separado: termine e entregue | 150s / 130s |
+| 🧹 Caixa derrubada | Alguém derrubou uma caixa numa das ruas. Vá até lá e segure a ação pra varrer (a bagunça some aos poucos) | 45s (turno sem fim) |
 | 🖥️ Tela roxa no WMS | O sistema trava: abre a tela roxa "ERRO NO SISTEMA" e o balcão para de liberar pedido. Vá ao balcão e chame a TI. Ao chamar, o relógio para e o técnico (colete azul) vem consertar. Quem já tem pedido na mão pode continuar | 40s / 35s |
 | 😡 Briga no galpão | Dois colegas param e começam a brigar. Ligue pro RH no ramal da parede de cima (perto da placa EPI). Ao ligar, o relógio para e a moça do RH sai da sala, acalma os dois e volta | 40s / 35s |
 | 💥 Batida de empilhadeiras | Duas empilhadeiras levando carga pro caminhão batem de frente no corredor entre as bancadas e pega fogo. Apague com o extintor. A carga do último pedido entregue queima e volta pro balcão como "-R" pra refazer | 34s / 30s |
@@ -88,11 +89,18 @@ O chefe sai da sala (porta "CHEFE" na parede de cima) de tempos em tempos, passe
 
 O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido atrasado, cada urgência, esbarrão de empilhadeira e quando você fica parada com pedido esperando. Entre uma bronca e outra há pelo menos 18 segundos (fila cheia e urgências furam essa espera).
 
+## Demandas (sem pressão)
+
+Além dos problemas, o sorteio pode trazer uma demanda: uma tarefa sem cronômetro. A faixa fica azul (sem borda vermelha nem alarme), mostra o progresso, e os pedidos congelam: não cai pedido novo e o prazo de quem está esperando para de andar. O balcão só volta ao normal quando a demanda termina.
+
+- 🚛 **Caminhão**: 3 pallets pra levar do recebimento pro estoque. A empilhadeira vai e volta: guardou um, já pode buscar o próximo sem descer. A faixa mostra 0/3, 1/3...
+- 🎓 **Treinar o Enzo**: chega o Enzo, funcionário novo (popup com o rosto dele). Só sai do balcão o pedido TREINO, e você mostra tudo: WMS, coleta, embalagem e doca. Ele segue você pelo rastro e comenta as coisas. Cada passo só conta com ele do lado; se ele estiver longe, aparece "CADÊ O ENZO?". De vez em quando ele se distrai (bebedouro, empilhadeira, bancada...) e some: a seta aponta pra ele e é só chegar perto pra ele voltar. Entregou o TREINO, ele agradece e vai embora.
+
 ## Ritmo do turno sem fim
 
 Cai um pedido a cada 35 segundos (no máximo 6 esperando). Com 5 ou mais pedidos parados no balcão, o próximo demora o dobro (70 segundos), pra dar tempo de recuperar.
 
-As urgências são sorteadas com peso: tela roxa e briga aparecem mais (21% cada), coletor, descarga e abandono no meio (14% cada), e incêndio e batida menos (7% cada). O primeiro problema do turno é sempre a tela roxa (aos 25 segundos). Depois disso, o sorteio nunca repete a mesma urgência em seguida nem coloca dois fogos seguidos.
+Problemas e demandas são sorteados com peso: tela roxa e briga aparecem mais; coletor, descarga, abandono, caixa derrubada, caminhão e treino no meio; incêndio e batida menos. O primeiro problema do turno é sempre a tela roxa (aos 25 segundos). Depois disso, o sorteio nunca repete a mesma urgência em seguida nem coloca dois fogos seguidos.
 
 ## Hidratação
 
