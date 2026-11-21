@@ -488,6 +488,29 @@
     }
     .et-atrasado { color: #b91c1c; font-weight: bold; }
     .balao-nome { display: block; font-size: 0.8em; color: #475569; margin-bottom: 2px; letter-spacing: 0.04em; }
+    /* Aviso de demanda */
+    #modal-demanda { background: rgba(15, 23, 42, 0.55); }
+    .aviso-demanda {
+      width: min(92%, 460px);
+      box-sizing: border-box;
+      padding: 18px 20px 16px;
+      background: #eff6ff;
+      color: #0f172a;
+      border: 3px solid #1e3a8a;
+      box-shadow: 6px 6px 0 #000;
+      font-size: 10px;
+      line-height: 1.6;
+      text-align: left;
+      animation: trEntra 0.25s steps(4);
+    }
+    .aviso-demanda .dm-icone { font-size: 30px; line-height: 1; margin-bottom: 6px; }
+    .aviso-demanda h2 { font-size: 14px; color: #1e3a8a; margin: 0 0 8px; }
+    .aviso-demanda ol { margin: 0 0 8px; padding-left: 18px; }
+    .aviso-demanda li { margin-bottom: 4px; }
+    .aviso-demanda .dm-nota { color: #1d4ed8; margin: 0; }
+    .aviso-demanda .dm-btn { width: 100%; margin-top: 10px; }
+    #hud .hud-fila.congelado, #hud .hud-fila.tem.congelado { background: #1e3a8a; color: #bfdbfe; animation: none; }
+    #hud .hud-fila.congelado::after { content: " ❄"; }
     /* Tela roxa do WMS */
     #modal-tela-roxa { background: rgba(46, 16, 101, 0.55); }
     .tela-roxa {
@@ -1729,6 +1752,17 @@
       </div>
     </div>
 
+    <!-- MODAL: Aviso de demanda (tarefa sem pressão) -->
+    <div id="modal-demanda" class="modal-overlay">
+      <div class="aviso-demanda" role="alertdialog" aria-labelledby="dm-titulo">
+        <div class="dm-icone" id="dm-icone">🚛</div>
+        <h2 id="dm-titulo">CHEGOU CAMINHÃO!</h2>
+        <ol id="dm-passos"></ol>
+        <p class="dm-nota" id="dm-nota"></p>
+        <button class="btn dm-btn" id="btn-demanda">BORA</button>
+      </div>
+    </div>
+
     <div id="modal-pedido-ok" class="modal-overlay">
       <div data-titulo="WMS · PEDIDO CONCLUÍDO" class="modal-box janela" style="max-width: 420px; text-align: center;">
         <p id="pok-sub" style="font-size: 8px;">PEDIDO 1/2 · DOCA 1</p>
@@ -2462,6 +2496,16 @@
         "Ué, cadê todo mundo?",
         "Fiquei olhando o relógio. Ele anda, sabia?",
         "Essa bancada tem um cheirinho de fita nova."
+      ],
+      falasEnzoPasseio: [
+        "Alguém viu minha caneta? Tá na minha orelha? Ah. Tá.",
+        "Tô procurando a rua R05. Não tem R05? Explica muita coisa.",
+        "Esse bebedouro é self-service ou precisa de senha?",
+        "Já sei separar! Agora só falta o resto.",
+        "Oi! Tô só passeando. Quer dizer, trabalhando. Passeando trabalhando.",
+        "O Geraldo me chamou de 'promessa'. Isso é bom, né?",
+        "Descobri que o carrinho tem quatro rodas. Uma tá meio torta.",
+        "Tô contando os pallets. Já perdi a conta duas vezes."
       ],
       falasEnzoAchado: [
         "Ah, você tá aí! Achei que VOCÊ tinha se perdido.",
@@ -3902,6 +3946,12 @@
         if (e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape") { SFX.menuEnter(); fecharPedidoOk(); }
         return;
       }
+      if (estadoJogo === "DEMANDA_AVISO") {
+        const fechar = e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape";
+        if (fechar) e.preventDefault();
+        if (fechar && !e.repeat && performance.now() - avisoDemandaAbertoEm > 800) { SFX.menuEnter(); fecharAvisoDemanda(); }
+        return;
+      }
       if (estadoJogo === "TELA_ROXA") {
         // Tecla segurada (coletando com E, por exemplo) não fecha: só um toque novo, depois de 1s na tela
         const fechar = e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape";
@@ -4497,7 +4547,7 @@
     let stepSoundTimer = 0;
 
     function update(dt) {
-      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU" || estadoJogo === "PEDIDO_OK" || estadoJogo === "TELA_ROXA") {
+      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU" || estadoJogo === "PEDIDO_OK" || estadoJogo === "TELA_ROXA" || estadoJogo === "DEMANDA_AVISO") {
         return;
       }
 
@@ -7159,6 +7209,9 @@
       ti.ativo = false;
       RADIO_MUSICA.voltarDaTemporaria();
       enzo.ativo = false;
+      enzo.modo = "";
+      treinoAtivo = null;
+      Object.assign(enzoHist, { treinos: 0, aulaFogo: false, proxPasseio: Infinity });
       resetarHidratacao();
       cancelarBroncaAgendada();
       fecharChefe();
@@ -7174,7 +7227,7 @@
       resetarEmergencias();
       fecharChefe();
       resetarDicasDaPartida();
-      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok", "modal-tela-roxa"]
+      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok", "modal-tela-roxa", "modal-demanda"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
 
       encaixarCameraNoJogador();
@@ -7365,7 +7418,7 @@
       pulmao_alinhar: "ENCAIXE", zona_ok: "BAIXAR", zona_devagar: "PARE",
       zona_fora: "ENTRE", coletor: "PEGAR", npc: "PERGUNTAR",
       receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
-      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR"
+      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER"
     };
     let rotuloAcaoAtual = "";
     function atualizarBotoesToque() {
@@ -7870,7 +7923,7 @@
       }
       // A cada minuto cai um pedido aleatório. Com o balcão vazio e nada na mão, não precisa esperar o minuto.
       const g = MISSAO_ATUAL.geracao;
-      if (demandaAtiva()) {
+      if (pedidosCongelados()) {
         // Congelado: não cai pedido novo e o prazo de quem está esperando não anda
         fila.proxGeracao += dt;
         fila.pedidos.forEach(p => {
@@ -7927,7 +7980,8 @@
       const n = pedidosEsperando().length;
       document.getElementById("hud-fila-n").textContent = String(n);
       chip.classList.toggle("tem", n > 0);
-      chip.classList.toggle("atrasado", pedidosEsperando().some(estaAtrasado));
+      chip.classList.toggle("atrasado", !pedidosCongelados() && pedidosEsperando().some(estaAtrasado));
+      chip.classList.toggle("congelado", pedidosCongelados());
       chip.title = n ? `${n} pedido(s) esperando no balcão WMS` : "Nenhum pedido esperando";
       if (pop) {
         chip.classList.add("pop");
@@ -7955,9 +8009,6 @@
 
     // Fila do balcão, do mais urgente (menos prazo sobrando) para o menos urgente
     function listaBalcao() {
-      // No treino só sai o pedido de treino
-      const a = emerg.ativa;
-      if (a && a.tipo === "treino" && a.pedido.status === "esperando") return [a.pedido];
       const folga = (p) => p.def.urgente ? -1e9 : prazoDe(p) - idadeDe(p);
       return pedidosEsperando().sort((a, b) => folga(a) - folga(b));
     }
@@ -8101,8 +8152,10 @@
       atualizarChipFila();
       const a = emerg.ativa;
       if (a && a.tipo === "abandono" && a.pedido === p) concluirEmergencia();
-      if (a && a.tipo === "treino" && a.pedido === p) concluirTreino(a);
-      if (MISSAO_ATUAL.semFim && !p.def.treino && !p.def.urgente) contarPedidoNoCiclo();
+      const emTreino = !!treinoAtivo;
+      if (emTreino && !p.def.urgente) pedidoDoTreinoEntregue(treinoAtivo);
+      // Os 3 pedidos do treino já são a "demanda" deles: não contam pro ciclo
+      if (MISSAO_ATUAL.semFim && !emTreino && !p.def.urgente) contarPedidoNoCiclo();
     }
 
     function abrirPedidoOk() {
@@ -8237,7 +8290,9 @@
     const EXTINTOR_POS = { x: 668, y: 30 }; // armário vermelho na parede, perto da consolidação
     const emerg = { ativa: null, proxima: Infinity, ordem: [], ultimo: null, alarme: 0, hud: 0, extintorNaMao: false, spray: false,
                     // Turno sem fim: o que vem a seguir ("problema" = sorteio de problema; ou o tipo da demanda)
-                    pendentes: [], gatilhoProblema: Infinity, proxDemanda: 0 };
+                    pendentes: [], gatilhoProblema: Infinity, proxDemanda: 0,
+                    demandaPendente: null, semEvento: 0 };
+    const MAX_SEM_PROBLEMA = 55; // segundos jogando pedido sem nenhum evento: estoura um problema
     // Ritmo do turno sem fim: a cada 3 pedidos entregues vem uma demanda;
     // no meio desses 3 pedidos (depois do 1º ou do 2º) estoura um problema
     const PEDIDOS_POR_CICLO = 3;
@@ -8250,7 +8305,7 @@
       abandono: { icone: "🪣", nome: "PEDIDO ABANDONADO", falha: "abandonoAtrasou", tituloFalha: "O PEDIDO FICOU PRA TRÁS" },
       limpeza: { icone: "🧹", nome: "CAIXA DERRUBADA", falha: "limpezaFalhou", tituloFalha: "A RUA FOI INTERDITADA" },
       caminhao: { icone: "🚛", nome: "CAMINHÃO", demanda: true },
-      treino: { icone: "🎓", nome: "TREINANDO O ENZO", demanda: true },
+      treino: { icone: "🎓", nome: "TREINANDO O ENZO", demanda: true, semCongelar: true },
       telaRoxa: { icone: "🖥️", nome: "TELA ROXA NO WMS", falha: "telaRoxaFalhou", tituloFalha: "O SISTEMA FICOU FORA DO AR" },
       briga: { icone: "😡", nome: "BRIGA NO GALPÃO", falha: "brigaSaiu", tituloFalha: "A BRIGA PAROU O GALPÃO" },
       batida: { icone: "💥", nome: "BATIDA DE EMPILHADEIRAS", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" }
@@ -8275,6 +8330,8 @@
     // Demanda: tarefa sem pressão (sem cronômetro); os pedidos congelam enquanto ela dura
     const ehDemanda = (a) => !!a && !!(URGENCIA_INFO[a.tipo] && URGENCIA_INFO[a.tipo].demanda);
     const demandaAtiva = () => ehDemanda(emerg.ativa);
+    // Pedidos congelados: demanda que para o balcão (o treino do Enzo acontece junto com os pedidos)
+    const pedidosCongelados = () => demandaAtiva() && !URGENCIA_INFO[emerg.ativa.tipo].semCongelar;
     const incendioAtivo = () => !!emerg.ativa && (emerg.ativa.tipo === "incendio" || (emerg.ativa.tipo === "batida" && !(emerg.ativa.colisao > 0)));
     const temFogo = (a) => !!a && (a.tipo === "incendio" || a.tipo === "batida");
     function coletorSumido() {
@@ -8292,6 +8349,8 @@
       emerg.proxima = u ? u.primeira * fatorTempo() : Infinity;
       emerg.pendentes = [];
       emerg.gatilhoProblema = Infinity;
+      emerg.demandaPendente = null;
+      emerg.semEvento = 0;
       // Turno sem fim: o primeiro problema é sempre a tela roxa (é o problema dos 3 primeiros pedidos);
       // depois, tudo anda pela contagem de pedidos
       if (MISSAO_ATUAL.semFim && u) {
@@ -8345,15 +8404,20 @@
         agendar("problema", 8 + Math.random() * 12);
       }
       if (fila.ciclo % PEDIDOS_POR_CICLO === 0) {
-        // Fechou 3 pedidos: vem uma demanda (alternando caminhão e treino)
-        agendar(DEMANDAS_SEM_FIM[emerg.proxDemanda % DEMANDAS_SEM_FIM.length], 4);
-        emerg.proxDemanda++;
+        // Fechou 3 pedidos: a demanda começa assim que fechar a janela do pedido entregue
+        // (se o Enzo ainda está treinando, esse ciclo fica sem demanda)
+        if (!treinoAtivo) {
+          emerg.demandaPendente = DEMANDAS_SEM_FIM[emerg.proxDemanda % DEMANDAS_SEM_FIM.length];
+          emerg.proxDemanda++;
+        }
         // O problema do próximo ciclo cai depois do 1º ou do 2º pedido dele
         emerg.gatilhoProblema = fila.ciclo + 1 + Math.floor(Math.random() * 2);
       }
     }
 
     function iniciarEmergencia(vez = "problema") {
+      // O treino do Enzo corre em paralelo: não ocupa o lugar dos problemas
+      if (vez === "treino") { iniciarTreinoParalelo(); return; }
       const u = MISSAO_ATUAL.urgencias;
       let tipo = vez;
       if (vez === "problema") {
@@ -8385,8 +8449,12 @@
         // Demanda: 3 pallets do caminhão pro estoque, com a empilhadeira indo e voltando
         Object.assign(a, { total: 3, feito: 0 });
         prepararPalletCaminhao(a);
-      } else if (tipo === "treino") {
-        iniciarTreino(a);
+        abrirAvisoDemanda("🚛", "CHEGOU CAMINHÃO!", [
+          "Suba na empilhadeira (ela fica estacionada perto das docas).",
+          "Pegue o pallet no RECEBIMENTO, encaixando o garfo nele.",
+          "Leve até o endereço que aparece na faixa azul e guarde no nível pedido.",
+          "Repita até os 3 pallets estarem no estoque."
+        ], "Os pedidos ficam congelados enquanto isso: sem pressa e sem atraso.");
       } else if (tipo === "telaRoxa") {
         Object.assign(a, { x: TERMINAL_INICIAL.x + 15, y: TERMINAL_INICIAL.y, chamado: false });
         abrirTelaRoxa();
@@ -8434,6 +8502,8 @@
       emerg.ativa = a;
       emerg.alarme = 0;
       SFX.pararColetaTom();
+      if ((tipo === "incendio" || tipo === "batida") && MISSAO_ATUAL.semFim && !treinoAtivo) enzoVemAprenderFogo();
+      atualizarChipFila();
       if (ehDemanda(a)) {
         // Demanda não é emergência: sem alarme, sem borda vermelha
         document.documentElement.classList.add("demanda");
@@ -8449,7 +8519,7 @@
         telaRoxa: "O WMS deu tela roxa! Vá ao balcão e chame a TI.",
         limpeza: `Alguém derrubou uma caixa na ${a.rua ? a.rua.id : "rua"}! Vá limpar antes que alguém escorregue.`,
         caminhao: "Chegou caminhão! Sem pressa: leve os 3 pallets do recebimento pro estoque. Os pedidos ficam congelados.",
-        treino: "Chegou o Enzo, funcionário novo! Pegue o pedido de TREINO no balcão e mostre o caminho. Não deixe ele se perder.",
+        treino: "O Enzo vai te seguir nos próximos 3 pedidos. Cada passo só conta com ele do lado. Não deixe ele se perder!",
         briga: `${a.brigoes ? a.brigoes[0].nome + " e " + a.brigoes[1].nome : "Dois colegas"} estão brigando! Ligue pro RH no ramal da parede.`,
         abandono: `${a.colega} largou o emprego! O pedido ${a.pedido ? a.pedido.def.numero : ""} ${ROSTOS_COLEGAS[a.colega] ? ROSTOS_COLEGAS[a.colega].pronome : "dele"} está no topo do balcão.`,
         coletor: "O coletor sumiu! Sem ele, sem WMS. Siga o bip.",
@@ -8469,11 +8539,14 @@
       emerg.ativa = null;
       emerg.extintorNaMao = false;
       emerg.spray = false;
+      emerg.semEvento = 0;
       emerg.proxima = MISSAO_ATUAL.semFim
         ? (emerg.pendentes.length ? tempoDecorrido + 6 : Infinity)
         : tempoDecorrido + (u ? u.intervalo * fatorTempo() : Infinity);
       document.documentElement.classList.remove("emergencia", "demanda");
       document.getElementById("emergencia-banner").classList.remove("visivel");
+      if (treinoAtivo) atualizarBannerEmergencia();
+      atualizarChipFila();
       SFX.minigameSucesso();
       JUICE.textoFlutuante(player.x, player.y - 18, ehDemanda(a) ? "DEMANDA CONCLUÍDA!" : "RESOLVIDO!", "#34d399");
       JUICE.particulas(player.x, player.y, "confete", 14);
@@ -8486,9 +8559,30 @@
       if (!u || !cronometroIniciado) return;
       const a = emerg.ativa;
       if (!a) {
+        if (treinoAtivo) {
+          emerg.hud -= dt;
+          if (emerg.hud <= 0) { emerg.hud = 0.1; atualizarBannerEmergencia(); }
+        }
+        if (MISSAO_ATUAL.semFim && estadoJogo === "JOGANDO") {
+          // Demanda: entre um pedido e outro (nada na mão), começa na hora
+          if (emerg.demandaPendente && !fila.ativo && !cargaDepositada) {
+            const d = emerg.demandaPendente;
+            emerg.demandaPendente = null;
+            emerg.semEvento = 0;
+            iniciarEmergencia(d);
+            return;
+          }
+          // Tempo demais sem nenhum evento: vem um problema
+          emerg.semEvento += dt;
+          if (emerg.semEvento > MAX_SEM_PROBLEMA && !emerg.pendentes.includes("problema")) {
+            emerg.pendentes.push("problema");
+            emerg.proxima = Math.min(emerg.proxima, tempoDecorrido);
+          }
+        }
         if (estadoJogo === "JOGANDO" && !filaConcluida() && !cargaDepositada && tempoDecorrido >= emerg.proxima) {
           if (!MISSAO_ATUAL.semFim) iniciarEmergencia();
           else if (emerg.pendentes.length) {
+            emerg.semEvento = 0;
             iniciarEmergencia(emerg.pendentes.shift());
           } else emerg.proxima = Infinity;
         }
@@ -8542,7 +8636,7 @@
     }
 
     function atualizarBannerEmergencia() {
-      const a = emerg.ativa;
+      const a = emerg.ativa || treinoAtivo;
       const b = document.getElementById("emergencia-banner");
       if (!a) { b.classList.remove("visivel"); return; }
       const info = URGENCIA_INFO[a.tipo];
@@ -8628,6 +8722,7 @@
       JUICE.particulas(a.x, a.y, "poeira", 22);
       JUICE.textoFlutuante(a.x, a.y - 20, "APAGADO!", "#e0f2fe");
       concluirEmergencia();
+      enzoTerminaAulaFogo();
       if (a.tipo === "batida") refazerPedidosQueimados();
     }
 
@@ -8746,7 +8841,7 @@
             carrinho.pego = false;
             SFX.terminal();
             falar("subiuEmpilhadeira", "#fbbf24");
-            a.etapa = "PEGAR";
+            a.etapa = veiculo.comPallet ? "LEVAR" : "PEGAR";
             atualizarHUD();
           }
           return true;
@@ -8865,6 +8960,34 @@
           }
         }
       }
+      // Longe do recebimento e da posição: a ação desce da empilhadeira (pra beber água, por exemplo)
+      if (!player.currentZone) {
+        player.currentZone = { tipo: "descer" };
+        if (interactPressedThisFrame) {
+          if (Math.abs(veiculo.vel) > 15) falarTexto("Pare a empilhadeira antes de descer.", "#fbbf24");
+          else descerDaEmpilhadeira();
+        }
+      }
+    }
+
+    function descerDaEmpilhadeira() {
+      const saidas = [[-30, 0], [30, 0], [0, -34], [0, 34], [-30, -30], [30, 30], [-30, 30], [30, -30]];
+      for (const [dx, dy] of saidas) {
+        if (!checkCollision(veiculo.x + dx, veiculo.y + dy, player.radius + 1)) {
+          veiculo.pilotando = false;
+          veiculo.vel = veiculo.vx = veiculo.vy = 0;
+          player.x = veiculo.x + dx;
+          player.y = veiculo.y + dy;
+          SFX.terminal();
+          falarTexto(veiculo.comPallet
+            ? "Desceu da empilhadeira. O pallet fica no garfo: é só subir de novo pra continuar."
+            : "Desceu da empilhadeira. Quando quiser, é só subir de novo.", "#fbbf24");
+          atualizarHUD();
+          return true;
+        }
+      }
+      falarTexto("Sem espaço pra descer aqui. Anda um pouquinho.", "#fbbf24");
+      return false;
     }
 
     /* ---------- Desenho: extintor, fogo, posição da descarga ---------- */
@@ -9494,46 +9617,126 @@
     const enzoPerdido = () => enzo.ativo && (enzo.estado === "perdido" || enzo.estado === "indoPerder");
     const enzoPerto = () => enzo.ativo && enzo.estado === "seguindo" && Math.hypot(enzo.x - player.x, enzo.y - player.y) < 80;
 
-    function iniciarTreino(a) {
-      fila.seq++;
-      const def = criarDefPicking();
-      Object.assign(def, { numero: "TREINO", cliente: "Treinamento do Enzo", prazo: 9999, treino: true, itens: def.itens.slice(0, 2) });
-      def.quantidadeVolumes = somaVolumes(def.itens);
-      a.pedido = { def, indice: fila.pedidos.length, status: "esperando", chegouEm: tempoDecorrido, aceitoEm: 0, entregueEm: 0,
-                   penAntes: 0, atrasoAvisado: false, resultado: null };
-      fila.pedidos.push(a.pedido);
-      atualizarChipFila(true);
-      // O Enzo entra pela porta e vem até a operadora
-      Object.assign(enzo, { ativo: true, x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4, dir: "DOWN", estado: "chegando",
-                            trilha: [], parado: 0, proxPerder: tempoDecorrido + 18 + Math.random() * 6, proxFala: tempoDecorrido + 9 });
+    // Quantos treinos de picking o Enzo já fez e se já teve a aula de fogo
+    const enzoHist = { treinos: 0, aulaFogo: false, proxPasseio: Infinity };
+
+    function enzoEntraPelaPorta(estado) {
+      if (enzo.ativo && estado === "chegando") {
+        // Já está no galpão (passeando): só vem até a operadora
+        enzo.estado = "chegando";
+        enzo.trilha = [];
+        enzo.parado = 0;
+        enzo.rota = rotaAte(enzo.x, enzo.y, player.x, player.y + 16);
+        return;
+      }
+      Object.assign(enzo, { ativo: true, x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4, dir: "DOWN", estado,
+                            trilha: [], parado: 0, falou: false });
       enzo.rota = [{ x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 8 }, ...rotaAte(PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8, player.x, player.y + 16)];
-      popupRadio("Oi! Sou o Enzo, é meu primeiro dia! Me mandaram te seguir. O WMS é aquele computador ou é tipo uma empilhadeira?",
-        { colega: "ENZO", tag: "ENZO · CHEGOU O NOVATO", duracao: 6500 });
+    }
+
+    // Treino em andamento (paralelo aos problemas): { tipo: "treino", feitos, total }
+    let treinoAtivo = null;
+
+    function iniciarTreinoParalelo() {
+      const a = { tipo: "treino", feitos: 0, total: 3 };
+      treinoAtivo = a;
+      SFX.notificacao();
+      falarTexto("O Enzo vai te seguir nos próximos 3 pedidos. Cada passo só conta com ele do lado. Não deixe ele se perder!", "#93c5fd");
+      enzoEntraPelaPorta("chegando");
+      enzo.modo = "treino";
+      enzo.proxPerder = tempoDecorrido + 18 + Math.random() * 6;
+      enzo.proxFala = tempoDecorrido + 9;
+      const primeira = enzoHist.treinos === 0;
+      popupRadio(primeira
+        ? "Oi! Sou o Enzo, é meu primeiro dia! Me mandaram te seguir nos próximos 3 pedidos. O WMS é aquele computador ou é tipo uma empilhadeira?"
+        : sortear([
+            "Voltei! Esqueci tudo do picking. Tudo. Até o que é picking. Me ensina de novo?",
+            "Oi de novo! Me mandaram reaprender. Eu jurava que tinha anotado...",
+            "Lembra de mim? O Enzo! Tô de volta pro treino. Dessa vez eu presto atenção, prometo."
+          ]),
+        { colega: "ENZO", tag: primeira ? "ENZO · CHEGOU O NOVATO" : "ENZO · VOLTOU PRO TREINO", duracao: 6500 });
+      atualizarBannerEmergencia();
+      atualizarHUD();
+    }
+
+    // Cada pedido entregue com o Enzo do lado conta; no 3º ele está treinado
+    function pedidoDoTreinoEntregue(a) {
+      a.feitos++;
+      if (a.feitos < a.total) {
+        mostrarBalaoNpc(enzo, sortear(["Um a menos! Tô pegando o jeito.", "Esse foi fácil. Eu acho.", "Anotei! Na outra mão dessa vez."]));
+        JUICE.textoFlutuante(player.x, player.y - 30, `TREINO ${a.feitos}/${a.total}`, "#a3e635");
+        atualizarBannerEmergencia();
+        return;
+      }
+      concluirTreino(a);
     }
 
     function concluirTreino(a) {
-      concluirEmergencia();
+      treinoAtivo = null;
+      SFX.minigameSucesso();
+      JUICE.particulas(player.x, player.y, "confete", 14);
+      atualizarBannerEmergencia();
+      atualizarHUD();
+      enzoHist.treinos++;
+      if (enzoHist.proxPasseio === Infinity) enzoHist.proxPasseio = tempoDecorrido + 60 + Math.random() * 30;
       JUICE.textoFlutuante(player.x, player.y - 30, "ENZO TREINADO!", "#a3e635");
       mostrarBalaoNpc(enzo, "Aprendi tudo! Acho. Pelo menos a parte da caixa. Valeu!");
+      enzoVaiEmbora(2.5);
+    }
+
+    function enzoVaiEmbora(espera = 0) {
       enzo.estado = "saindo";
-      enzo.parado = 2.5;
+      enzo.parado = espera;
       enzo.rota = [...rotaAte(enzo.x, enzo.y, PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8), { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4 }];
+    }
+
+    // Aula de fogo: no primeiro incêndio (ou batida) depois do primeiro treino, o Enzo vem junto
+    function enzoVemAprenderFogo() {
+      if (enzoHist.treinos < 1 || enzoHist.aulaFogo) return;
+      enzoHist.aulaFogo = true;
+      enzoEntraPelaPorta("chegando");
+      enzo.modo = "fogo";
+      enzo.proxPerder = Infinity; // na aula de fogo ele fica quietinho do lado
+      enzo.proxFala = tempoDecorrido + 7;
+      popupRadio("Me mandaram aprender a apagar fogo com você! Eu trouxe o extintor... brincadeira, não trouxe. Onde fica?",
+        { colega: "ENZO", tag: "ENZO · AULA DE INCÊNDIO", duracao: 6000 });
+    }
+    function enzoTerminaAulaFogo() {
+      if (!enzo.ativo || enzo.modo !== "fogo") return;
+      mostrarBalaoNpc(enzo, sortear([
+        "Mira na base do fogo, não na chama. Anotei! Na mão, de novo.",
+        "Uau. Você é tipo bombeira de galpão. Posso tirar uma foto?",
+        "Entendi: puxa o pino, mira na base e aperta. E grita 'FOGO' antes, né?"
+      ]));
+      enzoVaiEmbora(2.5);
     }
 
     // Etapa atual do treino pra faixa: [feito, total, rótulo]
     function progressoTreino(a) {
-      if (enzoPerdido()) return [0, 4, "ENZO SUMIU!"];
-      if (a.pedido.status === "esperando") return [0, 4, "1/4 WMS"];
-      if (volumesColetados < MISSAO_ATUAL.quantidadeVolumes) return [1, 4, "2/4 COLETA"];
-      if (!pacoteEmbalado) return [2, 4, "3/4 EMBALA"];
-      return [3, 4, "4/4 DOCA"];
+      if (enzoPerdido()) return [a.feitos, a.total, "ENZO SUMIU!"];
+      const passo = !fila.ativo ? "WMS" : volumesColetados < MISSAO_ATUAL.quantidadeVolumes ? "COLETA" : !pacoteEmbalado ? "EMBALA" : "DOCA";
+      return [a.feitos, a.total, `PEDIDO ${a.feitos + 1}/${a.total} · ${passo}`];
+    }
+
+    // Passeio bobo: depois do primeiro treino, o Enzo aparece de vez em quando andando e falando
+    function enzoComecaPasseio() {
+      enzoEntraPelaPorta("passeio");
+      enzo.modo = "passeio";
+      const pontos = [
+        { x: BEBEDOURO.x, y: BEBEDOURO.y + 16 }, { x: 500, y: 300 }, { x: 600, y: 230 },
+        ...ESTACOES_EMBALAGEM.map(e => ({ x: e.x + 44, y: e.y + e.h + 9 })),
+        ...RUAS_CONFIG.map(r => ({ x: r.corridorX + 24, y: 140 + Math.random() * 300 }))
+      ];
+      enzo.paradas = [sortear(pontos), sortear(pontos)];
+      enzo.rota = [{ x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 8 }];
+      enzo.esperaPasseio = 0;
     }
 
     // Passo do treino sem o Enzo do lado: não conta (devolve true quando bloqueou)
     function treinoBloqueia() {
       const a = emerg.ativa;
-      if (!a || a.tipo !== "treino" || !enzo.ativo) return false;
-      if (fila.ativo && fila.ativo !== a.pedido) return false; // pedido comum que já estava na mão
+      if (!treinoAtivo || !enzo.ativo || enzo.modo !== "treino") return false;
+      if (fila.ativo && fila.ativo.def.urgente) return false; // pedido largado por colega não entra no treino
       if (enzoPerto()) return false;
       if (enzo.avisoT <= 0) {
         enzo.avisoT = 1.5;
@@ -9545,13 +9748,35 @@
     }
 
     function atualizarEnzo(dt) {
+      // Passeio de vez em quando (depois do primeiro treino, com o galpão calmo)
+      if (!enzo.ativo && MISSAO_ATUAL.semFim && estadoJogo === "JOGANDO" && tempoDecorrido > enzoHist.proxPasseio && !emerg.ativa) {
+        enzoHist.proxPasseio = tempoDecorrido + 70 + Math.random() * 40;
+        enzoComecaPasseio();
+      }
       if (!enzo.ativo) return;
       if (enzo.avisoT > 0) enzo.avisoT -= dt;
       if (estadoJogo !== "JOGANDO") return;
       const dJog = Math.hypot(player.x - enzo.x, player.y - enzo.y);
       if (enzo.parado > 0) { enzo.parado -= dt; return; }
       if (enzo.estado === "saindo") {
-        if (seguirRota(enzo, dt)) enzo.ativo = false;
+        if (seguirRota(enzo, dt)) { enzo.ativo = false; enzo.modo = ""; }
+        return;
+      }
+      if (enzo.estado === "passeio") {
+        // Comentário bobo quando passa perto da operadora (uma vez)
+        if (!enzo.falou && dJog < 56) { enzo.falou = true; mostrarBalaoNpc(enzo, sortearTexto("falasEnzoPasseio")); }
+        if (enzo.esperaPasseio > 0) {
+          enzo.esperaPasseio -= dt;
+          enzo.dir = ["LEFT", "DOWN", "RIGHT", "DOWN"][Math.floor(Date.now() / 700) % 4];
+          return;
+        }
+        if (seguirRota(enzo, dt)) {
+          const prox = enzo.paradas.shift();
+          if (!prox) { enzoVaiEmbora(); return; }
+          enzo.rota = rotaAte(enzo.x, enzo.y, prox.x, prox.y);
+          enzo.esperaPasseio = enzo.rota.length ? 0 : 1;
+          if (enzo.x !== PORTA_ESCRITORIO.x || enzo.y > PORTA_ESCRITORIO.y + 10) enzo.esperaPasseio = 2.5;
+        }
         return;
       }
       if (enzo.estado === "chegando") {
@@ -9712,6 +9937,29 @@
       ret(ctx, x + 1, y + 14, 3, 2, "#ef4444");  // torneira quente
       ret(ctx, x - 4, y + 19, 9, 2, "#94a3b8");  // bandeja
       desenharBitmap("AGUA", x, y + 27, "#bae6fd", 1, "center");
+    }
+
+    /* ---------- Aviso de demanda: explica a tarefa antes de começar ---------- */
+    let avisoDemandaAbertoEm = 0;
+    function abrirAvisoDemanda(icone, titulo, passos, nota) {
+      estadoJogo = "DEMANDA_AVISO";
+      avisoDemandaAbertoEm = performance.now();
+      limparInputs();
+      SFX.pararColetaTom();
+      document.getElementById("dm-icone").textContent = icone;
+      document.getElementById("dm-titulo").textContent = titulo;
+      const ol = document.getElementById("dm-passos");
+      ol.innerHTML = "";
+      passos.forEach(t => { const li = document.createElement("li"); li.textContent = t; ol.appendChild(li); });
+      document.getElementById("dm-nota").textContent = nota || "";
+      document.getElementById("modal-demanda").style.display = "flex";
+      setTimeout(() => document.getElementById("btn-demanda").focus(), 50);
+    }
+    function fecharAvisoDemanda() {
+      document.getElementById("modal-demanda").style.display = "none";
+      if (estadoJogo === "DEMANDA_AVISO") estadoJogo = "JOGANDO";
+      limparInputs();
+      atualizarHUD();
     }
 
     /* ---------- Tela roxa no WMS e a TI ---------- */
@@ -10051,7 +10299,7 @@
       limparTimersVitoria();
       SFX.pararColetaTom();
       calarRadio();
-      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing", "modal-pedido-ok", "modal-tela-roxa"]
+      ["modal-result", "modal-falha", "modal-briefing", "modal-order", "modal-pause", "modal-erguer", "modal-boot", "modal-packing", "modal-pedido-ok", "modal-tela-roxa", "modal-demanda"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
       document.getElementById("hud").style.display = "none";
       resetarEmergencias();
@@ -11054,6 +11302,11 @@
       continuarCampanha();
     });
     atualizarMenuInicial();
+    document.getElementById("btn-demanda").addEventListener("click", () => {
+      if (performance.now() - avisoDemandaAbertoEm < 500) return;
+      SFX.menuEnter();
+      fecharAvisoDemanda();
+    });
     document.getElementById("btn-tela-roxa").addEventListener("click", () => {
       if (performance.now() - telaRoxaAbertaEm < 600) return; // toque que já vinha do jogo
       SFX.menuEnter();

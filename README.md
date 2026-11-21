@@ -89,12 +89,17 @@ O chefe sai da sala (porta "CHEFE" na parede de cima) de tempos em tempos, passe
 
 O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido atrasado, cada urgência, esbarrão de empilhadeira e quando você fica parada com pedido esperando. Entre uma bronca e outra há pelo menos 18 segundos (fila cheia e urgências furam essa espera).
 
-## Demandas (sem pressão)
+## Demandas e o Enzo
 
-Além dos problemas, o sorteio pode trazer uma demanda: uma tarefa sem cronômetro. A faixa fica azul (sem borda vermelha nem alarme), mostra o progresso, e os pedidos congelam: não cai pedido novo e o prazo de quem está esperando para de andar. O balcão só volta ao normal quando a demanda termina.
+**🚛 Caminhão (demanda):** começa assim que você fecha a janela do pedido entregue. Abre uma janela explicando o passo a passo (subir na empilhadeira, pegar no recebimento, guardar no endereço da faixa azul, 3 vezes). Enquanto dura, os pedidos congelam: não cai pedido novo, o prazo de quem espera para, o balcão não libera pedido e o chip da fila fica azul com ❄.
 
-- 🚛 **Caminhão**: 3 pallets pra levar do recebimento pro estoque. A empilhadeira vai e volta: guardou um, já pode buscar o próximo sem descer. A faixa mostra 0/3, 1/3...
-- 🎓 **Treinar o Enzo**: chega o Enzo, funcionário novo (popup com o rosto dele). Só sai do balcão o pedido TREINO, e você mostra tudo: WMS, coleta, embalagem e doca. Ele segue você pelo rastro e comenta as coisas. Cada passo só conta com ele do lado; se ele estiver longe, aparece "CADÊ O ENZO?". De vez em quando ele se distrai (bebedouro, empilhadeira, bancada...) e some: a seta aponta pra ele e é só chegar perto pra ele voltar. Entregou o TREINO, ele agradece e vai embora.
+**Descer da empilhadeira:** pilotando, longe do recebimento e da posição, a ação vira DESCER (precisa estar quase parada). O pallet fica no garfo e, ao subir de novo, você continua de onde parou. Serve pra ir beber água, por exemplo.
+
+**🎓 Treino do Enzo:** o Enzo te segue nos próximos 3 pedidos normais. Cada passo (pegar no balcão, coletar, embalar, entregar) só conta com ele do lado. Ele se distrai de vez em quando e some; é só chegar perto que ele volta. O treino corre em paralelo: os problemas continuam aparecendo no meio. Os 3 pedidos do treino não contam pro ciclo de demandas.
+
+- No primeiro incêndio ou batida depois do primeiro treino, o Enzo vem ter aula de fogo: segue você enquanto apaga e comenta no fim.
+- Depois do primeiro treino, ele aparece de vez em quando passeando pelo galpão e soltando comentários.
+- Nos treinos seguintes ele volta "pra reaprender", com falas diferentes.
 
 ## Ritmo do turno sem fim
 
@@ -102,8 +107,9 @@ Cai um pedido a cada 35 segundos (no máximo 6 esperando). Com 5 ou mais pedidos
 
 Problemas e demandas andam pela contagem de pedidos entregues (pedidos comuns; o de treino e o abandonado não contam):
 
-- A cada 3 pedidos entregues, vem uma demanda, alternando caminhão e treino do Enzo.
+- A cada 3 pedidos entregues, vem uma demanda, alternando caminhão e treino do Enzo. Ela começa ao fechar a janela do pedido entregue.
 - No meio de cada ciclo de 3 (depois do 1º ou do 2º pedido) estoura um problema, uns 8 a 20 segundos depois da entrega.
+- Se passarem 55 segundos sem nenhum problema ou demanda, estoura um problema.
 - O primeiro problema do turno é sempre a tela roxa, aos 25 segundos.
 
 Exemplo: pedido 3 → caminhão; pedido 4 ou 5 → problema; pedido 6 → treino; pedido 7 ou 8 → problema; pedido 9 → caminhão...
