@@ -1162,6 +1162,8 @@
       border: 1px solid #000;
       box-shadow: inset -1px -1px 0 #6b7280, inset 1px 1px 0 #fff;
     }
+    .modal-box.janela.sem-barra { padding-top: 18px; }
+    .modal-box.janela.sem-barra::before, .modal-box.janela.sem-barra::after { display: none; }
     .modal-box.janela.briefing-box::before { background: linear-gradient(90deg, #7f1d1d, #b91c1c); }
     .modal-box.janela.briefing-box { background: #fdfbf3; }
     .modal-box.janela > h1, .modal-box.janela > h2 { color: #0f172a; }
@@ -1617,8 +1619,8 @@
 
     <!-- MODAL: Erguer o garfo (fase 2) -->
     <div id="modal-erguer" class="modal-overlay">
-      <div data-titulo="PULMÃO · CONTROLE DO GARFO" class="modal-box janela" style="max-width: 360px; text-align: center;">
-        <h2 id="erguer-titulo" style="font-size: 11px; color: #92400e;">PULMÃO PUL-02 · NÍVEL 3</h2>
+      <div class="modal-box janela sem-barra" style="max-width: 360px; text-align: center;">
+        <h2 id="erguer-titulo" style="font-size: 11px; color: #92400e;">PUL-02 · NÍVEL 3</h2>
         <div class="erguer-area">
           <div class="erguer-coluna">
             <div class="erguer-nivel" id="erguer-n1" style="bottom: 25%;"><span>N1</span></div>
@@ -8645,13 +8647,13 @@
       const nivel = nivelAlvoAtual();
       Object.assign(GARFO_ALVO, NIVEIS_GARFO[nivel] || NIVEIS_GARFO[3]);
       document.getElementById("erguer-titulo").textContent =
-        `${descargaAtiva() ? "RACK" : "PULMÃO"} ${baiaAlvoAtual()} · NÍVEL ${nivel}` + (guardar ? " · GUARDAR" : "");
+        `${descargaAtiva() ? "RACK " : ""}${baiaAlvoAtual()} · NÍVEL ${nivel}` + (guardar ? " · GUARDAR" : "");
       document.getElementById("erguer-alvo-txt").textContent = "N" + nivel;
       [1, 2, 3].forEach(n => { document.getElementById("erguer-n" + n).style.display = n === nivel ? "none" : ""; });
       const alvo = document.getElementById("erguer-alvo");
       alvo.style.bottom = (GARFO_ALVO.min * 100) + "%";
       alvo.style.height = ((GARFO_ALVO.max - GARFO_ALVO.min) * 100) + "%";
-      document.getElementById("erguer-feedback").textContent = "SEGURE [E] PARA SUBIR. SOLTE NA FAIXA VERDE.";
+      document.getElementById("erguer-feedback").textContent = EH_TOQUE ? "SOLTE NA FAIXA VERDE." : "SEGURE [E] PARA SUBIR. SOLTE NA FAIXA VERDE.";
       atualizarUIErguer();
       document.getElementById("modal-erguer").style.display = "flex";
     }
@@ -8712,7 +8714,8 @@
           atualizarHUD();
         }, 450);
       } else if (garfoNivel < GARFO_ALVO.min) {
-        document.getElementById("erguer-feedback").textContent = "AINDA BAIXO. SEGURE [E] DE NOVO.";
+        // No celular o botão já diz o que fazer; o aviso só aparece no teclado
+        if (!EH_TOQUE) document.getElementById("erguer-feedback").textContent = "AINDA BAIXO. SEGURE [E] DE NOVO.";
       }
     }
 
