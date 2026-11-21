@@ -4806,7 +4806,11 @@
       // 3. NPCs
       if (SFX.npcBumpCooldown > 0) SFX.npcBumpCooldown = Math.max(0, SFX.npcBumpCooldown - dt);
       npcs.forEach(npc => {
-        if (npc.foiEmbora) return;
+        if (npc.foiEmbora) {
+          // Quem largou o emprego volta arrependido um tempo depois
+          if (MISSAO_ATUAL.semFim && npc.voltaEm && tempoDecorrido >= npc.voltaEm && estadoJogo === "JOGANDO") colegaVolta(npc);
+          return;
+        }
         moverColega(npc, dt);
 
         const dJog = Math.hypot(player.x - npc.x, player.y - npc.y);
@@ -8292,7 +8296,13 @@
                     // Turno sem fim: o que vem a seguir ("problema" = sorteio de problema; ou o tipo da demanda)
                     pendentes: [], gatilhoProblema: Infinity, proxDemanda: 0,
                     demandaPendente: null, semEvento: 0 };
-    const MAX_SEM_PROBLEMA = 55; // segundos jogando pedido sem nenhum evento: estoura um problema
+    // Turno sem fim: problemas por TEMPO (o jogador se enrola), demandas pela quantidade de pedidos.
+    // Começa com ~45s entre um problema e outro e vai apertando 2s por minuto, até ~28s.
+    function intervaloProblema() {
+      const minutos = tempoDecorrido / 60;
+      const base = Math.max(28, 45 - minutos * 2);
+      return base + (Math.random() * 12 - 6); // um pouco de imprevisto
+    }
     // Ritmo do turno sem fim: a cada 3 pedidos entregues vem uma demanda;
     // no meio desses 3 pedidos (depois do 1º ou do 2º) estoura um problema
     const PEDIDOS_POR_CICLO = 3;
@@ -8366,7 +8376,7 @@
     }
 
     // Peso de cada urgência no sorteio: tela roxa e briga aparecem mais; fogo (incêndio e batida) menos
-    const PESOS_URGENCIA = { telaRoxa: 3, briga: 3, coletor: 2, descarga: 2, abandono: 2, incendio: 1, batida: 1, limpeza: 2, caminhao: 2, treino: 2 };
+    const PESOS_URGENCIA = { incendio: 3, telaRoxa: 3, briga: 3, limpeza: 2, coletor: 2, abandono: 2, batida: 2, descarga: 1 };
     const ehDeFogo = (t) => t === "incendio" || t === "batida";
 
     // Monta um "saco" com cada tipo repetido pelo peso e tira um por vez, sem repetir o anterior
@@ -8395,14 +8405,6 @@
     // Pedido comum entregue no turno sem fim: avança o ciclo de 3
     function contarPedidoNoCiclo() {
       fila.ciclo = (fila.ciclo || 0) + 1;
-      const agendar = (vez, atraso) => {
-        emerg.pendentes.push(vez);
-        if (!emerg.ativa) emerg.proxima = Math.min(emerg.proxima, tempoDecorrido + atraso);
-      };
-      if (fila.ciclo === emerg.gatilhoProblema) {
-        // Problema no meio do ciclo: estoura enquanto a operadora já está no próximo pedido
-        agendar("problema", 8 + Math.random() * 12);
-      }
       if (fila.ciclo % PEDIDOS_POR_CICLO === 0) {
         // Fechou 3 pedidos: a demanda começa assim que fechar a janela do pedido entregue
         // (se o Enzo ainda está treinando, esse ciclo fica sem demanda)
@@ -8410,8 +8412,6 @@
           emerg.demandaPendente = DEMANDAS_SEM_FIM[emerg.proxDemanda % DEMANDAS_SEM_FIM.length];
           emerg.proxDemanda++;
         }
-        // O problema do próximo ciclo cai depois do 1º ou do 2º pedido dele
-        emerg.gatilhoProblema = fila.ciclo + 1 + Math.floor(Math.random() * 2);
       }
     }
 
@@ -8424,8 +8424,9 @@
         if (!emerg.ordem.length) emerg.ordem = sortearOrdemUrgencias();
         // Pula o que não dá pra acontecer agora (sem colega pra largar o pedido ou pra brigar)
         const possivel = (t) => !(t === "abandono" && !colegasQuePodemLargar().length) && !(t === "briga" && colegasNoGalpao().length < 2);
-        const idx = emerg.ordem.findIndex(possivel);
-        tipo = idx >= 0 ? emerg.ordem.splice(idx, 1)[0] : "telaRoxa";
+        let idx = emerg.ordem.findIndex(possivel);
+        if (idx < 0) { emerg.ordem = sortearOrdemUrgencias(); idx = emerg.ordem.findIndex(possivel); }
+        tipo = idx >= 0 ? emerg.ordem.splice(idx, 1)[0] : "incendio";
       }
       emerg.ultimo = tipo;
       const limite = u.tempos[tipo] * fatorTempo();
@@ -8541,7 +8542,7 @@
       emerg.spray = false;
       emerg.semEvento = 0;
       emerg.proxima = MISSAO_ATUAL.semFim
-        ? (emerg.pendentes.length ? tempoDecorrido + 6 : Infinity)
+        ? tempoDecorrido + (ehDemanda(a) ? 20 : intervaloProblema())
         : tempoDecorrido + (u ? u.intervalo * fatorTempo() : Infinity);
       document.documentElement.classList.remove("emergencia", "demanda");
       document.getElementById("emergencia-banner").classList.remove("visivel");
@@ -8568,23 +8569,14 @@
           if (emerg.demandaPendente && !fila.ativo && !cargaDepositada) {
             const d = emerg.demandaPendente;
             emerg.demandaPendente = null;
-            emerg.semEvento = 0;
             iniciarEmergencia(d);
-            return;
-          }
-          // Tempo demais sem nenhum evento: vem um problema
-          emerg.semEvento += dt;
-          if (emerg.semEvento > MAX_SEM_PROBLEMA && !emerg.pendentes.includes("problema")) {
-            emerg.pendentes.push("problema");
-            emerg.proxima = Math.min(emerg.proxima, tempoDecorrido);
+            if (emerg.ativa) return; // o treino corre em paralelo e não ocupa a vez
           }
         }
         if (estadoJogo === "JOGANDO" && !filaConcluida() && !cargaDepositada && tempoDecorrido >= emerg.proxima) {
+          // No turno sem fim, o primeiro é a tela roxa (pendente); depois, sorteio de problema
           if (!MISSAO_ATUAL.semFim) iniciarEmergencia();
-          else if (emerg.pendentes.length) {
-            emerg.semEvento = 0;
-            iniciarEmergencia(emerg.pendentes.shift());
-          } else emerg.proxima = Infinity;
+          else iniciarEmergencia(emerg.pendentes.length ? emerg.pendentes.shift() : "problema");
         }
         return;
       }
@@ -9391,7 +9383,7 @@
       }
       if (!npc.rota) { proximaTarefa(npc); return; }
       if (seguirRota(npc, dt)) {
-        if (npc.saindo) { npc.foiEmbora = true; return; }
+        if (npc.saindo) { npc.foiEmbora = true; npc.voltaEm = tempoDecorrido + 80 + Math.random() * 40; return; }
         npc.rota = null;
         npc.esperando = npc.alvo ? npc.alvo.espera : 0.5;
       }
@@ -9406,6 +9398,21 @@
       const prog = 1 - Math.max(0, npc.esperando) / npc.alvo.espera;
       ret(ctx, bx + 1, by + 2, Math.max(1, Math.round(8 * prog)), 2, "#e9c46a");
       if (Math.floor(Date.now() / 160) % 2 === 0) ret(ctx, bx + 1 + Math.round(7 * prog), by + 1, 2, 1, "#f8fafc");
+    }
+
+    function colegaVolta(npc) {
+      resetarColega(npc);
+      npc.voltaEm = 0;
+      npc.x = PORTA_ESCRITORIO.x;
+      npc.y = PORTA_ESCRITORIO.y + 8;
+      npc.parado = 1.5;
+      mostrarBalaoNpc(npc, sortear([
+        "Voltei! Pensei melhor. E esqueci minha marmita.",
+        "Oi, gente... ainda tem vaga? Tô brincando. Tô? Tô sim. Voltei.",
+        "Fiquei com saudade do bip do coletor. Voltei!",
+        "O Geraldo me ligou chorando. Voltei."
+      ]));
+      SFX.notificacao();
     }
 
     function colegasNoGalpao() { return npcs.filter(n => !n.foiEmbora && !n.saindo && !n.brigando); }

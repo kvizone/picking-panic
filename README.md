@@ -105,16 +105,14 @@ O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido 
 
 Cai um pedido a cada 35 segundos (no máximo 6 esperando). Com 5 ou mais pedidos parados no balcão, o próximo demora o dobro (70 segundos), pra dar tempo de recuperar.
 
-Problemas e demandas andam pela contagem de pedidos entregues (pedidos comuns; o de treino e o abandonado não contam):
+Problemas vêm por TEMPO e demandas pela quantidade de pedidos:
 
-- A cada 3 pedidos entregues, vem uma demanda, alternando caminhão e treino do Enzo. Ela começa ao fechar a janela do pedido entregue.
-- No meio de cada ciclo de 3 (depois do 1º ou do 2º pedido) estoura um problema, uns 8 a 20 segundos depois da entrega.
-- Se passarem 55 segundos sem nenhum problema ou demanda, estoura um problema.
-- O primeiro problema do turno é sempre a tela roxa, aos 25 segundos.
+- **Problemas:** o primeiro é sempre a tela roxa, aos 25 segundos. Depois, um novo uns 45 segundos depois de resolver o anterior (com 6 segundos pra mais ou pra menos de imprevisto). O intervalo aperta 2 segundos por minuto de turno, até uns 28 segundos. Depois de uma demanda, 20 segundos de respiro.
+- **Demandas:** a cada 3 pedidos entregues, alternando caminhão e treino do Enzo. Começam ao fechar a janela do pedido entregue. O treino corre em paralelo, então os problemas continuam caindo no meio dele.
 
-Exemplo: pedido 3 → caminhão; pedido 4 ou 5 → problema; pedido 6 → treino; pedido 7 ou 8 → problema; pedido 9 → caminhão...
+Os problemas são sorteados com peso: incêndio, tela roxa e briga aparecem mais; caixa derrubada, coletor, abandono e batida no meio; descarga urgente menos (o caminhão já usa a empilhadeira). O sorteio nunca repete o mesmo problema em seguida nem coloca dois fogos seguidos. Numa simulação de 20 minutos vieram 24 problemas, 7 deles de fogo.
 
-Os problemas são sorteados com peso (tela roxa e briga aparecem mais; incêndio e batida menos), sem repetir o mesmo em seguida nem colocar dois fogos seguidos.
+Quem larga o emprego volta arrependido uns 2 minutos depois, pra não faltar gente pra brigar nem pra largar pedido.
 
 ## Hidratação
 
