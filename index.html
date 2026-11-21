@@ -3690,8 +3690,8 @@
 
     // Área de visão em pixels do mundo. No computador é sempre 480x270.
     // No celular ela se adapta ao formato da tela (em pé ou deitado), sem barras pretas.
-    let VIEW_W = 480;
-    let VIEW_H = 270;
+    let VIEW_W = 560;
+    let VIEW_H = 315;
     const TOQUE_DISPOSITIVO = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || ("ontouchstart" in window);
 
     // No celular o controle é mais lento: estrelas e bateria ganham 35% a mais de tempo,
@@ -10264,7 +10264,7 @@
     /* ---------- Hidratação: bebedouro na parede de cima ----------
        A água vai baixando (mais rápido correndo). Zerou: 20s pra chegar no bebedouro. */
     const BEBEDOURO = { x: 566, y: 30 };
-    const DURACAO_AGUA = 180;      // segundos de 100% até 0% andando (3 minutos)
+    const DURACAO_AGUA = 252;      // segundos de 100% até 0% andando (4 min e 12 s)
     const TEMPO_DESIDRATADA = 20;  // prazo pra beber depois de zerar
     const hidra = { nivel: 100, seca: false, restante: 0, avisouBaixa: false };
     const temHidratacao = () => !!MISSAO_ATUAL.semFim;

@@ -127,7 +127,7 @@ Quem larga o emprego volta arrependido uns 2 minutos depois, pra não faltar gen
 
 ## Hidratação
 
-No turno sem fim, embaixo do relógio tem uma gota com uma barra de água. Ela esvazia em cerca de 3 minutos andando (um pouco mais rápido correndo). Com 25% ela fica laranja e o rádio avisa. Zerou: a personagem desidrata e começa uma contagem de 20 segundos pra beber água no bebedouro (parede de cima, do lado da porta do Geraldo). A seta passa a apontar pra lá. Se não beber a tempo, o turno acaba com "VOCÊ DESIDRATOU".
+No turno sem fim, embaixo do relógio tem uma gota com uma barra de água. Ela esvazia em pouco mais de 4 minutos andando (um pouco mais rápido correndo). Com 25% ela fica laranja e o rádio avisa. Zerou: a personagem desidrata e começa uma contagem de 20 segundos pra beber água no bebedouro (parede de cima, do lado da porta do Geraldo). A seta passa a apontar pra lá. Se não beber a tempo, o turno acaba com "VOCÊ DESIDRATOU".
 
 ## Personagens
 
