@@ -2210,7 +2210,7 @@
       estrelas: { tres: 99999, duas: 99999 },
       tempoColetaPorVolume: 1.0,
       geracao: { intervalo: 35, meta: Infinity, armazenagem: false, numeroInicial: 2000 },
-      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 38, telaRoxa: 38, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75 } },
+      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 120, telaRoxa: 38, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -8628,6 +8628,10 @@
           mensagemRadioPeao(null, "📻 Alguém trocou a rádio pra Casa dos Caipiras!");
           setTimeout(() => falarTexto("📻 Alguém trocou a rádio pra Casa dos Caipiras!", "#fde047"), 1500);
         }
+        if (a.dialogo.tema === "ar") {
+          mensagemRadioPeao(null, "❄️ Alguém botou o ar-condicionado em 16 °C!");
+          setTimeout(() => falarTexto("❄️ Alguém mexeu no ar-condicionado. Vai dar briga...", "#93c5fd"), 1500);
+        }
         chefeReclama("chefeBriga");
       } else if (tipo === "abandono") {
         const npc = sortear(colegasQuePodemLargar());
@@ -10614,32 +10618,18 @@
         rh: "Vamos fazer uma playlist da equipe: rock e moda de viola, revezando. Por hoje, volta a 89."
       },
       {
-        tema: "carrinho",
+        tema: "ar",
         falas: [
-          "Você estacionou o carrinho na minha vaga de novo!",
-          "Vaga? Desde quando corredor tem dono, {outro}?",
-          "Desde que eu cheguei primeiro hoje. Às seis e meia!",
-          "Eu cheguei seis e vinte! Só fui no banheiro!",
-          "Banheiro não conta! Saiu, perdeu!",
-          "Isso não tá escrito em lugar nenhum, {outro}!",
-          "Tá escrito no meu coração.",
-          "Que coisa mais brega."
+          "Quem colocou o ar em 16 graus?! Tô virando picolé aqui!",
+          "Fui eu! Tava um forno, {outro}. Até a fita adesiva tava derretendo!",
+          "Então tira o colete! Eu tô de luva pra separar pedido!",
+          "Luva é EPI, {outro}. Não vale como argumento.",
+          "Vou subir pra 26.",
+          "Se subir, eu desço pra 15!",
+          "Nem existe 15 nesse ar!",
+          "Existe, se apertar com vontade."
         ],
-        rh: "Carrinho não tem vaga fixa, gente. Quem chegar, usa. E cada um guarda o seu no fim do turno."
-      },
-      {
-        tema: "fita",
-        falas: [
-          "Quem pegou minha fita adesiva? Deixei bem aqui na bancada!",
-          "Fita é da bancada, {outro}. É de todo mundo!",
-          "Essa era especial! Tinha um coraçãozinho desenhado na ponta!",
-          "Ah... aquela. Usei pra lacrar três caixas.",
-          "TRÊS?!",
-          "Foi por uma boa causa! Os pedidos saíram no prazo!",
-          "Meu coraçãozinho foi pra Minas Gerais, {outro}.",
-          "Pelo menos ele viajou. Eu nunca fui pra Minas."
-        ],
-        rh: "Fita é material da bancada, mas entendi o valor sentimental. Vou trazer uma pra cada um."
+        rh: "Ar fica em 22 graus, travado. Quem sente frio ganha moletom; quem sente calor fica perto da doca."
       }
     ];
 
@@ -10704,7 +10694,8 @@
             RADIO_MUSICA.voltarDaTemporaria();
             falarTexto("📻 O RH devolveu a rádio pra 89 FM.", "#c4b5fd");
             mensagemRadioPeao(null, "📻 Rádio de volta na 89 FM.");
-          } else mensagemRadioPeao(null, "Fizeram as pazes. Fim da fofoca.");
+          } else if (a.dialogo.tema === "ar") mensagemRadioPeao(null, "🌡️ Ar travado em 22 °C. Paz no galpão.");
+          else mensagemRadioPeao(null, "Fizeram as pazes. Fim da fofoca.");
           radioPeao.fecharEm = tempoDecorrido + 4.5;
         }
       }
