@@ -93,7 +93,7 @@ O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido 
 
 **🚛 Caminhão (demanda):** começa assim que você fecha a janela do pedido entregue. Abre uma janela explicando o passo a passo (subir na empilhadeira, pegar no recebimento, guardar no endereço da faixa azul, 3 vezes). Enquanto dura, os pedidos congelam: não cai pedido novo, o prazo de quem espera para, o balcão não libera pedido e o chip da fila fica azul com ❄.
 
-**Empilhadeira livre:** dá pra subir e descer da empilhadeira a qualquer hora. Perto dela aparece o botão 🚜 (igual ao do carrinho), que fica amarelo enquanto você pilota; no teclado é a tecla F. Na descarga, a ação também sobe (E) e, longe do recebimento e da posição, vira DESCER. Precisa estar quase parada pra descer. O pallet fica no garfo e, ao subir de novo, você continua de onde parou.
+**Empilhadeira livre:** dá pra subir e descer da empilhadeira a qualquer hora. Perto dela aparece o botão 🚜 (igual ao do carrinho), que fica amarelo enquanto você pilota e serve pra subir e descer; no teclado é a tecla F. No computador, os botões do carrinho e da empilhadeira também aparecem no canto de baixo e dá pra clicar. Na descarga, a ação também sobe (E). Precisa estar quase parada pra descer. O pallet fica no garfo e, ao subir de novo, você continua de onde parou.
 
 **📋 Inventário rápido (demanda):** conte as caixas de 3 endereços (segure a ação em cada posição piscando em azul) e digite os números no WMS do balcão, com botões de + e −. Se algum número não bater, o WMS avisa qual conferir. Pedidos congelados enquanto isso.
 
