@@ -839,7 +839,7 @@
       border-radius: 6px;
       background: #facc15;
       color: #111827;
-      border: 4px solid #ffffff;
+      border: none;
       outline: 3px solid #000000;
       box-shadow: 5px 5px 0 #000000;
       font-family: inherit;
@@ -872,15 +872,32 @@
       background: #38bdf8;
     }
 
-    #packing-touch {
-      display: flex;
+    #packing-touch { display: none; }
+    html.toque #packing-touch {
+      display: grid;
+      grid-template-columns: repeat(3, 58px) 18px 70px;
+      grid-template-rows: 54px 54px;
+      grid-template-areas: ". w . . e" "a s d . e";
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
+      margin-top: 4px;
     }
+    #packing-touch [data-tecla="KeyW"] { grid-area: w; }
+    #packing-touch [data-tecla="KeyA"] { grid-area: a; }
+    #packing-touch [data-tecla="KeyS"] { grid-area: s; }
+    #packing-touch [data-tecla="KeyD"] { grid-area: d; }
+    #packing-touch [data-tecla="KeyE"] { grid-area: e; height: 100%; }
+    #packing-touch button.proxima {
+      background: #facc15;
+      color: #111827;
+      border-color: #111827;
+      animation: teclaChama 0.8s ease-in-out infinite;
+    }
+    @keyframes teclaChama { 50% { transform: scale(1.08); box-shadow: 0 0 0 5px rgba(250, 204, 21, 0.45), 3px 3px 0 #000; } }
     #packing-touch button:hover { background: #334155; }
     #packing-touch button {
-      width: 56px;
-      height: 56px;
+      width: 100%;
+      height: 100%;
       font-family: inherit;
       font-size: 18px;
       background: #1e293b;
@@ -3786,8 +3803,11 @@
         setTimeout(() => container.classList.remove("shake"), 250);
       } else {
         feedback.style.color = "#fbbf24";
-        feedback.textContent = `PRESSIONE: [ ${minigameLabels[minigameIndex]} ]`;
+        feedback.textContent = EH_TOQUE ? `Passo ${Math.min(minigameIndex + 1, minigameLabels.length)} de ${minigameLabels.length}` : `PRESSIONE: [ ${minigameLabels[minigameIndex]} ]`;
       }
+      // No celular, acende o botão da próxima tecla da sequência
+      const prox = minigameSequence[minigameIndex];
+      document.querySelectorAll("#packing-touch button").forEach(b => b.classList.toggle("proxima", !!prox && b.dataset.tecla === prox.code));
     }
 
     document.querySelectorAll("#packing-touch button").forEach(b => { b.innerHTML = iconeTecla(b.textContent.trim()); });
@@ -4886,6 +4906,9 @@
         if (itemAqui) return; // item já coletado: sem prompt
         texto = "[E]";
       }
+      // No celular não existe tecla E: fica só o nome da ação
+      if (TOQUE_DISPOSITIVO) texto = texto.replace("[E]", "").trim();
+      if (!texto) return;
       desenharPainelBitmap(texto, player.x, player.y + 12, "#0b1326", "#ffffff", "#fbbf24");
     }
 
@@ -6894,7 +6917,7 @@
     // Embalagem no celular: deslizar na direção da seta, ou tocar para o E
     if (EH_TOQUE) {
       document.getElementById("packing-instrucao").textContent =
-        "Deslize o dedo na direção de cada seta (toque = E) ou use os botões:";
+        "Toque os botões na mesma ordem da fila:";
     }
     (function gestosEmbalagem() {
       const area = document.getElementById("modal-packing");
@@ -7055,7 +7078,7 @@
       if (!carrinho.ativo || veiculo.pilotando) return;
       const c = posicaoCarrinho();
       if (EH_TOQUE && perto_doCarrinho() && estadoJogo === "JOGANDO") {
-        desenharPainelBitmap("TOQUE NO CARRINHO", c.x, c.y - 20, "#0b1326", "#38bdf8", "#bae6fd");
+        desenharPainelBitmap("CARRINHO", c.x, c.y - 20, "#0b1326", "#38bdf8", "#bae6fd");
       }
       const horizontal = Math.abs(carrinho.fx) > Math.abs(carrinho.fy);
       const w = horizontal ? 15 : 11;
