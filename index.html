@@ -3850,7 +3850,10 @@
         return;
       }
       if (estadoJogo === "TELA_ROXA") {
-        if (e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape") { e.preventDefault(); SFX.menuEnter(); fecharTelaRoxa(); }
+        // Tecla segurada (coletando com E, por exemplo) não fecha: só um toque novo, depois de 1s na tela
+        const fechar = e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape";
+        if (fechar) e.preventDefault();
+        if (fechar && !e.repeat && performance.now() - telaRoxaAbertaEm > 1000) { SFX.menuEnter(); fecharTelaRoxa(); }
         return;
       }
       if (estadoJogo === "FALHOU") {
@@ -9289,9 +9292,11 @@
     };
     const ti = { nome: "VINI DA TI", ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 64, fase: "", t: 0, parado: 0, vestColor: "#0ea5e9" };
     let timerTelaRoxa = null;
+    let telaRoxaAbertaEm = 0;
 
     function abrirTelaRoxa() {
       estadoJogo = "TELA_ROXA";
+      telaRoxaAbertaEm = performance.now();
       limparInputs();
       SFX.pararColetaTom();
       // Bipe de erro do Windows 98 do galpão
@@ -10544,7 +10549,11 @@
       continuarCampanha();
     });
     atualizarMenuInicial();
-    document.getElementById("btn-tela-roxa").addEventListener("click", () => { SFX.menuEnter(); fecharTelaRoxa(); });
+    document.getElementById("btn-tela-roxa").addEventListener("click", () => {
+      if (performance.now() - telaRoxaAbertaEm < 600) return; // toque que já vinha do jogo
+      SFX.menuEnter();
+      fecharTelaRoxa();
+    });
     document.getElementById("btn-sem-fim").addEventListener("click", () => {
       entrarModoCelular();
       initAudio();
