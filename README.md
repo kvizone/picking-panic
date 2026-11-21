@@ -88,6 +88,14 @@ O chefe sai da sala (porta "CHEFE" na parede de cima) de tempos em tempos, passe
 
 O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido atrasado, cada urgência, esbarrão de empilhadeira e quando você fica parada com pedido esperando. Entre uma bronca e outra há pelo menos 18 segundos (fila cheia e urgências furam essa espera).
 
+## Hidratação
+
+No turno sem fim, embaixo do relógio tem uma gota com uma barra de água. Ela esvazia em cerca de 100 segundos andando (mais rápido correndo). Com 25% ela fica laranja e o rádio avisa. Zerou: a personagem desidrata e começa uma contagem de 20 segundos pra beber água no bebedouro (parede de cima, do lado da porta do Geraldo). A seta passa a apontar pra lá. Se não beber a tempo, o turno acaba com "VOCÊ DESIDRATOU".
+
+## Personagens
+
+Geraldo é o chefe (popup do rádio e ronda pelo galpão). Vini é o técnico da TI que conserta a tela roxa. Os balões de fala mostram o nome de quem está falando.
+
 ## Pedidos entregues
 
 Por enquanto a marcação é o número de pedidos finalizados, no prazo ou atrasados. Aparece embaixo do relógio ("✔ 3 ENTREGUES"), no relatório do turno e no fim do turno sem fim. O total de todas as partidas fica salvo no navegador e aparece na tela inicial.
@@ -100,7 +108,7 @@ O navegador guarda em que fase da campanha você está (e os tempos das fases qu
 
 ## Turno sem fim
 
-Botão na tela inicial. Pedidos caem a cada 35 segundos e urgências a cada 45, sem meta. O turno acaba quando uma urgência dá errado, e a tela final mostra quantos pedidos você entregou e em quanto tempo.
+É o jogo principal: a tela inicial tem um botão só, INICIAR, que abre o turno sem fim. As 6 fases da campanha continuam no código, mas sem entrada na tela inicial. Pedidos caem a cada 35 segundos e urgências a cada 45, sem meta. O turno acaba quando uma urgência dá errado, e a tela final mostra quantos pedidos você entregou e em quanto tempo.
 
 ## Fase 4: Fila no Balcão
 

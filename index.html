@@ -135,6 +135,18 @@
       letter-spacing: 1px;
     }
 
+    .hud-agua { display: none; align-items: center; gap: 4px; margin-top: 3px; color: #e0f2fe; white-space: nowrap; }
+    .hud-agua.ativa { display: flex; }
+    #hud .hud-agua { font-size: calc(7px * var(--escala)); gap: calc(3px * var(--escala)); margin-top: calc(2px * var(--escala)); }
+    .agua-barra { display: inline-block; width: 48px; height: 6px; background: #0f172a; border: 1px solid #334155; }
+    #hud .agua-barra { width: calc(34px * var(--escala)); height: calc(4px * var(--escala)); }
+    .agua-barra i { display: block; height: 100%; background: #38bdf8; transition: width 0.3s linear; }
+    .hud-agua.baixa .agua-barra i { background: #f59e0b; }
+    .hud-agua.baixa .agua-ico { animation: piscaFila 0.8s steps(2) infinite; }
+    .hud-agua.seca { color: #fecaca; }
+    .hud-agua.seca .agua-barra { border-color: #ef4444; }
+    html.toque .hud-agua.seca .agua-barra { display: none; }
+    .hud-agua.seca #agua-txt { color: #ffffff; background: #b91c1c; padding: 0 3px; animation: piscaFila 0.5s steps(2) infinite; }
     .hud-entregues {
       display: block;
       font-size: calc(7px * var(--escala) / var(--dpr));
@@ -475,6 +487,7 @@
       background: #f59e0b;
     }
     .et-atrasado { color: #b91c1c; font-weight: bold; }
+    .balao-nome { display: block; font-size: 0.8em; color: #475569; margin-bottom: 2px; letter-spacing: 0.04em; }
     /* Tela roxa do WMS */
     #modal-tela-roxa { background: rgba(46, 16, 101, 0.55); }
     .tela-roxa {
@@ -1510,6 +1523,7 @@
           <span class="timer-value" id="hud-timer">00:00.0</span>
           <span class="penalty-indicator" id="hud-penalty">+0.0s</span>
           <span class="hud-entregues" id="hud-entregues" title="Pedidos entregues neste turno">✔ <span id="hud-entregues-n">0</span> ENTREGUES</span>
+          <span class="hud-agua" id="hud-agua" title="Hidratação: beba água no bebedouro"><span class="agua-ico">💧</span><span class="agua-barra"><i id="agua-nivel"></i></span><span id="agua-txt"></span></span>
         </div>
 
         <div class="objective-container" id="hud-obj-box" title="Ver etiqueta (Q)">
@@ -1547,7 +1561,7 @@
     <!-- Popup do chefe (3 pedidos atrasados) -->
     <div id="chefe-popup" class="chefe-popup" title="Fechar">
       <canvas id="chefe-rosto" width="20" height="20"></canvas>
-      <div class="chefe-fala"><b id="chefe-tag">CHEFE · RÁDIO</b><span id="chefe-texto"></span></div>
+      <div class="chefe-fala"><b id="chefe-tag">GERALDO · CHEFE</b><span id="chefe-texto"></span></div>
     </div>
     <div id="emergencia-banner" class="emergencia-banner">
       <div class="emerg-linha"><span id="emergencia-titulo">🔥 INCÊNDIO</span><span id="emergencia-tempo">0:30</span></div>
@@ -2315,7 +2329,7 @@
         "O WMS acordou. E ele acorda com fome."
       ],
       inicioSemFim: [
-        "Turno sem fim. O balcão não fecha e o chefe não dorme.",
+        "Turno sem fim. O balcão não fecha e o Geraldo não dorme.",
         "Hoje não tem hora pra acabar. Bora ver até onde dá.",
         "Pedido caindo, problema estourando. Normal de um galpão."
       ],
@@ -2418,6 +2432,12 @@
       fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
       descargaAtrasou: ["A descarga travou a doca e o fornecedor foi embora.", "O pallet ficou no recebimento e a doca parou."],
       telaRoxaFalhou: ["Ninguém chamou a TI e o WMS ficou roxo o turno inteiro.", "Sem sistema, sem etiqueta, sem caminhão. O galpão parou."],
+      desidratou: ["Ficou sem água no meio do turno e precisou sair pra se recuperar.", "Desidratou. Nenhum pedido vale mais que um copo d'água."],
+      chefeAgua: [
+        "Bebe água! Não quero ninguém passando mal no meu turno.",
+        "Desidratou?! O bebedouro tá ali do lado da minha porta, vai!",
+        "Hidratação também é segurança do trabalho. Bebedouro, agora!"
+      ],
       falasTI: [
         "Já tentou desligar e ligar de novo? Brincadeira, já resolvi.",
         "Era um cabo solto. Sempre é um cabo solto.",
@@ -2479,7 +2499,9 @@
         "Tô fazendo minha caminhada. O médico mandou.",
         "Bom dia. Ou boa tarde. Aqui dentro eu perco a noção.",
         "Vi uma caixa sem etiqueta ali atrás. Brincadeira. Ou não.",
-        "Se o Robson aparecer, fala que eu quero conversar."
+        "Se o Robson aparecer, fala que eu quero conversar.",
+        "Tá bebendo água? O bebedouro é do lado da minha sala.",
+        "Galpão quente, hein. Hidrata aí."
       ],
       urgenciaResolvida: ["Resolvido. Pode voltar pro pedido.", "Crise controlada. Bora que o balcão não para.", "Apagou o incêndio, literalmente ou não."],
 
@@ -3844,7 +3866,7 @@
         if (estadoJogo === "MENU") {
           SFX.menuEnter();
           RADIO_MUSICA.tocar();
-          continuarCampanha(); // sem progresso salvo, começa da fase 1
+          comecarSemFim();
           return;
         } else if (estadoJogo === "CARD_PEDIDO") {
           SFX.menuBlip();
@@ -4267,6 +4289,7 @@
     }
 
     function obterAlvoAtual() {
+      if (hidra.seca) return { x: BEBEDOURO.x, y: BEBEDOURO.y + 12 };
       if (urgenciaQueGuia()) return alvoUrgencia();
       const etapaId = MISSAO_ATUAL.etapas[etapaAtualIndex]?.id;
       switch (etapaId) {
@@ -4479,6 +4502,7 @@
       if (coletorSumido() && estadoJogo === "JOGANDO") atualizarFase3(dt);
       atualizarFila(dt);
       atualizarEmergencias(dt);
+      atualizarHidratacao(dt);
       atualizarRonda(dt);
       if (!emerg.ativa || emerg.ativa.tipo !== "briga") atualizarRHFora(dt);
       if (!emerg.ativa || emerg.ativa.tipo !== "telaRoxa") atualizarTIFora(dt);
@@ -5260,6 +5284,7 @@
 
       // 7b. Urgências: fogo, extintor na parede e posição da descarga
       desenharPortaEscritorio();
+      desenharBebedouro();
       desenharBatida();
       desenharFogo();
       desenharExtintorFixo();
@@ -6622,6 +6647,7 @@
         document.getElementById("hud-obj-step").textContent = `FASE ${faseIndex + 1}/${FASES.length} · URGÊNCIA · ${info.nome}`;
         document.getElementById("hud-obj-desc").textContent = textoUrgencia();
       }
+      if (hidra.seca) document.getElementById("hud-obj-desc").textContent = "Desidratada! Beba água no bebedouro, do lado da porta do Geraldo.";
       if (document.getElementById("modal-order").style.display === "flex") atualizarItensEtiqueta();
 
       const inv = document.getElementById("hud-inv-status");
@@ -6969,6 +6995,12 @@
     }
 
     function carregarMelhorTempoInicial() {
+      if (true) {
+        const tot = totalEntregues();
+        document.getElementById("start-entregues-box").style.display = tot > 0 ? "block" : "none";
+        document.getElementById("start-entregues").textContent = String(tot);
+        return; // recorde de tempo era da campanha; no turno sem fim vale o total de pedidos
+      }
       const tot = totalEntregues();
       document.getElementById("start-entregues-box").style.display = tot > 0 ? "block" : "none";
       document.getElementById("start-entregues").textContent = String(tot);
@@ -7055,6 +7087,7 @@
       resetarRonda();
       rh.ativo = false;
       ti.ativo = false;
+      resetarHidratacao();
       cancelarBroncaAgendada();
       fecharChefe();
       ultimaBronca = -Infinity;
@@ -7260,7 +7293,7 @@
       pulmao_alinhar: "ENCAIXE", zona_ok: "BAIXAR", zona_devagar: "PARE",
       zona_fora: "ENTRE", coletor: "PEGAR", npc: "PERGUNTAR",
       receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
-      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI"
+      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER"
     };
     let rotuloAcaoAtual = "";
     function atualizarBotoesToque() {
@@ -7454,7 +7487,15 @@
     function mostrarBalaoNpc(npc, texto) {
       balaoNpc.npc = npc;
       balaoNpc.timer = 3.5 + texto.length * 0.04;
-      document.getElementById("balao-npc-texto").textContent = texto;
+      const el = document.getElementById("balao-npc-texto");
+      el.textContent = "";
+      if (npc.nome) {
+        const b = document.createElement("b");
+        b.className = "balao-nome";
+        b.textContent = npc.nome;
+        el.appendChild(b);
+      }
+      el.appendChild(document.createTextNode(texto));
       document.getElementById("balao-npc").style.borderColor = npc.vestColor;
       document.getElementById("balao-npc").classList.add("visivel");
       SFX.playTone(520, "square", 0.04, 0.08, 0.01);
@@ -7485,7 +7526,7 @@
     let chamadoAtivo = false;
     function atualizarChamadoBalcao() {
       const el = document.getElementById("chamado-balcao");
-      const mostrar = estadoJogo === "JOGANDO" && precisaPegarPedido() && !urgenciaQueGuia();
+      const mostrar = estadoJogo === "JOGANDO" && precisaPegarPedido() && !urgenciaQueGuia() && !hidra.seca;
       chamadoAtivo = mostrar;
       el.classList.toggle("visivel", mostrar);
       if (!mostrar) return false;
@@ -7839,7 +7880,7 @@
       if (fila.ativo) { abrirCardPedido(); return; }
       if (sistemaFora()) {
         JUICE.textoFlutuante(player.x, player.y - 16, "WMS FORA DO AR", "#c4b5fd");
-        falarTexto(emerg.ativa.chamado ? "A TI ainda está consertando. Já já o balcão volta." : "Tela roxa! Chame a TI aqui no balcão.", "#c4b5fd");
+        falarTexto(emerg.ativa.chamado ? "O Vini ainda está consertando. Já já o balcão volta." : "Tela roxa! Chame a TI aqui no balcão.", "#c4b5fd");
         return;
       }
       if (!listaBalcao().length) {
@@ -8335,7 +8376,7 @@
       if (a.tipo === "batida" && a.colisao > 0) return "Saia da frente: tem empilhadeira vindo!";
       if (a.tipo === "abandono") return `Pegue o ${a.pedido.def.numero} no balcão e entregue antes do tempo acabar.`;
       if (a.tipo === "briga") return a.chamado ? "O RH está a caminho. Pode voltar pros pedidos." : `Ligue pro RH no ramal da parede${fimE}.`;
-      if (a.tipo === "telaRoxa") return a.chamado ? "A TI está consertando o WMS. Aguenta aí que o balcão já volta." : `Vá ao balcão do WMS e chame a TI${fimE}.`;
+      if (a.tipo === "telaRoxa") return a.chamado ? "O Vini da TI está consertando o WMS. Aguenta aí que o balcão já volta." : `Vá ao balcão do WMS e chame a TI${fimE}.`;
       if (temFogo(a)) {
         return emerg.extintorNaMao
           ? `Chegue perto do fogo e segure ${E} para apagar.`
@@ -8484,6 +8525,12 @@
           return true;
         }
       }
+      // Bebedouro: sempre dá pra beber
+      if (temHidratacao() && Math.hypot(player.x - BEBEDOURO.x, player.y - (BEBEDOURO.y + 12)) < 22) {
+        player.currentZone = { tipo: "bebedouro" };
+        if (interactPressedThisFrame) beberAgua();
+        return true;
+      }
       // Balcão com tela roxa: chama a TI (e não libera pedido até consertar)
       if (a && a.tipo === "telaRoxa" &&
           player.x >= TERMINAL_INICIAL.x - 12 && player.x <= TERMINAL_INICIAL.x + TERMINAL_INICIAL.w + 12 &&
@@ -8495,7 +8542,7 @@
         }
         if (interactPressedThisFrame) {
           if (fila.ativo) abrirCardPedido(); // a etiqueta impressa continua valendo
-          else falarTexto("A TI ainda está consertando. Já já o balcão volta.", "#c4b5fd");
+          else falarTexto("O Vini ainda está consertando. Já já o balcão volta.", "#c4b5fd");
           return true;
         }
       }
@@ -8782,7 +8829,7 @@
       const tag = document.getElementById("chefe-tag");
       const rosto = document.getElementById("chefe-rosto");
       const info = quemFala ? ROSTOS_COLEGAS[quemFala] : null;
-      tag.textContent = opcoes.tag || "CHEFE · RÁDIO";
+      tag.textContent = opcoes.tag || "GERALDO · CHEFE";
       tag.style.background = info ? info.corTag : "";
       rosto.style.background = info ? info.fundo : "";
       span.textContent = "";
@@ -8822,7 +8869,7 @@
     function chefeReclama(evento, n) {
       if (typeof evento === "number") { n = evento; evento = "chefeBravo"; }
       // Fila cheia e urgências sempre passam; o resto respeita o intervalo
-      const prioridade = ["chefeBravo", "chefeIncendio", "chefeColetor", "chefeDescarga", "chefeAbandono", "chefeBatida"].includes(evento);
+      const prioridade = ["chefeAgua", "chefeBravo", "chefeIncendio", "chefeColetor", "chefeDescarga", "chefeAbandono", "chefeBatida"].includes(evento);
       if (tempoDecorrido - ultimaBronca < INTERVALO_CHEFE && !prioridade) return;
       if (estadoJogo !== "JOGANDO" && estadoJogo !== "MINIGAME" && estadoJogo !== "CARD_PEDIDO") return;
       ultimaBronca = tempoDecorrido;
@@ -9052,7 +9099,7 @@
     }
 
     /* ---------- Ronda do chefe ---------- */
-    const ronda = { ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, espera: 0, paradas: 0, voltando: false,
+    const ronda = { nome: "GERALDO", ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, espera: 0, paradas: 0, voltando: false,
                     falou: false, proxima: 40, parado: 0, speed: 34, vestColor: "#b91c1c", olharT: 0 };
 
     function pontosDeRonda() {
@@ -9129,12 +9176,91 @@
       renderPixelCharacter(ronda.x, ronda.y, ronda.dir, passo, ronda.vestColor, false, false, 1, 1, false, false, APARENCIA_CHEFE);
     }
 
+    /* ---------- Hidratação: bebedouro na parede de cima ----------
+       A água vai baixando (mais rápido correndo). Zerou: 20s pra chegar no bebedouro. */
+    const BEBEDOURO = { x: 566, y: 30 };
+    const DURACAO_AGUA = 100;      // segundos de 100% até 0% andando
+    const TEMPO_DESIDRATADA = 20;  // prazo pra beber depois de zerar
+    const hidra = { nivel: 100, seca: false, restante: 0, avisouBaixa: false };
+    const temHidratacao = () => !!MISSAO_ATUAL.semFim;
+
+    function resetarHidratacao() {
+      Object.assign(hidra, { nivel: 100, seca: false, restante: 0, avisouBaixa: false });
+      atualizarHUDAgua();
+    }
+
+    function atualizarHidratacao(dt) {
+      if (!temHidratacao() || estadoJogo !== "JOGANDO" || !cronometroIniciado) return;
+      if (!hidra.seca) {
+        const correndo = keys["ShiftLeft"] || keys["ShiftRight"] || (toque.ativo && vetorToque().mag > TOQUE_CORRER);
+        hidra.nivel -= dt * (100 / DURACAO_AGUA) * (correndo ? 1.5 : 1);
+        if (hidra.nivel <= 25 && !hidra.avisouBaixa) {
+          hidra.avisouBaixa = true;
+          falarTexto("Tá batendo sede. Passa no bebedouro, do lado da porta do Geraldo.", "#38bdf8");
+          SFX.playTone(660, "sine", 0.08, 0.06, 0.01);
+        }
+        if (hidra.nivel <= 0) {
+          hidra.nivel = 0;
+          hidra.seca = true;
+          hidra.restante = TEMPO_DESIDRATADA;
+          SFX.estrelaPerdida();
+          falarTexto(`Você desidratou! Beba água no bebedouro em ${TEMPO_DESIDRATADA} segundos.`, "#ef4444");
+          chefeReclama("chefeAgua");
+          atualizarHUD();
+        }
+      } else {
+        hidra.restante -= dt;
+        if (hidra.restante <= 0) { falharFase("desidratou", "VOCÊ DESIDRATOU"); return; }
+      }
+      atualizarHUDAgua();
+    }
+
+    function atualizarHUDAgua() {
+      const el = document.getElementById("hud-agua");
+      if (!el) return;
+      el.classList.toggle("ativa", temHidratacao());
+      document.getElementById("agua-nivel").style.width = Math.max(0, hidra.nivel) + "%";
+      el.classList.toggle("baixa", !hidra.seca && hidra.nivel <= 25);
+      el.classList.toggle("seca", hidra.seca);
+      document.getElementById("agua-txt").textContent = hidra.seca ? `${EH_TOQUE ? "" : "BEBA ÁGUA "}${mmss(Math.max(0, hidra.restante))}` : "";
+    }
+
+    function beberAgua() {
+      const estavaSeca = hidra.seca;
+      Object.assign(hidra, { nivel: 100, seca: false, restante: 0, avisouBaixa: false });
+      // Glub glub
+      [0, 0.12, 0.24].forEach((d, i) => setTimeout(() => SFX.playTone(300 - i * 40, "sine", 0.09, 0.08, 0.01), d * 1000));
+      JUICE.textoFlutuante(player.x, player.y - 16, "GLUB GLUB!", "#7dd3fc");
+      falarTexto(estavaSeca ? "Ufa! Hidratada de novo. Bora." : "Água na veia. Bora.", "#38bdf8");
+      atualizarHUDAgua();
+      atualizarHUD();
+    }
+
+    function desenharBebedouro() {
+      const x = BEBEDOURO.x, y = 3;
+      const chama = temHidratacao() && (hidra.seca || hidra.nivel <= 25) && Math.floor(Date.now() / 300) % 2 === 0;
+      if (chama) ret(ctx, x - 8, y - 2, 17, 29, hidra.seca ? "#ef4444" : "#38bdf8");
+      // Galão
+      ret(ctx, x - 5, y, 11, 9, ARTE.contorno);
+      ret(ctx, x - 4, y + 1, 9, 7, "#7dd3fc");
+      ret(ctx, x - 3, y + 1, 2, 5, "#e0f2fe");
+      ret(ctx, x - 1, y + 8, 3, 2, "#1e3a8a");
+      // Corpo do bebedouro
+      ret(ctx, x - 6, y + 10, 13, 15, ARTE.contorno);
+      ret(ctx, x - 5, y + 11, 11, 13, "#e5e7eb");
+      ret(ctx, x - 5, y + 11, 11, 1, "#f8fafc");
+      ret(ctx, x - 3, y + 14, 3, 2, "#3b82f6");  // torneira fria
+      ret(ctx, x + 1, y + 14, 3, 2, "#ef4444");  // torneira quente
+      ret(ctx, x - 4, y + 19, 9, 2, "#94a3b8");  // bandeja
+      desenharBitmap("AGUA", x, y + 27, "#bae6fd", 1, "center");
+    }
+
     /* ---------- Tela roxa no WMS e a TI ---------- */
     const APARENCIA_TI = {
       id: "ti", capacete: "#f4f6fa", cabelo: "#111827", pele: "#8d5a3b", bochecha: "#a86a4c",
       camisa: "#111827", colete: "#0ea5e9", calca: "#334155", cabeloLongo: false
     };
-    const ti = { ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 64, fase: "", t: 0, parado: 0, vestColor: "#0ea5e9" };
+    const ti = { nome: "VINI DA TI", ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 64, fase: "", t: 0, parado: 0, vestColor: "#0ea5e9" };
     let timerTelaRoxa = null;
 
     function abrirTelaRoxa() {
@@ -9171,7 +9297,7 @@
       SFX.terminal();
       [0, 0.18].forEach(d => setTimeout(() => SFX.playTone(1320, "sine", 0.12, 0.06, 0.01), d * 1000));
       JUICE.textoFlutuante(player.x, player.y - 16, "TI CHAMADA!", "#c4b5fd");
-      falarTexto("Chamado aberto pra TI. Já tem gente vindo.", "#c4b5fd");
+      falarTexto("Chamado aberto pra TI. O Vini já está vindo.", "#c4b5fd");
       Object.assign(ti, { ativo: true, x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4, fase: "indo", t: 0, parado: 0 });
       // Para na frente do balcão, do lado do monitor
       ti.rota = [{ x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 8 }, { x: PORTA_ESCRITORIO.x, y: TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 10 },
@@ -9217,7 +9343,7 @@
       id: "rh", capacete: "#f4f6fa", cabelo: "#3b2416", pele: "#d9a07a", bochecha: "#c9846a",
       camisa: "#6d28d9", colete: "#a78bfa", calca: "#1f2937", cabeloLongo: true
     };
-    const rh = { ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 62, fase: "", t: 0, parado: 0, vestColor: "#7c3aed" };
+    const rh = { nome: "RH", ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 62, fase: "", t: 0, parado: 0, vestColor: "#7c3aed" };
 
     function atualizarBriga(a, dt) {
       // Os dois se xingando, um de cada vez
@@ -9336,6 +9462,11 @@
     }
     // Tela inicial: com progresso salvo, CONTINUAR vira o botão principal
     function atualizarMenuInicial() {
+      // Uma porta só: INICIAR abre o turno sem fim (a campanha fica guardada no código)
+      document.getElementById("btn-continuar").style.display = "none";
+      document.getElementById("btn-sem-fim").style.display = "none";
+      document.getElementById("start-best-time-box").style.display = "none";
+      return;
       const p = lerProgresso();
       const cont = document.getElementById("btn-continuar");
       const novo = document.getElementById("btn-start-game");
@@ -10184,6 +10315,7 @@
 
     function falharFase(evento, titulo = "BATERIA ACABOU") {
       fecharChefe();
+      hidra.seca = false;
       cancelarBroncaAgendada();
       document.getElementById("falha-titulo").textContent = titulo;
       document.documentElement.classList.remove("emergencia");
@@ -10351,6 +10483,7 @@
         extintor: ["[E] PEGAR EXTINTOR", "#7f1d1d", "#fecaca", "#ffffff"],
         ramal: ["[E] LIGAR PRO RH", "#4c1d95", "#ddd6fe", "#ffffff"],
         chamar_ti: ["[E] CHAMAR A TI", "#4c1d95", "#ddd6fe", "#ffffff"],
+        bebedouro: ["[E] BEBER ÁGUA", "#0c4a6e", "#bae6fd", "#ffffff"],
         fogo: ["SEGURE [E] APAGAR", "#7f1d1d", "#fecaca", "#ffffff"],
         rua_ok: ["[E] GUARDAR", "#052e16", "#34d399", "#bbf7d0"],
         rua_alinhar: ["PARE NA MARCA", "#422006", "#facc15", "#fef08a"],
@@ -10374,7 +10507,7 @@
       initAudio();
       SFX.menuEnter();
       RADIO_MUSICA.tocar();
-      comecarCampanha();
+      comecarSemFim();
     });
     document.getElementById("btn-continuar").addEventListener("click", () => {
       entrarModoCelular();
