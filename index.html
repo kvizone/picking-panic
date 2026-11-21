@@ -831,10 +831,10 @@
       left: 3%;
       bottom: 6%;
       z-index: 30;
-      min-width: 92px;
-      height: 92px;
-      padding: 0 14px;
-      border-radius: 50%;
+      min-width: 84px;
+      height: 52px;
+      padding: 0 12px;
+      border-radius: 6px;
       background: #facc15;
       color: #111827;
       border: 4px solid #ffffff;
@@ -853,10 +853,10 @@
     .btn-toque-carrinho {
       left: 3%;
       right: auto;
-      bottom: calc(6% + 112px); /* em cima do botão de ação, longe do minimapa */
-      min-width: 64px;
-      height: 64px;
-      font-size: 24px;
+      bottom: calc(6% + 66px); /* logo acima do botão de ação */
+      min-width: 52px;
+      height: 46px;
+      font-size: 22px;
       background: #e2e8f0;
     }
     .btn-toque-carrinho.ligado { background: #38bdf8; }
@@ -864,9 +864,9 @@
       left: auto;
       right: 3%;
       bottom: 38%;
-      min-width: 64px;
-      height: 64px;
-      font-size: 24px;
+      min-width: 52px;
+      height: 46px;
+      font-size: 22px;
       background: #38bdf8;
     }
 
@@ -931,6 +931,7 @@
     html.retrato #hud-obj-box { order: 10; flex-basis: 100%; }
     html.retrato .hud-right-group { margin-left: auto; }
     html.retrato .btn-toque { bottom: 4%; }
+    html.retrato .btn-toque-carrinho { bottom: calc(4% + 66px); }
     html.retrato .btn-toque-buzina { bottom: 22%; }
     html.retrato .modal-box { max-width: 96vw; }
     html.retrato .etiqueta-wrap { zoom: 1; }
@@ -944,7 +945,8 @@
       .logo-img { max-width: 220px; }
       .timer-container { min-width: 0; }
       .inventory-container { min-width: 0; }
-      .btn-toque { min-width: 76px; height: 76px; font-size: 9px; }
+      .btn-toque { min-width: 76px; height: 46px; font-size: 9px; }
+      .btn-toque-carrinho { bottom: calc(6% + 60px); height: 40px; }
     }
 
     /* ==========================================================================
@@ -1550,8 +1552,8 @@
           </div>
         </div>
         <div class="cupom-botoes">
-          <button class="btn" id="btn-close-order">BORA! [E / ENTER]</button>
-          <button class="btn btn-secondary" id="btn-cupom-depois" type="button">AGORA NÃO [ESC]</button>
+          <button class="btn" id="btn-close-order">BORA!</button>
+          <button class="btn btn-secondary" id="btn-cupom-depois" type="button">AGORA NÃO</button>
         </div>
       </div>
     </div>
@@ -1590,7 +1592,7 @@
         <div class="briefing-linhas" id="brief-linhas"></div>
         <div class="briefing-controles" id="brief-controles"></div>
         <div class="briefing-obs" id="brief-obs"></div>
-        <button class="btn" id="btn-close-briefing">BORA! [E / ENTER]</button>
+        <button class="btn" id="btn-close-briefing">BORA!</button>
       </div>
     </div>
 
@@ -1625,7 +1627,7 @@
         <p id="pok-fala" style="font-size: 8px; line-height: 1.7;"></p>
         <div class="pok-stats" id="pok-stats"></div>
         <div class="pok-fila" id="pok-fila"></div>
-        <button class="btn" id="btn-pok-voltar" type="button">VOLTAR AO GALPÃO [ENTER]</button>
+        <button class="btn" id="btn-pok-voltar" type="button">VOLTAR AO GALPÃO</button>
       </div>
     </div>
 
@@ -1640,7 +1642,7 @@
         <h1 id="falha-titulo" style="font-size: 14px; color: #991b1b;">BATERIA ACABOU</h1>
         <p id="falha-texto" style="font-size: 8px; color: #cbd5e1; line-height: 1.8;"></p>
         <div style="display: flex; gap: 10px;">
-          <button class="btn" id="btn-falha-retry" style="flex: 1;">TENTAR DE NOVO [ENTER]</button>
+          <button class="btn" id="btn-falha-retry" style="flex: 1;">TENTAR DE NOVO</button>
           <button class="btn btn-secondary" id="btn-falha-menu" style="flex: 1;">INÍCIO</button>
         </div>
       </div>
@@ -1660,7 +1662,7 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button class="btn" id="btn-resume-game">RETOMAR [ESC]</button>
+          <button class="btn" id="btn-resume-game">RETOMAR</button>
           <button class="btn btn-secondary" id="btn-restart-game">REINICIAR MISSÃO</button>
         </div>
       </div>
@@ -1697,7 +1699,7 @@
         <canvas id="celeb-canvas" width="24" height="34"></canvas>
 
         <div style="display: flex; gap: 10px; margin-top: 4px;">
-          <button class="btn" id="btn-next-phase" style="flex: 1;">PRÓXIMA FASE [ENTER]</button>
+          <button class="btn" id="btn-next-phase" style="flex: 1;">PRÓXIMA FASE</button>
           <button class="btn btn-secondary" id="btn-play-again" style="flex: 1;">REPETIR</button>
           <button class="btn btn-secondary" id="btn-back-menu" style="flex: 1;">INÍCIO</button>
         </div>
@@ -4765,7 +4767,6 @@
         const cx = rua.corridorX + 24;
         const marcas = [];
         for (let i = 2; i < 10; i += 3) marcas.push(startY + i * bayHeight + 16);
-        marcas.push(startY + 10 * bayHeight + 6);
         marcas.forEach(y => {
           const w = larguraBitmap(rua.id, 2);
           ctx.fillStyle = "rgba(15, 23, 42, 0.72)";
@@ -6369,7 +6370,7 @@
       const ultimaFase = faseIndex + 1 >= FASES.length;
       document.getElementById("res-fase").textContent = `FASE ${faseIndex + 1}/${FASES.length} · ${MISSAO_ATUAL.nomeFase}` +
         (TOQUE_DISPOSITIVO ? ` · CELULAR (3★ ATÉ ${Math.round(lim.tres)}s)` : "");
-      document.getElementById("btn-next-phase").textContent = ultimaFase ? "INÍCIO [ENTER]" : "PRÓXIMA FASE [ENTER]";
+      document.getElementById("btn-next-phase").textContent = ultimaFase ? "INÍCIO" : "PRÓXIMA FASE";
       // Na última fase o botão principal já leva ao menu
       document.getElementById("btn-back-menu").style.display = ultimaFase ? "none" : "";
       const tituloEl = document.getElementById("res-titulo");
@@ -7483,7 +7484,7 @@
       document.getElementById("cup-ant").disabled = lista.length < 2;
       document.getElementById("cup-prox").disabled = lista.length < 2;
       document.getElementById("cupom-seletor").classList.add("visivel");
-      document.getElementById("btn-close-order").textContent = "PEGAR ESTE PEDIDO [E]";
+      document.getElementById("btn-close-order").textContent = "PEGAR ESTE PEDIDO";
       abrirCardPedido(true);
     }
 
@@ -7497,7 +7498,7 @@
 
     function esconderSeletorCupom() {
       document.getElementById("cupom-seletor").classList.remove("visivel");
-      document.getElementById("btn-close-order").textContent = "BORA! [E / ENTER]";
+      document.getElementById("btn-close-order").textContent = "BORA!";
     }
 
     // Esc no balcão: o pedido volta para a fila
