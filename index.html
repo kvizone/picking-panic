@@ -1414,6 +1414,23 @@
     #btn-acao.chamando { animation: botaoChama 0.7s ease-in-out infinite; }
     @keyframes botaoChama { 50% { transform: scale(1.12); box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.45); } }
     html.toque #dica-jit.legenda { bottom: auto; top: var(--topo-livre, 70px); max-width: 88%; }
+    /* Dentro da barra de cima (celular): etiqueta pequena, sem cobrir o mapa nem os botões */
+    #hud-obj-box > .chamado-balcao, #hud-obj-box > #dica-jit {
+      position: static !important;
+      transform: none !important;
+      left: auto !important; top: auto !important; bottom: auto !important;
+      align-self: flex-start;
+      max-width: 100%;
+      margin-top: 3px;
+      padding: 2px 6px;
+      font-size: 9px;
+      line-height: 1.4;
+      white-space: normal;
+      box-shadow: 2px 2px 0 #000;
+      animation: none;
+    }
+    #hud-obj-box > #dica-jit::after { display: none; }
+    #hud-obj-box > #dica-jit .balao-tag { display: none; }
     .pok-stats {
       background: #0f172a;
       color: #cbd5e1;
@@ -3748,6 +3765,11 @@
     let VIEW_W = 560;
     let VIEW_H = 315;
     const TOQUE_DISPOSITIVO = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || ("ontouchstart" in window);
+    // No celular, o chamado do balcão e as dicas viram uma etiqueta dentro da barra de cima
+    if (TOQUE_DISPOSITIVO) {
+      const caixa = document.getElementById("hud-obj-box");
+      ["chamado-balcao", "dica-jit"].forEach(id => { const el = document.getElementById(id); if (caixa && el) caixa.appendChild(el); });
+    }
     // No computador, o alerta de urgência fica dentro da barra de cima (antes do contador de pedidos)
     if (!TOQUE_DISPOSITIVO) {
       const barra = document.querySelector(".hud-top-bar"), alerta = document.getElementById("emergencia-banner");
@@ -7566,7 +7588,9 @@
       const buz = document.getElementById("btn-buzina");
       const z = player.currentZone;
       // Descer da empilhadeira fica só no botão 🚜
-      const mostrar = estadoJogo === "JOGANDO" && !!z && z.tipo !== "descer";
+      // Pilotando: o botão só aparece quando dá pra pegar ou guardar o pallet (ENCAIXE/PARE ficam só no desenho)
+      const soAlinhando = veiculo.pilotando && z && ["receb_alinhar", "rua_alinhar"].includes(z.tipo);
+      const mostrar = estadoJogo === "JOGANDO" && !!z && z.tipo !== "descer" && !soAlinhando;
       let rotulo = mostrar ? (ROTULOS_ACAO[z.tipo] || "AÇÃO") : "";
       if (mostrar && z.tipo === "terminal" && ehFila()) rotulo = precisaPegarPedido() ? "PEGAR PEDIDO" : (fila.ativo ? "ETIQUETA" : "BALCÃO");
       btn.classList.toggle("chamando", mostrar && z.tipo === "terminal" && precisaPegarPedido());
@@ -11820,7 +11844,8 @@
       };
       const t = textos[z.tipo];
       if (!t) return false;
-      if (TOQUE_DISPOSITIVO) return true; // no celular o botão de ação já mostra o que fazer
+      // No celular o botão de ação já mostra o que fazer; só "encaixe/pare" (sem botão) é desenhado no mapa
+      if (TOQUE_DISPOSITIVO && !["receb_alinhar", "rua_alinhar"].includes(z.tipo)) return true;
       // Pilotando, o painel vai acima da empilhadeira para não cobrir o rack
       // Pilotando: o painel fica do lado oposto aos garfos, para não cobrir o caminho
       const yPainel = veiculo.pilotando ? (frenteVeiculo().y > 0.3 ? -52 : 30) : 12;
