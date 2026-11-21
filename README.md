@@ -74,6 +74,7 @@ O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais
 | 📟 Coletor perdido | Sem coletor, sem WMS: siga o bip e a barra SINAL, pergunte aos colegas | 60s / 55s |
 | 🚚 Descarga urgente | Suba na empilhadeira, pegue o pallet no recebimento e guarde na posição sorteada da rua (R0X-PYY), no nível pedido | 120s / 100s |
 | 🪣 Pedido abandonado | Robson ou Jéssica chuta o balde e vai embora, e aparece no rádio (com rosto, igual ao chefe) contando o que largou. Logo depois o chefe reage. O pedido cai no topo do balcão, com o primeiro item já separado: termine e entregue | 150s / 130s |
+| 😡 Briga no galpão | Dois colegas param e começam a brigar. Ligue pro RH no ramal da parede de cima (perto da placa EPI). Ao ligar, o relógio para e a moça do RH sai da sala, acalma os dois e volta | 40s / 35s |
 | 💥 Batida de empilhadeiras | Duas empilhadeiras levando carga pro caminhão batem de frente no corredor entre as bancadas e pega fogo. Apague com o extintor. A carga do último pedido entregue queima e volta pro balcão como "-R" pra refazer | 34s / 30s |
 
 O extintor e a empilhadeira ficam sempre no mapa, mas só funcionam na urgência deles. Os pedidos não param: enquanto você resolve a urgência, o prazo deles continua correndo.
@@ -85,6 +86,12 @@ Os colegas (Robson, Jéssica e Kauã) trabalham de verdade: pegam caixa na rua, 
 O chefe sai da sala (porta "CHEFE" na parede de cima) de tempos em tempos, passeia por dois ou três pontos do galpão, para pra vigiar e volta. Se passar perto de você, solta um comentário.
 
 O chefe também aparece no canto da tela reclamando: fila com 3 pedidos, pedido atrasado, cada urgência, esbarrão de empilhadeira e quando você fica parada com pedido esperando. Entre uma bronca e outra há pelo menos 18 segundos (fila cheia e urgências furam essa espera).
+
+## Pedidos entregues
+
+Por enquanto a marcação é o número de pedidos finalizados, no prazo ou atrasados. Aparece embaixo do relógio ("✔ 3 ENTREGUES"), no relatório do turno e no fim do turno sem fim. O total de todas as partidas fica salvo no navegador e aparece na tela inicial.
+
+A etiqueta mostra os horários no relógio do turno: entrada do pedido, prazo e atraso (em vermelho quando passou).
 
 ## Progresso salvo
 

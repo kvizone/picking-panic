@@ -135,6 +135,15 @@
       letter-spacing: 1px;
     }
 
+    .hud-entregues {
+      display: block;
+      font-size: calc(7px * var(--escala) / var(--dpr));
+      color: #86efac;
+      margin-top: calc(3px * var(--escala) / var(--dpr));
+      white-space: nowrap;
+    }
+    .hud-entregues.pop { color: #ffffff; transform: scale(1.15); transform-origin: left center; }
+    #hud .hud-entregues { font-size: calc(7px * var(--escala)); margin-top: calc(2px * var(--escala)); }
     .penalty-indicator {
       font-size: calc(8px * var(--escala) / var(--dpr));
       color: #ef4444;
@@ -465,6 +474,7 @@
       animation: blinker 0.2s step-start infinite;
       background: #f59e0b;
     }
+    .et-atrasado { color: #b91c1c; font-weight: bold; }
     .etiqueta-clip {
       width: 270px;
       margin-top: -14px;
@@ -1477,6 +1487,7 @@
         <div class="timer-container" id="hud-timer-box" title="Pausar">
           <span class="timer-value" id="hud-timer">00:00.0</span>
           <span class="penalty-indicator" id="hud-penalty">+0.0s</span>
+          <span class="hud-entregues" id="hud-entregues" title="Pedidos entregues neste turno">✔ <span id="hud-entregues-n">0</span> ENTREGUES</span>
         </div>
 
         <div class="objective-container" id="hud-obj-box" title="Ver etiqueta (Q)">
@@ -1537,6 +1548,9 @@
           <p>As outras dicas aparecem na hora certa, durante o turno.</p>
         </div>
 
+        <div id="start-entregues-box" style="font-size: 8px; color: #166534; display: none; margin-bottom: 4px;">
+          📦 <span id="start-entregues">0</span> PEDIDOS ENTREGUES NO TOTAL
+        </div>
         <div id="start-best-time-box" style="font-size: 8px; color: #34d399; display: none;">
           🏆 RECORDE: <span id="start-best-time">--:--.-</span>
         </div>
@@ -1580,6 +1594,11 @@
             </div>
             <div class="et-linha"><span>CLIENTE:</span><span id="et-cliente">MERCADO SUL</span></div>
             <div class="et-linha"><span>TURNO:</span><span id="et-turno">01 / 1996</span></div>
+            <div id="et-horarios">
+              <div class="et-linha"><span>ENTRADA:</span><span id="et-entrada">00:00</span></div>
+              <div class="et-linha"><span>PRAZO ATÉ:</span><span id="et-prazo">00:00</span></div>
+              <div class="et-linha"><span>ATRASO:</span><span id="et-atraso">NO PRAZO</span></div>
+            </div>
             <div class="et-sep"></div>
             <div class="et-cab"><span>END.</span><span>ITEM</span><span>QTD</span></div>
             <div id="et-itens"></div>
@@ -1717,6 +1736,7 @@
         <p id="res-fase" style="font-size: 8px; color: #374151;">FASE 1/3</p>
         <h1 id="res-titulo" style="font-size: 15px; color: #34d399;">EXPEDIÇÃO CONCLUÍDA!</h1>
         <p style="color: #94a3b8; font-size: 8px;" id="res-truck-info">Caminhão despachado.</p>
+        <p style="color: #166534; font-size: 9px; display: none;" id="res-entregues"></p>
 
         <div class="stars-row">
           <span class="star-icon" id="star-1">★</span>
@@ -1926,7 +1946,7 @@
       // Começa com um pedido; depois cai um aleatório a cada minuto. Fecha ao entregar a meta.
       geracao: { intervalo: 40, meta: 3, armazenagem: false, numeroInicial: 1100 },
       // Urgências: a primeira cai aos 35s, depois uma a cada 75s. Tempos para resolver cada uma.
-      urgencias: { primeira: 25, intervalo: 50, tempos: { incendio: 30, coletor: 60, descarga: 120, abandono: 150, batida: 34 } },
+      urgencias: { primeira: 25, intervalo: 50, tempos: { incendio: 30, coletor: 60, descarga: 120, abandono: 150, batida: 34, briga: 40 } },
       bateriaSegundos: 60,
       pedidos: [
         {
@@ -1993,7 +2013,7 @@
       estrelas: { tres: 310, duas: 390 },
       tempoColetaPorVolume: 1.0,
       geracao: { intervalo: 35, meta: 5, armazenagem: false, numeroInicial: 1200 },
-      urgencias: { primeira: 20, intervalo: 45, tempos: { incendio: 26, coletor: 55, descarga: 100, abandono: 130, batida: 30 } },
+      urgencias: { primeira: 20, intervalo: 45, tempos: { incendio: 26, coletor: 55, descarga: 100, abandono: 130, batida: 30, briga: 35 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -2029,7 +2049,7 @@
       estrelas: { tres: 99999, duas: 99999 },
       tempoColetaPorVolume: 1.0,
       geracao: { intervalo: 35, meta: Infinity, armazenagem: false, numeroInicial: 2000 },
-      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32 } },
+      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 38 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -2362,6 +2382,28 @@
       // ---------- Urgências ----------
       fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
       descargaAtrasou: ["A descarga travou a doca e o fornecedor foi embora.", "O pallet ficou no recebimento e a doca parou."],
+      brigaSaiu: ["Ninguém chamou o RH e a briga parou a expedição.", "A briga virou plateia e o galpão inteiro parou pra assistir."],
+      falasBriga: [
+        "Essa bancada é minha, eu cheguei primeiro!",
+        "Quem pegou minha fita adesiva?!",
+        "Foi você que comeu meu marmitex?!",
+        "Meu coletor tava carregando! Quem tirou da tomada?!",
+        "Para de cantar enquanto separa, eu me perco!",
+        "Você estacionou o carrinho na MINHA vaga!",
+        "Eu vi você trocando a estação da rádio!",
+        "Não fui eu! Foi o pessoal do turno da noite!"
+      ],
+      falasRH: [
+        "Vocês dois, na minha sala. Agora.",
+        "Respira. Conta até dez. Isso. De novo.",
+        "Vamos resolver isso numa dinâmica de grupo. Depois do turno.",
+        "Gente, a gente conversa. Sem grito, combinado?"
+      ],
+      chefeBriga: [
+        "Briga no MEU galpão? Chama o RH antes que vire novela!",
+        "Tão brigando por causa de fita adesiva? Liga pro RH, rápido!",
+        "Ou vocês trabalham ou vocês brigam. Os dois não dá. RH, já!"
+      ],
       abandonoAtrasou: ["O pedido do colega ficou parado e o cliente cancelou.", "Ninguém terminou o pedido e o caminhão saiu sem ele."],
       despedidaROBSON: [
         "Pra mim deu! Larguei o pedido {p} no balcão pela metade. O primeiro item já tá separado, o resto é com você. Fui!",
@@ -4034,9 +4076,27 @@
       document.getElementById("et-doca-label").textContent = armaz ? "GUARDAR EM:" : "DOCA DE SAÍDA:";
       document.getElementById("et-codigo").textContent = "*" + m.numero.replace("#", "") + "-" + destino.replace(/ /g, "") + "*";
       document.getElementById("et-barcode").innerHTML = codigoDeBarras(m.id + m.numero);
+      preencherHorariosEtiqueta();
       if (!etiquetaObs) etiquetaObs = sortearTexto("obsEtiqueta");
       document.getElementById("et-obs").textContent = etiquetaObs;
       atualizarItensEtiqueta();
+    }
+
+    // Horários no relógio do turno (o mesmo do canto da tela)
+    const relogio = (seg) => { const s = Math.max(0, Math.floor(seg)); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
+    function preencherHorariosEtiqueta() {
+      const p = ehFila() ? (fila.escolhendo ? fila.vendo : fila.ativo) : null;
+      const box = document.getElementById("et-horarios");
+      if (!p) { box.style.display = "none"; return; }
+      box.style.display = "";
+      const entrada = p.chegouRelogio ?? p.chegouEm;
+      const prazo = prazoDe(p);
+      const atraso = idadeDe(p) - prazo;
+      document.getElementById("et-entrada").textContent = relogio(entrada);
+      document.getElementById("et-prazo").textContent = relogio(entrada + prazo);
+      const at = document.getElementById("et-atraso");
+      at.textContent = atraso > 0 ? `+${relogio(atraso)}` : `NO PRAZO (FALTAM ${relogio(-atraso)})`;
+      at.classList.toggle("et-atrasado", atraso > 0);
     }
 
     function atualizarItensEtiqueta() {
@@ -4369,6 +4429,7 @@
       atualizarFila(dt);
       atualizarEmergencias(dt);
       atualizarRonda(dt);
+      if (!emerg.ativa || emerg.ativa.tipo !== "briga") atualizarRHFora(dt);
       if (estadoJogo === "FALHOU") return;
 
       // 1. Movimento do Jogador
@@ -5164,9 +5225,16 @@
         const passo = (npc.parado > 0 || npc.esperando > 0) ? 0 : Math.floor(Date.now() / 140 + i * 3) % 4;
         const embalando = npc.esperando > 0 && npc.alvo && npc.alvo.faz === "embalar";
         if (embalando) desenharCaixaNaBancada(npc);
-        renderPixelCharacter(npc.x, npc.y, npc.dir, passo, npc.vestColor, !embalando && npc.caixa === "aberta", !embalando && npc.caixa === "selada");
+        const brigandoAgora = npc.brigando && !(npc.rota && npc.rota.length);
+        const tremor = brigandoAgora ? Math.round(Math.sin(Date.now() / 45 + i) * 1) : 0;
+        renderPixelCharacter(npc.x + tremor, npc.y, npc.dir, brigandoAgora ? 0 : passo, npc.vestColor, !embalando && npc.caixa === "aberta", !embalando && npc.caixa === "selada");
+        if (brigandoAgora) {
+          const simbolo = ["#@!", "!!", "%&*!"][Math.floor(Date.now() / 420 + i) % 3];
+          desenharBitmap(simbolo, Math.round(npc.x), Math.round(npc.y) - 34 - (Math.floor(Date.now() / 200 + i) % 2), "#ef4444", 1, "center");
+        }
       });
       desenharRonda();
+      desenharRH();
       desenharBalde();
 
       // 9b. Carrinho de picking
@@ -6577,6 +6645,9 @@
       document.getElementById("btn-back-menu").style.display = ultimaFase ? "none" : "";
       const tituloEl = document.getElementById("res-titulo");
       const campEl = document.getElementById("res-campanha");
+      const entEl = document.getElementById("res-entregues");
+      entEl.style.display = ehFila() ? "" : "none";
+      entEl.textContent = `✔ ${fila.finalizados || 0} PEDIDO(S) ENTREGUE(S) NO TURNO`;
       if (ultimaFase && campanha.tempos.filter(t => t !== undefined).length === FASES.length) {
         // Zerou o jogo jogando as 3 fases em sequência
         const total = campanha.tempos.reduce((a, b) => a + b, 0);
@@ -6836,6 +6907,9 @@
     }
 
     function carregarMelhorTempoInicial() {
+      const tot = totalEntregues();
+      document.getElementById("start-entregues-box").style.display = tot > 0 ? "block" : "none";
+      document.getElementById("start-entregues").textContent = String(tot);
       try {
         const storageKey = chaveRecorde();
         const saved = localStorage.getItem(storageKey);
@@ -6917,6 +6991,7 @@
         resetarColega(npc);
       });
       resetarRonda();
+      rh.ativo = false;
       cancelarBroncaAgendada();
       fecharChefe();
       ultimaBronca = -Infinity;
@@ -7122,7 +7197,7 @@
       pulmao_alinhar: "ENCAIXE", zona_ok: "BAIXAR", zona_devagar: "PARE",
       zona_fora: "ENTRE", coletor: "PEGAR", npc: "PERGUNTAR",
       receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
-      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE"
+      extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH"
     };
     let rotuloAcaoAtual = "";
     function atualizarBotoesToque() {
@@ -7576,6 +7651,8 @@
       fila.chefeAvisou = false;
       fila.vendo = null;
       fila.armazGeradas = 0;
+      fila.finalizados = 0;
+      atualizarContadorEntregues();
       fila.seq = MISSAO_ATUAL.geracao ? MISSAO_ATUAL.geracao.numeroInicial : 0;
       fila.proxGeracao = MISSAO_ATUAL.geracao ? MISSAO_ATUAL.geracao.intervalo * fatorTempo() : Infinity;
       if (ehFila()) MISSAO_ATUAL.etapas = ETAPAS_PICKING;
@@ -7592,6 +7669,9 @@
     let tempoParada = 0;
     function atualizarFila(dt) {
       if (!ehFila() || !cronometroIniciado) return;
+      fila.pedidos.forEach(p => {
+        if (p.status !== "futuro" && p.chegouRelogio == null) p.chegouRelogio = p.chegouEm + tempoPenalidades;
+      });
       // Parada muito tempo com pedido esperando e nada na mão: o chefe vê da sala
       const andando = keys["ArrowUp"] || keys["ArrowDown"] || keys["ArrowLeft"] || keys["ArrowRight"] ||
         keys["KeyW"] || keys["KeyA"] || keys["KeyS"] || keys["KeyD"] || (typeof toque !== "undefined" && toque.ativo);
@@ -7636,6 +7716,21 @@
           atualizarChipFila();
         }
       });
+    }
+
+    const CHAVE_ENTREGUES = "pickingpanic_entregues_total";
+    function totalEntregues() {
+      try { return parseInt(localStorage.getItem(CHAVE_ENTREGUES) || "0", 10) || 0; } catch (e) { return 0; }
+    }
+    function atualizarContadorEntregues(pop) {
+      const el = document.getElementById("hud-entregues");
+      if (!el) return;
+      el.style.display = ehFila() ? "" : "none";
+      document.getElementById("hud-entregues-n").textContent = String(fila.finalizados || 0);
+      if (pop) {
+        el.classList.add("pop");
+        setTimeout(() => el.classList.remove("pop"), 200);
+      }
     }
 
     function atualizarChipFila(pop) {
@@ -7712,8 +7807,8 @@
       document.getElementById("cup-prazo").textContent = p.def.urgente
         ? `URGENTE · LARGADO PELO ${p.def.dono} · 1º ITEM JÁ SEPARADO`
         : atrasado
-        ? `ATRASADO HÁ ${mmss(idade - prazo)}`
-        : `${p.def.refazer ? "REFAZER (QUEIMOU) · " : ""}ESPERANDO ${mmss(idade)} · PRAZO ${mmss(prazo)}`;
+        ? `ATRASADO HÁ ${relogio(idade - prazo)}`
+        : `${p.def.refazer ? "REFAZER (QUEIMOU) · " : ""}ENTROU ${relogio(p.chegouRelogio ?? p.chegouEm)} · PRAZO ATÉ ${relogio((p.chegouRelogio ?? p.chegouEm) + prazo)}`;
       document.querySelector("#cupom-seletor .cup-info").classList.toggle("atrasado", atrasado);
       document.getElementById("cup-ant").disabled = lista.length < 2;
       document.getElementById("cup-prox").disabled = lista.length < 2;
@@ -7795,6 +7890,10 @@
       p.status = "entregue";
       fila.ativo = null;
       fila.ultimo = p;
+      // Conta todo pedido finalizado, no prazo ou atrasado (e soma no total do navegador)
+      fila.finalizados++;
+      try { localStorage.setItem(CHAVE_ENTREGUES, String(totalEntregues() + 1)); } catch (e) {}
+      atualizarContadorEntregues(true);
       atualizarChipFila();
       const a = emerg.ativa;
       if (a && a.tipo === "abandono" && a.pedido === p) concluirEmergencia();
@@ -7937,6 +8036,7 @@
       coletor: { icone: "📟", nome: "COLETOR PERDIDO", falha: "bateriaAcabou", tituloFalha: "BATERIA ACABOU" },
       descarga: { icone: "🚚", nome: "DESCARGA URGENTE", falha: "descargaAtrasou", tituloFalha: "A DOCA TRAVOU" },
       abandono: { icone: "🪣", nome: "PEDIDO ABANDONADO", falha: "abandonoAtrasou", tituloFalha: "O PEDIDO FICOU PRA TRÁS" },
+      briga: { icone: "😡", nome: "BRIGA NO GALPÃO", falha: "brigaSaiu", tituloFalha: "A BRIGA PAROU O GALPÃO" },
       batida: { icone: "💥", nome: "BATIDA DE EMPILHADEIRAS", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" }
     };
     const TEMPO_BATIDA = 1.6; // segundos das empilhadeiras vindo até a batida
@@ -7947,7 +8047,7 @@
       { x: 500, y: 480, nome: "CORREDOR DA BANCADA 3" }
     ];
     // Urgências que não param o pedido: o jogador segue no fluxo normal do balcão
-    const urgenciaNoFluxo = () => !!emerg.ativa && emerg.ativa.tipo === "abandono";
+    const urgenciaNoFluxo = () => !!emerg.ativa && (emerg.ativa.tipo === "abandono" || (emerg.ativa.tipo === "briga" && emerg.ativa.chamado));
     const urgenciaQueGuia = () => !!emerg.ativa && !urgenciaNoFluxo();
 
     const descargaAtiva = () => !!emerg.ativa && emerg.ativa.tipo === "descarga";
@@ -7987,6 +8087,8 @@
       let tipo = emerg.ordem.shift();
       // Sem colega no galpão, ninguém tem como largar o pedido
       if (tipo === "abandono" && !colegasQuePodemLargar().length) tipo = emerg.ordem.shift() || "incendio";
+      if (tipo === "briga" && colegasNoGalpao().length < 2) tipo = emerg.ordem.shift() || "incendio";
+      if (tipo === "abandono" && !colegasQuePodemLargar().length) tipo = "incendio";
       emerg.ultimo = tipo;
       const limite = u.tempos[tipo] * fatorTempo();
       const a = { tipo, limite, restante: limite };
@@ -8001,6 +8103,22 @@
           colisao: TEMPO_BATIDA,
           emps: [{ x0: cx - 130, y0: cy, x1: cx - 42, y1: cy, dir: "RIGHT" },
                  { x0: cx + 130, y0: cy, x1: cx + 42, y1: cy, dir: "LEFT" }] });
+      } else if (tipo === "briga") {
+        // O mais perto do centro fica onde está; o outro vem tirar satisfação
+        const [n1, n2] = [...colegasNoGalpao()].sort((p, q) => Math.hypot(p.x - 480, p.y - 300) - Math.hypot(q.x - 480, q.y - 300));
+        let lado = 16;
+        if (naRua(n1.x)) {
+          const centro = RUAS_CONFIG.map(r => r.corridorX + 24).reduce((m, c) => Math.abs(c - n1.x) < Math.abs(m - n1.x) ? c : m);
+          if (n1.x > centro) lado = -16;
+        }
+        [n1, n2].forEach(n => { n.brigando = true; n.esperando = 0; n.parado = 0; n.bancada = null; });
+        n1.rota = [];
+        n1.olharBriga = lado > 0 ? "RIGHT" : "LEFT";
+        n2.olharBriga = lado > 0 ? "LEFT" : "RIGHT";
+        n2.rota = rotaAte(n2.x, n2.y, n1.x + lado, n1.y);
+        Object.assign(a, { brigoes: [n1, n2], x: n1.x + lado / 2, y: n1.y, chamado: false, falaT: 0.3, vez: 1 });
+        mostrarBalaoNpc(n1, sortearTexto("falasBriga"));
+        chefeReclama("chefeBriga");
       } else if (tipo === "abandono") {
         const npc = sortear(colegasQuePodemLargar());
         a.colega = npc.nome;
@@ -8030,6 +8148,7 @@
       const texto = {
         incendio: `Fogo no pallet ${a.pallet ? a.pallet.label : ""}! Pegue o extintor.`,
         batida: "Cuidado! Duas empilhadeiras vindo de frente no corredor...",
+        briga: `${a.brigoes ? a.brigoes[0].nome + " e " + a.brigoes[1].nome : "Dois colegas"} estão brigando! Ligue pro RH no ramal da parede.`,
         abandono: `${a.colega} largou o emprego! O pedido ${a.pedido ? a.pedido.def.numero : ""} ${ROSTOS_COLEGAS[a.colega] ? ROSTOS_COLEGAS[a.colega].pronome : "dele"} está no topo do balcão.`,
         coletor: "O coletor sumiu! Sem ele, sem WMS. Siga o bip.",
         descarga: `Descarga urgente: leve o pallet até a ${a.pos ? a.pos.idCompleto : ""}.`
@@ -8066,7 +8185,8 @@
         return;
       }
       if (a.tipo === "coletor") a.restante = coletor.bateria; // a bateria é o relógio
-      else a.restante -= dt;
+      else if (!(a.tipo === "briga" && a.chamado)) a.restante -= dt; // RH a caminho: o relógio para
+      if (a.tipo === "briga") atualizarBriga(a, dt);
       // Batida: as duas empilhadeiras chegam, batem e o pallet pega fogo
       if (a.tipo === "batida" && a.colisao > 0) {
         a.colisao -= dt;
@@ -8135,6 +8255,7 @@
       const fimE = EH_TOQUE ? "" : " [E]"; // no fim da frase: no celular o botão amarelo já diz a ação
       if (a.tipo === "batida" && a.colisao > 0) return "Saia da frente: tem empilhadeira vindo!";
       if (a.tipo === "abandono") return `Pegue o ${a.pedido.def.numero} no balcão e entregue antes do tempo acabar.`;
+      if (a.tipo === "briga") return a.chamado ? "O RH está a caminho. Pode voltar pros pedidos." : `Ligue pro RH no ramal da parede${fimE}.`;
       if (temFogo(a)) {
         return emerg.extintorNaMao
           ? `Chegue perto do fogo e segure ${E} para apagar.`
@@ -8151,6 +8272,7 @@
       const a = emerg.ativa;
       if (a.tipo === "coletor") return null; // sem coletor, sem seta
       if (temFogo(a)) return emerg.extintorNaMao ? { x: a.x, y: a.y } : { x: EXTINTOR_POS.x, y: EXTINTOR_POS.y + 16 };
+      if (a.tipo === "briga") return a.chamado ? null : { x: RH_RAMAL.x, y: RH_RAMAL.y + 12 };
       if (!veiculo.pilotando) return { x: veiculo.x, y: veiculo.y };
       if (a.etapa === "PEGAR") { const p = palletArmazenagemAtual(); return p ? { x: p.x - 30, y: p.y } : null; }
       const rua = RUAS_CONFIG.find(r => r.id === a.pos.rua);
@@ -8278,6 +8400,18 @@
         }
         if (interactPressedThisFrame) {
           falarTexto("Empilhadeira só para descarga urgente.", "#94a3b8");
+          return true;
+        }
+      }
+      // Ramal do RH na parede: só serve quando tem briga
+      if (Math.hypot(player.x - RH_RAMAL.x, player.y - (RH_RAMAL.y + 10)) < 26) {
+        if (a && a.tipo === "briga" && !a.chamado) {
+          player.currentZone = { tipo: "ramal" };
+          if (interactPressedThisFrame) chamarRH(a);
+          return true;
+        }
+        if (interactPressedThisFrame) {
+          falarTexto("Ramal do RH: só pra quando a coisa esquentar entre o pessoal.", "#94a3b8");
           return true;
         }
       }
@@ -8665,6 +8799,7 @@
       npc.saindo = false;
       npc.foiEmbora = false;
       npc.bancada = null;
+      npc.brigando = false;
     }
 
     // Ciclo de trabalho: rua → bancada → doca → rua
@@ -8697,6 +8832,16 @@
     }
 
     function moverColega(npc, dt) {
+      if (npc.brigando) {
+        // Vai até o ponto da briga e fica encarando o outro
+        if (npc.rota && npc.rota.length) {
+          const v = npc.speed;
+          npc.speed = v * 1.9; // vem bufando
+          seguirRota(npc, dt);
+          npc.speed = v;
+        } else npc.dir = npc.olharBriga;
+        return;
+      }
       if (npc.parado > 0) { npc.parado -= dt; return; } // buzina, conversa, susto
       const fogo = emerg.ativa;
       if (temFogo(fogo) && Math.hypot(npc.x - fogo.x, npc.y - fogo.y) < 60 && !npc.saindo) return; // espera o fogo apagar
@@ -8731,13 +8876,14 @@
       if (Math.floor(Date.now() / 160) % 2 === 0) ret(ctx, bx + 1 + Math.round(7 * prog), by + 1, 2, 1, "#f8fafc");
     }
 
-    function colegasNoGalpao() { return npcs.filter(n => !n.foiEmbora && !n.saindo); }
+    function colegasNoGalpao() { return npcs.filter(n => !n.foiEmbora && !n.saindo && !n.brigando); }
     function colegasQuePodemLargar() { return colegasNoGalpao().filter(n => ROSTOS_COLEGAS[n.nome]); }
 
     // Pedestres que a empilhadeira do jogador precisa respeitar
     function pedestres() {
       const l = npcs.filter(n => !n.foiEmbora);
       if (ronda.ativo) l.push(ronda);
+      if (rh.ativo) l.push(rh);
       return l;
     }
 
@@ -8794,6 +8940,7 @@
     function desenharPortaEscritorio() {
       const x = PORTA_ESCRITORIO.x - 11, y = 4;
       const aberta = (ronda.ativo && Math.hypot(ronda.x - PORTA_ESCRITORIO.x, ronda.y - PORTA_ESCRITORIO.y) < 30) ||
+        (rh.ativo && Math.hypot(rh.x - PORTA_ESCRITORIO.x, rh.y - PORTA_ESCRITORIO.y) < 30) ||
         npcs.some(n => n.saindo && !n.foiEmbora && Math.hypot(n.x - PORTA_ESCRITORIO.x, n.y - PORTA_ESCRITORIO.y) < 30);
       ret(ctx, x - 1, y - 1, 24, 22, ARTE.contorno);
       ret(ctx, x, y, 22, 20, aberta ? "#0b0f1a" : "#7c5a3a");
@@ -8882,6 +9029,87 @@
       if (!ronda.ativo) return;
       const passo = (ronda.espera > 0 || ronda.parado > 0) ? 0 : Math.floor(Date.now() / 170) % 4;
       renderPixelCharacter(ronda.x, ronda.y, ronda.dir, passo, ronda.vestColor, false, false, 1, 1, false, false, APARENCIA_CHEFE);
+    }
+
+    /* ---------- Briga entre colegas e o RH ---------- */
+    const RH_RAMAL = { x: 258, y: 30 }; // telefone na parede de cima, entre a janela e a placa de EPI
+    const APARENCIA_RH = {
+      id: "rh", capacete: "#f4f6fa", cabelo: "#3b2416", pele: "#d9a07a", bochecha: "#c9846a",
+      camisa: "#6d28d9", colete: "#a78bfa", calca: "#1f2937", cabeloLongo: true
+    };
+    const rh = { ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 62, fase: "", t: 0, parado: 0, vestColor: "#7c3aed" };
+
+    function atualizarBriga(a, dt) {
+      // Os dois se xingando, um de cada vez
+      const chegaram = a.brigoes.every(n => !(n.rota && n.rota.length));
+      if (chegaram && rh.fase !== "conversando") {
+        a.falaT -= dt;
+        if (a.falaT <= 0) {
+          a.falaT = 2.4;
+          a.vez = 1 - a.vez;
+          mostrarBalaoNpc(a.brigoes[a.vez], sortearTexto("falasBriga"));
+          SFX.playTone(140 + Math.random() * 60, "square", 0.06, 0.05, 0.005);
+        }
+      }
+      atualizarRH(a, dt);
+    }
+
+    function chamarRH(a) {
+      a.chamado = true;
+      SFX.terminal();
+      // Toque de telefone
+      [0, 0.18].forEach(d => setTimeout(() => SFX.playTone(1320, "sine", 0.12, 0.06, 0.01), d * 1000));
+      JUICE.textoFlutuante(player.x, player.y - 16, "RH CHAMADO!", "#c4b5fd");
+      falarTexto("Ligou pro RH. Já tem gente vindo. Pode voltar pros pedidos.", "#c4b5fd");
+      Object.assign(rh, { ativo: true, x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4, fase: "indo", t: 0, parado: 0 });
+      rh.rota = [{ x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 8 }, ...rotaAte(PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8, a.x, a.y + 14)];
+      atualizarHUD();
+      atualizarBannerEmergencia();
+    }
+
+    function atualizarRH(a, dt) {
+      if (!rh.ativo) return;
+      if (rh.fase === "indo") {
+        if (seguirRota(rh, dt)) {
+          rh.fase = "conversando";
+          rh.t = 2.2;
+          rh.dir = "UP";
+          a.brigoes.forEach(n => { n.dir = "DOWN"; });
+          mostrarBalaoNpc(rh, sortearTexto("falasRH"));
+        }
+      } else if (rh.fase === "conversando") {
+        rh.t -= dt;
+        if (rh.t <= 0) {
+          a.brigoes.forEach(n => { n.brigando = false; n.rota = null; n.parado = 1.0; });
+          rh.fase = "voltando";
+          rh.rota = [...rotaAte(rh.x, rh.y, PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8), { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4 }];
+          JUICE.textoFlutuante(a.x, a.y - 30, "PAZ!", "#c4b5fd");
+          concluirEmergencia();
+        }
+      }
+    }
+
+    // O RH volta pra sala mesmo depois que a urgência acabou
+    function atualizarRHFora(dt) {
+      if (rh.ativo && rh.fase === "voltando" && seguirRota(rh, dt)) rh.ativo = false;
+    }
+
+    function desenharRH() {
+      // Ramal na parede (pisca vermelho enquanto ninguém ligou)
+      const a = emerg.ativa;
+      const chamando = a && a.tipo === "briga" && !a.chamado;
+      const x = RH_RAMAL.x - 5, y = 8;
+      if (chamando && Math.floor(Date.now() / 300) % 2 === 0) ret(ctx, x - 3, y - 3, 16, 17, "#ef4444");
+      ret(ctx, x - 1, y - 1, 12, 13, ARTE.contorno);
+      ret(ctx, x, y, 10, 11, "#e7dcc4");
+      ret(ctx, x + 1, y + 1, 3, 9, "#3f3f46");       // fone
+      ret(ctx, x + 5, y + 2, 4, 3, "#94a3b8");       // visor
+      ret(ctx, x + 5, y + 6, 1, 1, "#3f3f46"); ret(ctx, x + 7, y + 6, 1, 1, "#3f3f46");
+      ret(ctx, x + 5, y + 8, 1, 1, "#3f3f46"); ret(ctx, x + 7, y + 8, 1, 1, "#3f3f46");
+      desenharBitmap("RH", RH_RAMAL.x, 26, "#ddd6fe", 1, "center");
+      if (!rh.ativo) return;
+      const passo = (rh.fase === "conversando") ? 0 : Math.floor(Date.now() / 130) % 4;
+      renderPixelCharacter(rh.x, rh.y, rh.dir, passo, rh.vestColor, false, false, 1, 1, false, false, APARENCIA_RH);
     }
 
     /* ==========================================================================
@@ -9787,7 +10015,7 @@
       SFX.estrelaPerdida();
       calarRadio();
       document.getElementById("falha-texto").textContent = MISSAO_ATUAL.semFim
-        ? `${sortearTexto(evento)} Fim do turno: ${pedidosEntregues().length} pedido(s) entregue(s) em ${mmss(tempoDecorrido)}.`
+        ? `${sortearTexto(evento)} Fim do turno: ${fila.finalizados || 0} pedido(s) entregue(s) em ${mmss(tempoDecorrido)}.`
         : sortearTexto(evento) + " " + sortearTexto("falha");
       document.getElementById("modal-falha").style.display = "flex";
     }
@@ -9941,6 +10169,7 @@
         receb_alinhar: ["ENCAIXE NA MARCA", "#422006", "#facc15", "#fef08a"],
         pulmao_guardar: ["[E] GUARDAR", "#052e16", "#34d399", "#bbf7d0"],
         extintor: ["[E] PEGAR EXTINTOR", "#7f1d1d", "#fecaca", "#ffffff"],
+        ramal: ["[E] LIGAR PRO RH", "#4c1d95", "#ddd6fe", "#ffffff"],
         fogo: ["SEGURE [E] APAGAR", "#7f1d1d", "#fecaca", "#ffffff"],
         rua_ok: ["[E] GUARDAR", "#052e16", "#34d399", "#bbf7d0"],
         rua_alinhar: ["PARE NA MARCA", "#422006", "#facc15", "#fef08a"],
