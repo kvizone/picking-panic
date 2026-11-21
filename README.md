@@ -73,7 +73,7 @@ O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais
 | 🔥 Incêndio | Pegue o extintor no armário vermelho da parede e segure E perto do pallet até apagar | 30s / 26s |
 | 📟 Coletor perdido | Sem coletor, sem WMS: siga o bip e a barra SINAL, pergunte aos colegas | 60s / 55s |
 | 🚚 Descarga urgente | Suba na empilhadeira, pegue o pallet no recebimento e guarde na posição sorteada da rua (R0X-PYY), no nível pedido | 120s / 100s |
-| 🪣 Pedido abandonado | Um colega chuta o balde e vai embora. O pedido dele cai no topo do balcão, com o primeiro item já separado: termine e entregue | 150s / 130s |
+| 🪣 Pedido abandonado | Robson ou Jéssica chuta o balde e vai embora, e aparece no rádio (com rosto, igual ao chefe) contando o que largou. Logo depois o chefe reage. O pedido cai no topo do balcão, com o primeiro item já separado: termine e entregue | 150s / 130s |
 | 💥 Batida de empilhadeiras | Duas empilhadeiras levando carga pro caminhão batem de frente no corredor entre as bancadas e pega fogo. Apague com o extintor. A carga do último pedido entregue queima e volta pro balcão como "-R" pra refazer | 34s / 30s |
 
 O extintor e a empilhadeira ficam sempre no mapa, mas só funcionam na urgência deles. Os pedidos não param: enquanto você resolve a urgência, o prazo deles continua correndo.

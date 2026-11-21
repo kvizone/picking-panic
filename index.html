@@ -1445,7 +1445,7 @@
     .chefe-fala { display: flex; flex-direction: column; gap: calc(4px * var(--escala)); font-size: calc(8px * var(--escala)); line-height: 1.6; }
     .chefe-fala b { font-weight: normal; background: #b91c1c; color: #ffffff; padding: 1px 5px; align-self: flex-start; }
     .chefe-popup:not(.visivel) { visibility: hidden; pointer-events: none; transition: transform 0.18s ease-out, visibility 0s 0.18s; }
-    html.toque .chefe-popup { left: 50%; bottom: calc(120px * var(--escala)); transform: translate(-50%, 40px); opacity: 0; max-width: 92%; }
+    html.toque .chefe-popup { left: 50%; bottom: calc(120px * var(--escala)); transform: translate(-50%, 40px); opacity: 0; width: 90%; max-width: 90%; box-sizing: border-box; }
     html.toque .chefe-popup.visivel { transform: translate(-50%, 0); opacity: 1; }
 
     .briefing-obs:empty { display: none; }
@@ -1512,7 +1512,7 @@
     <!-- Popup do chefe (3 pedidos atrasados) -->
     <div id="chefe-popup" class="chefe-popup" title="Fechar">
       <canvas id="chefe-rosto" width="20" height="20"></canvas>
-      <div class="chefe-fala"><b>CHEFE · RÁDIO</b><span id="chefe-texto"></span></div>
+      <div class="chefe-fala"><b id="chefe-tag">CHEFE · RÁDIO</b><span id="chefe-texto"></span></div>
     </div>
     <div id="emergencia-banner" class="emergencia-banner">
       <div class="emerg-linha"><span id="emergencia-titulo">🔥 INCÊNDIO</span><span id="emergencia-tempo">0:30</span></div>
@@ -2336,9 +2336,9 @@
         "O fornecedor quer o caminhão de volta. Guarda esse pallet!"
       ],
       chefeAbandono: [
-        "Como assim o {n} foi embora?! Quem vai terminar o pedido dele? Adivinha.",
-        "O {n} pediu as contas no meio do turno. Parabéns, você foi promovida a dois.",
-        "Saiu chutando balde? Ele que limpe! Mas antes, alguém termina aquele pedido."
+        "Como assim {n} foi embora?! E quem termina aquele pedido? Adivinha.",
+        "{n} pediu as contas no meio do turno. Parabéns, você foi promovida a duas.",
+        "Saiu chutando balde? Depois a gente conversa sobre isso. Agora alguém termina aquele pedido."
       ],
       chefeBatida: [
         "Duas empilhadeiras batendo de FRENTE?! Isso aqui não é carrinho de bate-bate!",
@@ -2360,6 +2360,16 @@
       fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
       descargaAtrasou: ["A descarga travou a doca e o fornecedor foi embora.", "O pallet ficou no recebimento e a doca parou."],
       abandonoAtrasou: ["O pedido do colega ficou parado e o cliente cancelou.", "Ninguém terminou o pedido e o caminhão saiu sem ele."],
+      despedidaROBSON: [
+        "Pra mim deu! Larguei o pedido {p} no balcão pela metade. O primeiro item já tá separado, o resto é com você. Fui!",
+        "Vou abrir minha lojinha de açaí. O {p} ficou no balcão, só falta o resto dos itens. Tchau, galera!",
+        "Chutei o balde, literalmente. O pedido {p} é seu agora: o primeiro item já tá separado, tá no balcão."
+      ],
+      despedidaJÉSSICA: [
+        "Passei no concurso!!! O pedido {p} ficou no balcão com o primeiro item separado. Termina pra mim? Fui!",
+        "Hoje eu não volto mais. Deixei o {p} no balcão, já separei o primeiro item. Beijo pra todo mundo!",
+        "Vou viajar e não sei quando volto. O {p} tá pela metade no balcão, o primeiro item já tá separado. Tchau!"
+      ],
       falaAbandono: ["Cansei! Tô indo embora!", "Pra mim deu. Fui!", "Hoje não dá mais. Tchau, galera!", "Vou abrir uma lojinha de açaí. Fui!"],
       chefeRonda: [
         "Tô só de olho. Pode continuar.",
@@ -2564,7 +2574,7 @@
       },
 
       // Voz do chefe resmungando: sílabas "bla" com tom subindo e descendo, filtradas como voz abafada
-      blablabla(duracao) {
+      blablabla(duracao, tomBase = 150) {
         if (!audioCtx || isMuted) return;
         const inicio = audioCtx.currentTime + 0.02;
         const silaba = 0.13;
@@ -2573,7 +2583,7 @@
           const t = inicio + i * silaba + (Math.random() - 0.5) * 0.02;
           // Entonação de bronca: sobe no começo de cada "frase" e cai no fim
           const frase = (i % 7) / 7;
-          const tom = 150 + 70 * Math.sin(frase * Math.PI) + Math.random() * 25;
+          const tom = tomBase + tomBase * 0.47 * Math.sin(frase * Math.PI) + Math.random() * 25;
           const osc = audioCtx.createOscillator();
           const filtro = audioCtx.createBiquadFilter();
           const ganho = audioCtx.createGain();
@@ -6895,6 +6905,8 @@
         resetarColega(npc);
       });
       resetarRonda();
+      cancelarBroncaAgendada();
+      fecharChefe();
       ultimaBronca = -Infinity;
       tempoParada = 0;
 
@@ -7962,7 +7974,7 @@
       if (!emerg.ordem.length) emerg.ordem = sortearOrdemUrgencias();
       let tipo = emerg.ordem.shift();
       // Sem colega no galpão, ninguém tem como largar o pedido
-      if (tipo === "abandono" && !colegasNoGalpao().length) tipo = emerg.ordem.shift() || "incendio";
+      if (tipo === "abandono" && !colegasQuePodemLargar().length) tipo = emerg.ordem.shift() || "incendio";
       emerg.ultimo = tipo;
       const limite = u.tempos[tipo] * fatorTempo();
       const a = { tipo, limite, restante: limite };
@@ -7978,10 +7990,10 @@
           emps: [{ x0: cx - 130, y0: cy, x1: cx - 42, y1: cy, dir: "RIGHT" },
                  { x0: cx + 130, y0: cy, x1: cx + 42, y1: cy, dir: "LEFT" }] });
       } else if (tipo === "abandono") {
-        const npc = sortear(colegasNoGalpao());
-        colegaLargaOEmprego(npc);
+        const npc = sortear(colegasQuePodemLargar());
         a.colega = npc.nome;
         a.pedido = criarPedidoAbandonado(npc, limite);
+        colegaLargaOEmprego(npc, a.pedido.def.numero);
       } else if (tipo === "coletor") {
         // Some num esconderijo longe de onde o operador está
         let tentativas = 0;
@@ -8006,13 +8018,12 @@
       const texto = {
         incendio: `Fogo no pallet ${a.pallet ? a.pallet.label : ""}! Pegue o extintor.`,
         batida: "Cuidado! Duas empilhadeiras vindo de frente no corredor...",
-        abandono: `${a.colega} chutou o balde e foi embora! Termine o pedido ${a.pedido ? a.pedido.def.numero : ""} dele.`,
+        abandono: `${a.colega} largou o emprego! O pedido ${a.pedido ? a.pedido.def.numero : ""} ${ROSTOS_COLEGAS[a.colega] ? ROSTOS_COLEGAS[a.colega].pronome : "dele"} está no topo do balcão.`,
         coletor: "O coletor sumiu! Sem ele, sem WMS. Siga o bip.",
         descarga: `Descarga urgente: leve o pallet até a ${a.pos ? a.pos.idCompleto : ""}.`
       }[tipo];
       falarTexto(texto, "#ef4444");
-      if (tipo !== "batida") chefeReclama({ incendio: "chefeIncendio", coletor: "chefeColetor", descarga: "chefeDescarga", abandono: "chefeAbandono" }[tipo],
-        tipo === "abandono" ? a.colega.charAt(0) + a.colega.slice(1).toLowerCase() : undefined);
+      if (tipo !== "batida" && tipo !== "abandono") chefeReclama({ incendio: "chefeIncendio", coletor: "chefeColetor", descarga: "chefeDescarga" }[tipo]);
       atualizarBannerEmergencia();
       atualizarHUD();
     }
@@ -8458,15 +8469,102 @@
       c: "#eef1f5", k: "#b91c1c"
     };
 
+    // Rostos dos colegas que podem largar o emprego (20x20, mesmo padrão do chefe)
+    function linhasColega(c, boca) {
+      const mid = (inner) => "..oh" + inner + "ho..";
+      const bocas = [
+        ["ssssmmmmssss", "ssssssssssss", "ssssssssssss"],
+        ["ssssmttmssss", "ssssmddmssss", "ssssssssssss"],
+        ["sssmttttmsss", "sssmddddmsss", "ssssmmmmssss"]
+      ][boca];
+      const longo = c.cabeloLongo;
+      return [
+        "......oooooooo......",
+        "....ooHHHHHHHHoo....",
+        "...oHHLLHHHHHHHHo...",
+        "..oHHHHHHHHHHHHHHo..",
+        "..oBBBBBBBBBBBBBBo..",
+        mid("hhsssssssshh"),
+        mid(c.sobrancelha),
+        mid("sweesssseews"),
+        mid(c.bochecha ? "rssssSSssssr" : "sssssSSsssss"),
+        mid(bocas[0]),
+        mid(bocas[1]),
+        mid(bocas[2]),
+        longo ? "..hhossssssssssohh.." : "...osssssssssssso...",
+        longo ? "..hhhoossssssoohhh.." : "....oossssssssoo....",
+        longo ? "..hhh.osSSSSso.hhh.." : "......osSSSSso......",
+        "...ooVVVVccVVVVoo...",
+        "..oVVVVVccccVVVVVo..",
+        ".oVVRRVVVccVVVRRVVo.",
+        ".oVVRRVVVccVVVRRVVo.",
+        ".oVVVVVVVccVVVVVVVo."
+      ];
+    }
+    const ROSTOS_COLEGAS = {
+      "ROBSON": {
+        sobrancelha: "sbbbbssbbbbs", bochecha: false, cabeloLongo: false, voz: 125, fundo: "#fed7aa", pronome: "dele", corTag: "#c2410c",
+        paleta: { o: ARTE.contorno, H: "#60a5fa", L: "#bfdbfe", B: "#2563eb", h: "#1f1a17", s: "#b97a52", S: "#8f5a3a",
+                  b: "#1f1a17", w: "#ffffff", e: "#111827", m: "#4a1d14", t: "#ffffff", d: "#7f1d1d", r: "#c9705a",
+                  V: "#ea580c", c: "#334155", R: "#e8eef5" }
+      },
+      "JÉSSICA": {
+        sobrancelha: "ssbbbssbbbss", bochecha: true, cabeloLongo: true, voz: 230, fundo: "#a7f3d0", pronome: "dela", corTag: "#047857",
+        paleta: { o: ARTE.contorno, H: "#f4f6fa", L: "#ffffff", B: "#b8c0cc", h: "#7a4a2a", s: "#e7b48d", S: "#c48f6a",
+                  b: "#5a3520", w: "#ffffff", e: "#111827", m: "#5a1f1f", t: "#ffffff", d: "#7f1d1d", r: "#e8846f",
+                  V: "#10b981", c: "#1f3b4d", R: "#e8eef5" }
+      }
+    };
+
     const chefe = { timerDigitar: null, timerBoca: null, timerSair: null };
 
+    // Quem está falando no popup: o chefe ou um colega
+    let quemFala = null;
     function desenharRostoChefe(boca) {
       const cv = document.getElementById("chefe-rosto");
       const g = cv.getContext("2d");
       g.imageSmoothingEnabled = false;
       g.clearRect(0, 0, cv.width, cv.height);
-      g.drawImage(spriteDeTexto("chefe" + boca, linhasChefe(boca), PALETA_CHEFE), 0, 0);
+      const spr = quemFala
+        ? spriteDeTexto("rosto_" + quemFala + boca, linhasColega(ROSTOS_COLEGAS[quemFala], boca), ROSTOS_COLEGAS[quemFala].paleta)
+        : spriteDeTexto("chefe" + boca, linhasChefe(boca), PALETA_CHEFE);
+      g.drawImage(spr, 0, 0);
     }
+
+    // Popup de fala no rádio, com rosto e boca mexendo. Serve pro chefe e pros colegas.
+    function popupRadio(fala, opcoes = {}) {
+      fecharChefe();
+      quemFala = opcoes.colega || null;
+      const el = document.getElementById("chefe-popup");
+      const span = document.getElementById("chefe-texto");
+      const tag = document.getElementById("chefe-tag");
+      const rosto = document.getElementById("chefe-rosto");
+      const info = quemFala ? ROSTOS_COLEGAS[quemFala] : null;
+      tag.textContent = opcoes.tag || "CHEFE · RÁDIO";
+      tag.style.background = info ? info.corTag : "";
+      rosto.style.background = info ? info.fundo : "";
+      span.textContent = "";
+      el.classList.add("visivel");
+      desenharRostoChefe(2);
+      SFX.blablabla(fala.length * 0.038, info ? info.voz : 150);
+      let i = 0;
+      chefe.timerBoca = setInterval(() => desenharRostoChefe([1, 2, 0, 2, 1][Math.floor(Math.random() * 5)]), 90);
+      chefe.timerDigitar = setInterval(() => {
+        span.textContent += fala[i];
+        i++;
+        if (i >= fala.length) {
+          clearInterval(chefe.timerDigitar);
+          clearInterval(chefe.timerBoca);
+          desenharRostoChefe(0);
+          chefe.timerSair = setTimeout(fecharChefe, opcoes.duracao || 8800); // tempo pra ler com calma
+        }
+      }, 38);
+      return fala.length * 38 + (opcoes.duracao || 8800);
+    }
+
+    // Bronca agendada pra depois de outra fala (ex.: o chefe reage depois que o colega se despede)
+    let broncaAgendada = null;
+    function cancelarBroncaAgendada() { clearTimeout(broncaAgendada); broncaAgendada = null; }
 
     function fecharChefe() {
       clearInterval(chefe.timerDigitar);
@@ -8486,28 +8584,7 @@
       if (tempoDecorrido - ultimaBronca < INTERVALO_CHEFE && !prioridade) return;
       if (estadoJogo !== "JOGANDO" && estadoJogo !== "MINIGAME" && estadoJogo !== "CARD_PEDIDO") return;
       ultimaBronca = tempoDecorrido;
-      fecharChefe();
-      const el = document.getElementById("chefe-popup");
-      const span = document.getElementById("chefe-texto");
-      const fala = sortearTexto(evento).replace("{n}", String(n ?? ""));
-      span.textContent = "";
-      el.classList.add("visivel");
-      desenharRostoChefe(2);
-      SFX.blablabla(fala.length * 0.038); // resmungo do tamanho da fala
-      let i = 0;
-      // Boca mexendo enquanto fala
-      chefe.timerBoca = setInterval(() => desenharRostoChefe([1, 2, 0, 2, 1][Math.floor(Math.random() * 5)]), 90);
-      chefe.timerDigitar = setInterval(() => {
-        const ch = fala[i];
-        span.textContent += ch;
-        i++;
-        if (i >= fala.length) {
-          clearInterval(chefe.timerDigitar);
-          clearInterval(chefe.timerBoca);
-          desenharRostoChefe(0);
-          chefe.timerSair = setTimeout(fecharChefe, 8800); // tempo pra ler com calma (+5s)
-        }
-      }, 38);
+      popupRadio(sortearTexto(evento).replace("{n}", String(n ?? "")));
     }
 
     /* ==========================================================================
@@ -8643,6 +8720,7 @@
     }
 
     function colegasNoGalpao() { return npcs.filter(n => !n.foiEmbora && !n.saindo); }
+    function colegasQuePodemLargar() { return colegasNoGalpao().filter(n => ROSTOS_COLEGAS[n.nome]); }
 
     // Pedestres que a empilhadeira do jogador precisa respeitar
     function pedestres() {
@@ -8654,7 +8732,7 @@
     /* ---------- Colega chutando o balde ---------- */
     const balde = { ativo: false, x: 0, y: 0, vx: 0, t: 0 };
 
-    function colegaLargaOEmprego(npc) {
+    function colegaLargaOEmprego(npc, numero) {
       npc.saindo = true;
       npc.bancada = null;
       npc.esperando = 0;
@@ -8666,6 +8744,15 @@
       SFX.playTone(300, "square", 0.08, 0.12, 0.01, 0.05);
       JUICE.textoFlutuante(npc.x, npc.y - 22, "FUI!", "#fde047");
       mostrarBalaoNpc(npc, sortearTexto("falaAbandono"));
+      // Ele aparece no rádio explicando o que largou; o chefe reage logo depois
+      const nomeBonito = npc.nome.charAt(0) + npc.nome.slice(1).toLowerCase();
+      const ms = popupRadio(sortearTexto("despedida" + npc.nome).replace("{p}", numero),
+        { colega: npc.nome, tag: `${npc.nome} · LARGOU O PEDIDO`, duracao: 4500 });
+      cancelarBroncaAgendada();
+      broncaAgendada = setTimeout(() => {
+        broncaAgendada = null;
+        if (emerg.ativa && emerg.ativa.tipo === "abandono") chefeReclama("chefeAbandono", nomeBonito);
+      }, ms + 400);
     }
 
     function desenharBalde() {
@@ -8822,6 +8909,7 @@
 
     function voltarAoMenu() {
       fecharChefe();
+      cancelarBroncaAgendada();
       limparTimersVitoria();
       SFX.pararColetaTom();
       calarRadio();
@@ -9623,6 +9711,7 @@
 
     function falharFase(evento, titulo = "BATERIA ACABOU") {
       fecharChefe();
+      cancelarBroncaAgendada();
       document.getElementById("falha-titulo").textContent = titulo;
       document.documentElement.classList.remove("emergencia");
       document.getElementById("emergencia-banner").classList.remove("visivel");
