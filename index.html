@@ -6639,9 +6639,12 @@
       const h = container.clientHeight * dpr;
 
       let scale;
-      if (TOQUE_DISPOSITIVO) {
-        // Celular: o lado menor da tela mostra ~270 px do galpão; o lado maior acompanha a tela
-        scale = Math.max(1, Math.floor(Math.min(w, h) / 270));
+      {
+        // Celular: o lado menor da tela mostra ~270 px do galpão.
+        // Computador: a altura mostra uns 290-360 px (um pouco mais afastado), e o mapa preenche a janela toda, sem faixa preta.
+        scale = TOQUE_DISPOSITIVO
+          ? Math.max(1, Math.floor(Math.min(w, h) / 270))
+          : Math.max(1, Math.round(h / 320));
         const novoW = Math.min(WORLD_WIDTH, Math.floor(w / scale));
         const novoH = Math.min(WORLD_HEIGHT, Math.floor(h / scale));
         if (novoW !== VIEW_W || novoH !== VIEW_H) {
@@ -6651,11 +6654,7 @@
           bufferCanvas.height = VIEW_H;
           ctx.imageSmoothingEnabled = false;
         }
-        document.documentElement.classList.toggle("retrato", VIEW_H > VIEW_W);
-      } else {
-        const scaleX = Math.floor(w / VIEW_W);
-        const scaleY = Math.floor(h / VIEW_H);
-        scale = Math.max(1, Math.min(scaleX, scaleY));
+        document.documentElement.classList.toggle("retrato", TOQUE_DISPOSITIVO && VIEW_H > VIEW_W);
       }
 
       displayCanvas.width = VIEW_W * scale;
