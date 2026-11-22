@@ -169,29 +169,6 @@
       font-family: inherit; font-size: 11px; padding: 9px 10px; border: 2px solid #111827;
       background: #ffffff; color: #111827; box-shadow: inset 2px 2px 0 #d1d5db; width: 100%; box-sizing: border-box;
     }
-    .quadro-semana {
-      background: #7c4a21; border: 3px solid #3b2410; box-shadow: 3px 3px 0 #000, inset 0 0 0 3px #d4a017;
-      padding: 8px 10px 10px; color: #fff7ed; text-align: left;
-    }
-    .qs-placa { background: #d4a017; color: #3b2410; font-size: 8px; text-align: center; padding: 3px 4px; margin-bottom: 8px; border: 2px solid #3b2410; }
-    .qs-corpo { display: flex; gap: 10px; align-items: center; }
-    #qs-rosto { width: 64px; height: 64px; image-rendering: pixelated; background: #fde68a; border: 3px solid #d4a017; box-shadow: 2px 2px 0 #3b2410; flex-shrink: 0; }
-    .qs-info { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-    .qs-info b { font-size: 12px; color: #ffffff; font-weight: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .qs-info span { font-size: 7px; color: #fde68a; line-height: 1.5; }
-    .rk-abas { display: flex; gap: 4px; }
-    .rk-aba { flex: 1; font-family: inherit; font-size: 8px; padding: 6px; background: #e5e7eb; color: #4b5563; border: 2px solid #111827; cursor: pointer; }
-    .rk-aba.ativa { background: #111827; color: #fde047; }
-    .rk-lista { list-style: none; margin: 0; padding: 0; text-align: left; font-size: 8px; border: 2px solid #111827; background: #ffffff; }
-    .rk-lista li { display: flex; gap: 6px; align-items: center; padding: 4px 6px; border-bottom: 1px dashed #d1d5db; color: #111827; }
-    .rk-lista li:last-child { border-bottom: 0; }
-    .rk-lista .rk-pos { width: 22px; color: #6b7280; }
-    .rk-lista .rk-nome { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .rk-lista .rk-pts { color: #065f46; }
-    .rk-lista li.eu { background: #fef08a; }
-    .rk-lista li.rk-vazio { color: #6b7280; justify-content: center; padding: 10px; }
-    .rk-lista li:nth-child(1) .rk-pos { color: #b45309; }
-    .rk-eu { font-size: 7px; color: #4b5563; margin: 0; min-height: 10px; }
     html.retrato #modal-start .inicio-box { flex-direction: column; max-height: 92vh; overflow-y: auto; gap: 12px; }
     html.retrato .inicio-box .logo-img { max-width: 200px; }
     html.retrato .rk-lista { font-size: 9px; }
@@ -1671,6 +1648,85 @@
     .rp-msg.sistema { color: #fde047; justify-content: center; text-align: center; }
     @keyframes rpEntra { from { opacity: 0; transform: translateY(4px); } }
     html.toque .radio-peao { left: 3%; right: 3%; width: auto; top: var(--rp-topo, 70px); font-size: calc(7.5px * var(--escala)); }
+    /* ===== Tela inicial: painel escuro + mural de cortiça ===== */
+    #modal-start .inicio-box {
+      background: #0f172a; color: #e5e7eb; border: 3px solid #000;
+      box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.85); padding: 24px 18px 18px; position: relative;
+    }
+    #modal-start .inicio-box::before {
+      content: ""; display: block; position: absolute; left: 0; right: 0; top: 0; height: 8px;
+      background: repeating-linear-gradient(-45deg, #facc15 0 10px, #111827 10px 20px);
+    }
+    #modal-start .tela-essencial { color: #cbd5e1; }
+    #modal-start .tela-essencial p { color: #94a3b8; }
+    #modal-start .nome-jogador { color: #fde047; }
+    #modal-start .nome-jogador input { background: #f8fafc; border-color: #facc15; box-shadow: 3px 3px 0 #000; }
+    #modal-start #btn-start-game {
+      background: #facc15; color: #111827; border: 3px solid #000; box-shadow: 4px 4px 0 #000;
+      font-size: 13px !important; letter-spacing: 1px;
+    }
+    #modal-start #btn-start-game:hover { background: #fde047; }
+    #modal-start #btn-start-game:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
+
+    .mural {
+      flex: 1; position: relative; padding: 16px 14px 12px; display: flex; flex-direction: column; gap: 14px;
+      border: 6px solid #6b3f1d; box-shadow: inset 0 0 0 2px #3b2410, inset 0 0 18px rgba(59, 36, 16, 0.55), 3px 3px 0 #000;
+      background-color: #c08a56;
+      background-image:
+        radial-gradient(#a8743f 1px, transparent 1.4px), radial-gradient(#d6a36d 1px, transparent 1.4px),
+        radial-gradient(#9c6835 0.8px, transparent 1.2px);
+      background-size: 7px 7px, 11px 11px, 5px 5px;
+      background-position: 0 0, 3px 5px, 2px 1px;
+    }
+    .mural-topo { display: flex; gap: 14px; align-items: flex-start; }
+    .tacha {
+      position: absolute; top: -5px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fca5a5 0 25%, #dc2626 30%, #7f1d1d 100%);
+      box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.45); z-index: 2;
+    }
+    .tacha-azul { background: radial-gradient(circle at 35% 35%, #bfdbfe 0 25%, #2563eb 30%, #1e3a8a 100%); }
+    .polaroid {
+      position: relative; background: #fafaf9; padding: 7px 7px 6px; width: 104px; flex-shrink: 0;
+      transform: rotate(-4deg); box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35), 0 0 0 1px #d6d3d1; text-align: center;
+    }
+    .polaroid .clipe { position: absolute; top: -18px; left: 14px; width: 14px; height: 36px; transform: rotate(8deg); z-index: 2; }
+    .pol-foto { background: #bae6fd; border: 1px solid #a8a29e; padding: 4px; }
+    #qs-rosto { display: block; width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated; }
+    .polaroid b {
+      display: block; margin-top: 6px; font-weight: normal; font-size: 9px; color: #1e293b;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .bilhete {
+      position: relative; flex: 1; min-width: 0; background: #fef08a; color: #422006; text-align: left;
+      padding: 12px 10px 10px; transform: rotate(2deg); box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35);
+      display: flex; flex-direction: column; gap: 6px; font-size: 7px; line-height: 1.6; margin-top: 8px;
+    }
+    .bil-titulo { font-size: 9px; color: #b45309; }
+    #qs-cargo { font-size: 9px; color: #1c1917; }
+    #qs-pontos { color: #78350f; }
+    .folha {
+      position: relative; background-color: #fffdf5; padding: 14px 10px 8px; transform: rotate(-0.6deg);
+      box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35);
+      background-image: linear-gradient(90deg, transparent 26px, #fca5a5 26px, #fca5a5 27px, transparent 27px);
+    }
+    .folha .rk-abas { display: flex; gap: 4px; margin-bottom: 6px; padding-left: 30px; }
+    .folha .rk-aba {
+      flex: 1; font-family: inherit; font-size: 8px; padding: 5px; cursor: pointer;
+      background: transparent; color: #64748b; border: 0; border-bottom: 2px solid #cbd5e1;
+    }
+    .folha .rk-aba.ativa { color: #1e3a8a; border-bottom-color: #1e3a8a; }
+    .folha .rk-lista { list-style: none; margin: 0; padding: 0; text-align: left; font-size: 8px; background: transparent; border: 0; }
+    .folha .rk-lista li { display: flex; gap: 6px; align-items: center; padding: 4px 4px 4px 0; color: #1e293b; border-bottom: 1px solid #bfdbfe; }
+    .folha .rk-lista .rk-pos { width: 26px; text-align: center; color: #94a3b8; }
+    .folha .rk-lista li:nth-child(1) .rk-pos { color: #b45309; }
+    .folha .rk-lista .rk-nome { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .folha .rk-lista .rk-pts { color: #15803d; }
+    .folha .rk-lista li.eu { background: linear-gradient(transparent 20%, #fde047 20%, #fde047 85%, transparent 85%); }
+    .folha .rk-lista li.rk-vazio { color: #64748b; justify-content: center; padding: 10px; }
+    .folha .rk-eu { font-size: 7px; color: #64748b; margin: 4px 0 0; padding-left: 30px; }
+    .folha .rk-eu:empty { display: none; }
+    html.retrato .polaroid { width: 96px; }
+    html.retrato .folha .rk-lista { font-size: 9px; }
 </style>
 </head>
 <body>
@@ -1789,23 +1845,33 @@
        </div>
        <!-- Ranking da firma: quadro do Funcionário da semana + top 10 -->
        <div class="inicio-col inicio-ranking">
-        <div class="quadro-semana" id="quadro-semana">
-          <div class="qs-placa">🏆 FUNCIONÁRIO DA SEMANA</div>
-          <div class="qs-corpo">
-            <canvas id="qs-rosto" width="20" height="20"></canvas>
-            <div class="qs-info">
+        <div class="mural">
+          <div class="mural-topo">
+            <!-- Polaroid presa com clipe -->
+            <div class="polaroid" id="quadro-semana">
+              <svg class="clipe" viewBox="0 0 16 40" aria-hidden="true"><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#64748b" stroke-width="2.6" stroke-linecap="round" transform="translate(0.7 0.7)"/><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/></svg>
+              <div class="pol-foto"><canvas id="qs-rosto" width="20" height="20"></canvas></div>
               <b id="qs-nome">Vaga aberta!</b>
+            </div>
+            <!-- Bilhete com o título e o cargo -->
+            <div class="bilhete">
+              <i class="tacha"></i>
+              <span class="bil-titulo">FUNCIONÁRIO DA SEMANA</span>
               <span id="qs-cargo">Jogue um turno e seja o primeiro da semana.</span>
               <span id="qs-pontos"></span>
             </div>
           </div>
+          <!-- Folha pautada com o ranking -->
+          <div class="folha">
+            <i class="tacha tacha-azul"></i>
+            <div class="rk-abas">
+              <button type="button" class="rk-aba ativa" data-aba="semana">SEMANA</button>
+              <button type="button" class="rk-aba" data-aba="geral">GERAL</button>
+            </div>
+            <ol class="rk-lista" id="rk-lista"><li class="rk-vazio">Carregando ranking...</li></ol>
+            <p class="rk-eu" id="rk-eu"></p>
+          </div>
         </div>
-        <div class="rk-abas">
-          <button type="button" class="rk-aba ativa" data-aba="semana">SEMANA</button>
-          <button type="button" class="rk-aba" data-aba="geral">GERAL</button>
-        </div>
-        <ol class="rk-lista" id="rk-lista"><li class="rk-vazio">Carregando ranking...</li></ol>
-        <p class="rk-eu" id="rk-eu"></p>
        </div>
       </div>
     </div>
