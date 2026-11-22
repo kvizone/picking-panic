@@ -2680,6 +2680,7 @@
       // ---------- Urgências ----------
       fogoEspalhou: ["O fogo se espalhou e o galpão foi evacuado.", "Os bombeiros chegaram antes de você."],
       descargaAtrasou: ["A descarga travou a doca e o fornecedor foi embora.", "O pallet ficou no recebimento e a doca parou."],
+      turnoEncerrado: ["Você bateu o ponto mais cedo hoje.", "Turno encerrado. O galpão agradece a ajuda."],
       ligacaoFalhou: ["Ninguém atendeu o telefone e o cliente cancelou o pedido.", "O telefone tocou, tocou... e o cliente foi comprar no concorrente."],
       visitaFalhou: ["O diretor viu a bagunça no corredor. O Geraldo vai ter que explicar. E você também.", "Bagunça na visita da diretoria. O Geraldo ficou da cor do colete."],
       falasCliente: [
@@ -11917,6 +11918,7 @@
       document.getElementById("falha-texto").textContent = MISSAO_ATUAL.semFim
         ? `${sortearTexto(evento)} Fim do turno depois de ${mmss(tempoDecorrido)}.`
         : sortearTexto(evento) + " " + sortearTexto("falha");
+      document.querySelector("#modal-falha .modal-box").dataset.titulo = evento === "turnoEncerrado" ? "FIM DO TURNO" : "ERRO DO SISTEMA";
       document.getElementById("relatorio").classList.toggle("visivel", !!MISSAO_ATUAL.semFim);
       if (MISSAO_ATUAL.semFim) montarRelatorio();
       document.getElementById("modal-falha").style.display = "flex";
@@ -12365,7 +12367,13 @@
     });
     document.getElementById("btn-restart-game").addEventListener("click", () => {
       SFX.menuBlip();
-      voltarAoMenu(); // da pausa direto pra tela inicial
+      // No turno sem fim, sair no meio fecha o turno e mostra o relatório (dá pra salvar no ranking)
+      if (MISSAO_ATUAL && MISSAO_ATUAL.semFim && (pont.total > 0 || tempoDecorrido > 10)) {
+        document.getElementById("modal-pause").style.display = "none";
+        falharFase("turnoEncerrado", "TURNO ENCERRADO");
+        return;
+      }
+      voltarAoMenu();
     });
     document.getElementById("btn-play-again").addEventListener("click", () => {
       SFX.menuBlip();
