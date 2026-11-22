@@ -8458,7 +8458,7 @@
     const emerg = { ativa: null, proxima: Infinity, ordem: [], ultimo: null, alarme: 0, hud: 0, extintorNaMao: false, spray: false,
                     // Turno sem fim: o que vem a seguir ("problema" = sorteio de problema; ou o tipo da demanda)
                     pendentes: [], gatilhoProblema: Infinity, proxDemanda: 0,
-                    demandaPendente: null, semEvento: 0, visitaEm: Infinity, vistos: {} };
+                    demandaPendente: null, semEvento: 0, visitaEm: Infinity, vistos: {}, temasBriga: [], ultimaBrigaEm: 0 };
     // Turno sem fim: problemas por TEMPO (o jogador se enrola), demandas pela quantidade de pedidos.
     // Começa com ~45s entre um problema e outro e vai apertando 2s por minuto, até ~28s.
     function intervaloProblema() {
@@ -8528,6 +8528,8 @@
       emerg.demandaPendente = null;
       emerg.semEvento = 0;
       emerg.vistos = {};
+      emerg.ultimaBrigaEm = 0;
+      emerg.temasBriga = [];
       emerg.visitaEm = MISSAO_ATUAL.semFim ? 540 + Math.random() * 120 : Infinity; // entre 9 e 11 minutos
       // Turno sem fim: o primeiro problema é sempre a tela roxa (é o problema dos 3 primeiros pedidos);
       // depois, tudo anda pela contagem de pedidos
@@ -8555,7 +8557,8 @@
     // Monta um "saco" com cada tipo repetido pelo peso e tira um por vez, sem repetir o anterior
     // e sem dois fogos seguidos
     function sortearOrdemUrgencias() {
-      const disponiveis = Object.keys(MISSAO_ATUAL.urgencias.tempos).filter(t => !(URGENCIA_INFO[t] && (URGENCIA_INFO[t].demanda || URGENCIA_INFO[t].especial)));
+      const disponiveis = Object.keys(MISSAO_ATUAL.urgencias.tempos).filter(t => !(URGENCIA_INFO[t] && (URGENCIA_INFO[t].demanda || URGENCIA_INFO[t].especial)))
+        .filter(t => !(MISSAO_ATUAL.semFim && t === "briga")); // no turno sem fim a briga tem hora marcada (a cada ~6 min)
       let melhor = null, menosErros = Infinity;
       // Tenta algumas ordens e fica com a que não repete nada (quase sempre sai de primeira)
       for (let tentativa = 0; tentativa < 30 && menosErros > 0; tentativa++) {
@@ -8601,8 +8604,9 @@
         // Garantias pra quem joga 20-30 min: pelo menos um incêndio cedo e uma descarga com empilhadeira
         if (MISSAO_ATUAL.semFim) {
           const forcar = !emerg.vistos.incendio && tempoDecorrido > 300 ? "incendio"
-            : !emerg.vistos.descarga && tempoDecorrido > 720 ? "descarga" : null;
-          if (forcar && emerg.ultimo !== forcar) emerg.ordem.unshift(forcar);
+            : !emerg.vistos.descarga && tempoDecorrido > 720 ? "descarga"
+            : emerg.vistos.briga && tempoDecorrido - emerg.ultimaBrigaEm >= 360 ? "briga" : null; // uma briga a cada ~6 min
+          if (forcar && emerg.ultimo !== forcar) emerg.ordem = [forcar, ...emerg.ordem.filter(t => t !== forcar || forcar !== "briga")];
         }
         let idx = emerg.ordem.findIndex(possivel);
         if (idx < 0) { emerg.ordem = sortearOrdemUrgencias(); idx = emerg.ordem.findIndex(possivel); }
@@ -8610,6 +8614,7 @@
       }
       emerg.ultimo = tipo;
       emerg.vistos[tipo] = true;
+      if (tipo === "briga") emerg.ultimaBrigaEm = tempoDecorrido;
       const limite = u.tempos[tipo] * fatorTempo();
       const a = { tipo, limite, restante: limite };
       if (tipo === "incendio") {
@@ -8660,7 +8665,9 @@
         n2.olharBriga = lado > 0 ? "LEFT" : "RIGHT";
         n2.rota = rotaAte(n2.x, n2.y, n1.x + lado, n1.y);
         Object.assign(a, { brigoes: [n1, n2], x: n1.x + lado / 2, y: n1.y, chamado: false, falaT: 1.2, linha: 0,
-                           dialogo: MISSAO_ATUAL.semFim && !emerg.brigaRadioFeita ? DIALOGOS_BRIGA.find(d => d.tema === "rádio") : sortear(DIALOGOS_BRIGA) });
+                           dialogo: MISSAO_ATUAL.semFim && !emerg.brigaRadioFeita ? DIALOGOS_BRIGA.find(d => d.tema === "rádio")
+                             : sortearTemaBriga() });
+        emerg.temasBriga.push(a.dialogo.tema); // só repete assunto depois que todos saírem
         emerg.brigaRadioFeita = true; // a primeira briga do turno é sempre a da rádio caipira
         abrirRadioPeao();
         mensagemRadioPeao(null, `${bonito2(n1)} e ${bonito2(n2)} começaram a discutir...`);
@@ -8670,6 +8677,8 @@
           mensagemRadioPeao(null, "📻 Alguém trocou a rádio pra Casa dos Caipiras!");
           setTimeout(() => falarTexto("📻 Alguém trocou a rádio pra Casa dos Caipiras!", "#fde047"), 1500);
         }
+        if (a.dialogo.tema === "café") mensagemRadioPeao(null, "☕ A garrafa de café tá vazia. De novo.");
+        if (a.dialogo.tema === "estilete") mensagemRadioPeao(null, "✂️ Sumiu um estilete na bancada 2...");
         if (a.dialogo.tema === "ar") {
           mensagemRadioPeao(null, "❄️ Alguém botou o ar-condicionado em 16 °C!");
           setTimeout(() => falarTexto("❄️ Alguém mexeu no ar-condicionado. Vai dar briga...", "#93c5fd"), 1500);
@@ -10672,9 +10681,46 @@
           "Existe, se apertar com vontade."
         ],
         rh: "Ar fica em 22 graus, travado. Quem sente frio ganha moletom; quem sente calor fica perto da doca."
+      },
+      {
+        tema: "café",
+        falas: [
+          "Quem tomou o último café e não passou outro?!",
+          "Fui eu, {outro}. Mas deixei um golinho pra você!",
+          "Um golinho frio no fundo da garrafa não é café, é castigo!",
+          "Café frio é tendência. Café gelado, sabe?",
+          "Vou colocar cadeado na garrafa térmica.",
+          "Aí ninguém toma café. Nem você.",
+          "Pelo menos fica justo!",
+          "Justo e com sono, {outro}."
+        ],
+        rh: "Regra nova: tomou o último, passa outro. E tem pó extra no armário do RH, ninguém precisa sofrer."
+      },
+      {
+        tema: "estilete",
+        falas: [
+          "Quem pegou meu estilete?! Tinha meu nome na fita crepe!",
+          "Esse aqui? Tava na bancada 2. Achado não é roubado!",
+          "Achado na MINHA bancada é roubado sim, {outro}!",
+          "A bancada é da empresa, tecnicamente.",
+          "O estilete é meu, tecnicamente!",
+          "Tá, mas ele corta tão bem... posso usar só hoje?",
+          "Corta bem porque eu cuido dele!",
+          "Que fofo. Você deu nome pra ele também?"
+        ],
+        rh: "Estilete volta pro dono. E o almoxarifado vai liberar um novo, com nome, pra cada um."
       }
     ];
 
+    function sortearTemaBriga() {
+      let livres = DIALOGOS_BRIGA.filter(d => !emerg.temasBriga.includes(d.tema));
+      if (!livres.length) {
+        const ultimo = emerg.temasBriga[emerg.temasBriga.length - 1];
+        emerg.temasBriga = [];
+        livres = DIALOGOS_BRIGA.filter(d => d.tema !== ultimo);
+      }
+      return sortear(livres);
+    }
     const bonito2 = (n) => n.nome.charAt(0) + n.nome.slice(1).toLowerCase();
     function falaDaBriga(a, i) {
       const quem = a.brigoes[i % 2], outro = a.brigoes[(i + 1) % 2];
@@ -10737,6 +10783,8 @@
             falarTexto("📻 O RH devolveu a rádio pra 89 FM.", "#c4b5fd");
             mensagemRadioPeao(null, "📻 Rádio de volta na 89 FM.");
           } else if (a.dialogo.tema === "ar") mensagemRadioPeao(null, "🌡️ Ar travado em 22 °C. Paz no galpão.");
+          else if (a.dialogo.tema === "café") mensagemRadioPeao(null, "☕ Café novo passado. Paz no galpão.");
+          else if (a.dialogo.tema === "estilete") mensagemRadioPeao(null, "✂️ Estilete de volta pro dono.");
           else mensagemRadioPeao(null, "Fizeram as pazes. Fim da fofoca.");
           radioPeao.fecharEm = tempoDecorrido + 4.5;
         }
