@@ -2787,7 +2787,9 @@
         "Hm. Chão limpo. Gosto.",
         "Esse é o famoso galpão? Organizado. Muito organizado.",
         "Geraldo, que time bom você tem aqui.",
-        "Quero ver esse ritmo no relatório do mês, hein."
+        "Quero ver esse ritmo no relatório do mês, hein.",
+        "Parabéns, pessoal! Esse mês tem pizza. Se bater a meta do ano.",
+        "Excelente. Vou citar vocês na reunião. Sem nomes, claro."
       ],
       limpezaFalhou: ["Ninguém limpou a caixa e a rua foi interditada. Os pedidos de lá travaram.", "A bagunça ficou no corredor e a segurança fechou a rua."],
       chefeLimpeza: [
@@ -9729,6 +9731,12 @@
                   b: "#1f1a17", w: "#ffffff", e: "#111827", m: "#4a1d14", t: "#ffffff", d: "#7f1d1d", r: "#c9705a",
                   V: "#ea580c", c: "#334155", R: "#e8eef5" }
       },
+      "DIRETOR": {
+        sobrancelha: "sbbbbssbbbbs", bochecha: false, cabeloLongo: false, voz: 95, fundo: "#cbd5e1", pronome: "dele", corTag: "#1f2937",
+        paleta: { o: ARTE.contorno, H: "#d1d5db", L: "#f3f4f6", B: "#6b7280", h: "#374151", s: "#d29a72", S: "#a87452",
+                  b: "#4b5563", w: "#ffffff", e: "#111827", m: "#7f1d1d", t: "#ffffff", d: "#9f1239", r: "#b47a5a",
+                  V: "#1f2937", c: "#f8fafc", R: "#b91c1c" }
+      },
       "CLIENTE": {
         sobrancelha: "ssbbbssbbbss", bochecha: true, cabeloLongo: true, voz: 165, fundo: "#fde68a", pronome: "dele", corTag: "#92400e",
         paleta: { o: ARTE.contorno, H: "#3b2416", L: "#5b3a24", B: "#2a170d", h: "#3b2416", s: "#e0ac85", S: "#c08a63",
@@ -10433,6 +10441,8 @@
       ronda.x = PORTA_ESCRITORIO.x; ronda.y = PORTA_ESCRITORIO.y - 4;
       atualizarHUD();
       atualizarBannerEmergencia();
+      popupRadio("Bom dia, time! Vim só dar uma olhadinha. Continuem como se eu nem estivesse aqui.",
+        { colega: "DIRETOR", tag: "DIRETOR · VISITA", duracao: 7000 });
     }
     function atualizarVisita(a, dt) {
       if (a.fase !== "tour" || !diretor.ativo) return;
@@ -10933,7 +10943,7 @@
         tema: "marmita",
         falas: [
           "Quem comeu minha marmita?! Tava escrito {eu} na tampa!",
-          "Eu achei que {eu} era o nome do restaurante!",
+          "Eu achei que {outro} era o nome do restaurante!",
           "Era o strogonoff da minha mãe, {outro}! Com batata palha!",
           "Tava uma delícia, inclusive. Manda meus parabéns pra ela.",
           "Agora é pessoal.",
@@ -11027,7 +11037,7 @@
       if (chegaram && rh.fase !== "conversando") {
         a.falaT -= dt;
         if (a.falaT <= 0) {
-          a.falaT = 2.8;
+          a.falaT = 4.8; // tempo pra ler cada fala do Rádio Peão
           a.linha++;
           falaDaBriga(a, a.linha);
         }
