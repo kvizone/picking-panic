@@ -8735,6 +8735,8 @@
        O extintor e a empilhadeira ficam sempre no mapa, mas só servem na urgência deles.
        ========================================================================== */
     const EXTINTOR_POS = { x: 668, y: 30 }; // armário vermelho na parede, perto da consolidação
+    // Urgências sem o apito repetido (só um aviso ao começar): a visita da diretoria e o pedido abandonado
+    const SEM_APITO = ["visita", "abandono"];
     const emerg = { ativa: null, proxima: Infinity, ordem: [], ultimo: null, alarme: 0, hud: 0, extintorNaMao: false, spray: false,
                     // Turno sem fim: o que vem a seguir ("problema" = sorteio de problema; ou o tipo da demanda)
                     pendentes: [], gatilhoProblema: Infinity, proxDemanda: 0,
@@ -8995,7 +8997,7 @@
         SFX.notificacao();
       } else {
         document.documentElement.classList.add("emergencia");
-        SFX.alarme();
+        if (SEM_APITO.includes(tipo)) SFX.notificacao(); else SFX.alarme();
         JUICE.shake(5, 0.35);
       }
       const texto = {
@@ -9112,7 +9114,7 @@
         if (a.fogo <= 0) { apagarFogo(); return; }
       }
       emerg.alarme -= dt;
-      if (emerg.alarme <= 0 && !ehDemanda(a)) {
+      if (emerg.alarme <= 0 && !ehDemanda(a) && !SEM_APITO.includes(a.tipo)) {
         emerg.alarme = a.restante < a.limite * 0.3 ? 0.55 : 1.1;
         SFX.alarme();
       }
