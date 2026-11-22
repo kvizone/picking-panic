@@ -2013,7 +2013,7 @@
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <button class="btn" id="btn-resume-game">RETOMAR</button>
-          <button class="btn btn-secondary" id="btn-restart-game">REINICIAR MISSÃO</button>
+          <button class="btn btn-secondary" id="btn-restart-game">INÍCIO</button>
         </div>
       </div>
     </div>
@@ -12365,7 +12365,7 @@
     });
     document.getElementById("btn-restart-game").addEventListener("click", () => {
       SFX.menuBlip();
-      reiniciarJogo();
+      voltarAoMenu(); // da pausa direto pra tela inicial
     });
     document.getElementById("btn-play-again").addEventListener("click", () => {
       SFX.menuBlip();
