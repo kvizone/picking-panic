@@ -142,6 +142,24 @@ Por enquanto a marcação é o número de pedidos finalizados, no prazo ou atras
 
 A etiqueta mostra os horários no relógio do turno: entrada do pedido, prazo e atraso (em vermelho quando passou).
 
+
+## Pontuação e ranking
+
+No turno sem fim, o HUD mostra ★ pontos e o combo atual.
+
+| O quê | Pontos |
+|---|---|
+| Pedido entregue | 100 + 10 por volume, +50 no prazo; atrasado perde 1 por segundo de atraso (mínimo 30) |
+| Combo | cada pedido no prazo e sem trombada sobe o multiplicador em 0,1 (até x1,5); atraso ou trombada volta pra x1,0 |
+| Problema resolvido | incêndio e descarga 150; batida e abandono 120; briga e cliente 100; tela roxa, coletor e caixa 80; + até 50 de rapidez |
+| Demandas | caminhão 200, inventário 150, treino do Enzo 150, visita do diretor sem bagunça 300 |
+| Trombadas e afins | -5 por segundo de penalidade |
+| Tempo de turno | +10 por minuto |
+
+No fim do turno sai o **relatório** com o total, o detalhamento e o cargo: Novato, Auxiliar (500), Separador (1.500), Conferente (3.000), Líder de Turno (5.000), Supervisor (8.000) e Lenda do Galpão (12.000).
+
+**Ranking (Firebase, sem login):** o nome escrito na tela inicial ou no relatório vira uma linha só no ranking, com o melhor resultado. O primeiro navegador que usa um nome vira dono dele (login anônimo do Firebase) e ganha um código de 4 letras; em outro aparelho, quem tem o código pode usar o mesmo nome. A tela inicial mostra o quadro do **Funcionário da semana** (1º da semana, troca toda segunda) e o top 10 da semana e geral, com o seu nome destacado. Detalhes do banco em `firebase/README.md`.
+
 ## Progresso salvo
 
 O navegador guarda em que fase da campanha você está (e os tempos das fases que já passou). Fechou o jogo no meio da fase 4? Na próxima vez a tela inicial mostra "CONTINUAR · FASE 4" e você volta no começo dela. "RECOMEÇAR DA FASE 1" apaga o progresso. Zerou a campanha, o progresso some. Fica salvo por navegador e aparelho (localStorage), sem login.
