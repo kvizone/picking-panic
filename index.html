@@ -1648,6 +1648,11 @@
     .rp-msg.sistema { color: #fde047; justify-content: center; text-align: center; }
     @keyframes rpEntra { from { opacity: 0; transform: translateY(4px); } }
     html.toque .radio-peao { left: 3%; right: 3%; width: auto; top: var(--rp-topo, 70px); font-size: calc(7.5px * var(--escala)); }
+    @font-face {
+      font-family: "Permanent Marker";
+      src: url("assets/fonts/permanent-marker.woff2") format("woff2");
+      font-display: swap;
+    }
     /* ===== Tela inicial: painel escuro + mural de cortiça ===== */
     #modal-start .inicio-box {
       background: #0f172a; color: #e5e7eb; border: 3px solid #000;
@@ -1701,9 +1706,30 @@
       padding: 12px 10px 10px; transform: rotate(2deg); box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35);
       display: flex; flex-direction: column; gap: 6px; font-size: 7px; line-height: 1.6; margin-top: 8px;
     }
-    .bil-titulo { font-size: 9px; color: #b45309; }
-    #qs-cargo { font-size: 9px; color: #1c1917; }
-    #qs-pontos { color: #78350f; }
+    .bil-titulo { font-size: 7px; color: #b45309; letter-spacing: 1px; }
+    /* Nome escrito à mão, de caneta marcador */
+    #qs-nome {
+      font-family: "Permanent Marker", "Comic Sans MS", cursive; font-weight: normal;
+      font-size: 26px; line-height: 1.05; color: #1e293b; transform: rotate(-2deg);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 2px 0 2px;
+    }
+    /* Cargo: carimbo vermelho */
+    #qs-cargo {
+      align-self: flex-start; font-size: 8px; color: #b91c1c; text-transform: uppercase;
+      border: 2px solid #b91c1c; border-radius: 3px; padding: 4px 6px 3px; transform: rotate(-4deg);
+      opacity: 0.88; letter-spacing: 1px; box-shadow: inset 0 0 0 1px rgba(185, 28, 28, 0.35);
+    }
+    #qs-cargo.vazio { color: #422006; border: 0; box-shadow: none; padding: 0; transform: none; text-transform: none; letter-spacing: 0; line-height: 1.7; opacity: 1; }
+    /* Pontos: número grande circulado de caneta */
+    #qs-pontos { display: flex; align-items: baseline; gap: 5px; color: #78350f; margin-top: 2px; }
+    #qs-pontos b {
+      font-family: "Permanent Marker", "Comic Sans MS", cursive; font-weight: normal; font-size: 22px; line-height: 1;
+      color: #1d4ed8; padding: 2px 8px 0; border: 2px solid #ef4444; border-radius: 50% 45% 55% 48% / 60% 50% 55% 45%;
+      transform: rotate(-3deg);
+    }
+    #qs-pontos small { font-family: "Permanent Marker", cursive; font-size: 11px; color: #1d4ed8; }
+    #qs-pontos:empty { display: none; }
+    .polaroid #qs-semana { font-family: "Permanent Marker", "Comic Sans MS", cursive; font-size: 12px; color: #1d4ed8; }
     .folha {
       position: relative; background-color: #fffdf5; padding: 14px 10px 8px; transform: rotate(-0.6deg);
       box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35);
@@ -1851,12 +1877,13 @@
             <div class="polaroid" id="quadro-semana">
               <svg class="clipe" viewBox="0 0 16 40" aria-hidden="true"><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#64748b" stroke-width="2.6" stroke-linecap="round" transform="translate(0.7 0.7)"/><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/></svg>
               <div class="pol-foto"><canvas id="qs-rosto" width="20" height="20"></canvas></div>
-              <b id="qs-nome">Vaga aberta!</b>
+              <b id="qs-semana">semana 00</b>
             </div>
             <!-- Bilhete com o título e o cargo -->
             <div class="bilhete">
               <i class="tacha"></i>
-              <span class="bil-titulo">FUNCIONÁRIO DA SEMANA</span>
+              <span class="bil-titulo">★ FUNCIONÁRIO DA SEMANA</span>
+              <b id="qs-nome">Vaga aberta!</b>
               <span id="qs-cargo">Jogue um turno e seja o primeiro da semana.</span>
               <span id="qs-pontos"></span>
             </div>
@@ -12144,6 +12171,7 @@
     function desenharRanking() {
       const lista = document.getElementById("rk-lista");
       if (!lista) return;
+      document.getElementById("qs-semana").textContent = "semana " + RANK.semana.slice(-2);
       const eu = RANK.chave(document.getElementById("start-nome").value || RANK.nomeSalvo());
       const top = RANK.top[RANK.aba];
       const sem = RANK.top.semana;
@@ -12151,12 +12179,15 @@
       if (sem && sem.length) {
         const f = sem[0];
         document.getElementById("qs-nome").textContent = f.nome;
-        document.getElementById("qs-cargo").textContent = f.cargo || cargoDe(f.pontos);
-        document.getElementById("qs-pontos").textContent = `${fmtPts(f.pontos)} pts · ${f.disp === "celular" ? "📱" : "💻"}`;
+        const cargo = document.getElementById("qs-cargo");
+        cargo.textContent = f.cargo || cargoDe(f.pontos);
+        cargo.classList.remove("vazio");
+        document.getElementById("qs-pontos").innerHTML = `<b>${fmtPts(f.pontos)}</b><small>pts</small><span>${f.disp === "celular" ? "📱" : "💻"}</span>`;
         desenharRostoSemana(f.nome);
       } else {
         document.getElementById("qs-nome").textContent = "Vaga aberta!";
         document.getElementById("qs-cargo").textContent = RANK.db ? "Jogue um turno e seja o primeiro da semana." : "Ranking offline agora.";
+        document.getElementById("qs-cargo").classList.add("vazio");
         document.getElementById("qs-pontos").textContent = "";
         desenharRostoSemana("");
       }
