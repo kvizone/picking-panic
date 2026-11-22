@@ -158,7 +158,7 @@ No turno sem fim, o HUD mostra ★ pontos e o combo atual.
 
 No fim do turno sai o **relatório** com o total, o detalhamento e o cargo: Novato, Auxiliar (500), Separador (1.500), Conferente (3.000), Líder de Turno (5.000), Supervisor (8.000) e Lenda do Galpão (12.000).
 
-**Ranking (Firebase, sem login):** o nome escrito na tela inicial ou no relatório vira uma linha só no ranking, com o melhor resultado. O primeiro navegador que usa um nome vira dono dele (login anônimo do Firebase) e ganha um código de 4 letras; em outro aparelho, quem tem o código pode usar o mesmo nome. A tela inicial mostra o quadro do **Funcionário da semana** (1º da semana, troca toda segunda) e o top 10 da semana e geral, com o seu nome destacado. Detalhes do banco em `firebase/README.md`.
+**Ranking (Firebase, sem login):** todo fim de turno salva sozinho no ranking: quando a água acaba, quando um problema estoura, quando a pessoa sai pela pausa e até quando fecha a página no meio do turno. Cada turno é uma linha (pode repetir nome). Sem nome, entra como Visitante e dá pra trocar o nome ali no relatório. A tela inicial mostra o mural com o **Funcionário da semana** (1º da semana, troca toda segunda) e o top 10 da semana e geral, com o seu nome destacado. Detalhes do banco em `firebase/README.md`.
 
 ## Progresso salvo
 

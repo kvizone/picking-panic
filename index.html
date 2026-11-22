@@ -187,11 +187,9 @@
     .rel-linhas .neg { color: #b91c1c; }
     .rel-rank { margin-top: 8px; border-top: 2px dashed #9ca3af; padding-top: 8px; }
     .rel-form { display: flex; gap: 6px; }
-    .rel-form #rel-codigo { width: 84px; flex-shrink: 0; text-transform: uppercase; display: none; }
     .rel-form .btn { width: auto; padding: 8px 10px; font-size: 9px; margin: 0; }
     #rel-status { font-size: 8px; color: #374151; line-height: 1.7; margin: 6px 0 0; min-height: 12px; }
     #rel-status b { color: #065f46; font-weight: normal; }
-    #rel-status .codigo { background: #111827; color: #fde047; padding: 1px 5px; letter-spacing: 2px; }
     .hud-entregues.pop { color: #ffffff; transform: scale(1.15); transform-origin: left center; }
     #hud .hud-entregues { font-size: calc(7px * var(--escala)); margin-top: calc(2px * var(--escala)); }
     .penalty-indicator {
@@ -2079,7 +2077,6 @@
           <div class="rel-rank">
             <div class="rel-form">
               <input type="text" id="rel-nome" maxlength="16" autocomplete="nickname" placeholder="Seu nome no ranking">
-              <input type="text" id="rel-codigo" maxlength="4" autocomplete="off" placeholder="CÓDIGO">
               <button type="button" class="btn" id="rel-salvar">SALVAR</button>
             </div>
             <p id="rel-status"></p>
@@ -9114,7 +9111,7 @@
         if (a.fogo <= 0) { apagarFogo(); return; }
       }
       emerg.alarme -= dt;
-      if (emerg.alarme <= 0 && !ehDemanda(a) && !SEM_APITO.includes(a.tipo)) {
+      if (emerg.alarme <= 0 && !ehDemanda(a) && !SEM_APITO.includes(a.tipo) && !a.chamado) { // RH/TI chamados: sem apito
         emerg.alarme = a.restante < a.limite * 0.3 ? 0.55 : 1.1;
         SFX.alarme();
       }
@@ -12045,39 +12042,29 @@
         pont.maxCombo > 1 ? linha(`🔥 Maior combo`, `x${pont.maxCombo.toFixed(1)}`) : "",
         pont.ptsPenal ? linha(`💥 Trombadas e afins`, fmtPts(pont.ptsPenal), true) : ""
       ].join("");
-      const nome = RANK.nomeSalvo();
-      document.getElementById("rel-nome").value = nome;
-      document.getElementById("rel-codigo").style.display = "none";
-      document.getElementById("rel-codigo").value = "";
+      document.getElementById("rel-nome").value = RANK.nomeSalvo();
       document.getElementById("rel-salvar").disabled = false;
-      statusRelatorio(nome ? "Salvando no ranking..." : "Escreva seu nome e salve pra entrar no ranking da firma.");
-      if (nome) salvarNoRanking();
+      salvarNoRanking(); // sempre salva sozinho; sem nome, entra como Visitante (dá pra trocar depois)
     }
     function statusRelatorio(html) { document.getElementById("rel-status").innerHTML = html; }
     async function salvarNoRanking() {
       const r = ultimoResultado;
       if (!r) return;
-      const nome = document.getElementById("rel-nome").value.trim();
-      const cod = document.getElementById("rel-codigo").value.trim().toUpperCase();
-      if (!RANK.chave(nome)) { statusRelatorio("Escreva um nome com pelo menos uma letra ou número."); return; }
+      const digitado = document.getElementById("rel-nome").value.trim();
+      const nome = digitado || "Visitante";
       const btn = document.getElementById("rel-salvar");
       btn.disabled = true;
-      statusRelatorio("Salvando no ranking...");
-      const res = await RANK.salvar(nome, r, cod);
+      statusRelatorio(r.ids ? "Atualizando o nome..." : "Salvando no ranking...");
+      const trocandoNome = !!r.ids;
+      const res = await RANK.salvar(nome, r);
       btn.disabled = false;
       if (res.st === "offline") return statusRelatorio("Sem conexão com o ranking agora. Seus pontos ficam só neste turno.");
-      if (res.st === "dono-outro" || res.st === "codigo-errado") {
-        document.getElementById("rel-codigo").style.display = "block";
-        return statusRelatorio(res.st === "dono-outro"
-          ? `O nome <b>${escaparHtml(nome)}</b> já tem dono no ranking. Se for você, digite seu código de 4 letras. Se não, escolha outro nome.`
-          : "Código não confere. Confira o código ou escolha outro nome.");
-      }
-      if (res.st !== "ok") return statusRelatorio("Não deu pra salvar agora. Tenta de novo daqui a pouco.");
-      RANK.guardarNome(nome);
-      document.getElementById("rel-codigo").style.display = "none";
-      const pos = res.posicao ? ` Você está em <b>${res.posicao}º</b> na semana.` : "";
-      const novo = res.novoSemana ? (res.novoGeral ? "Novo recorde seu! " : "Novo recorde da semana! ") : "Esse turno não bateu seu recorde da semana. ";
-      statusRelatorio(`${novo}${pos}<br>Seu código: <span class="codigo">${res.codigo || "????"}</span> · anote pra jogar com esse nome em outro aparelho.`);
+      if (res.st !== "ok") return statusRelatorio("Não deu pra salvar agora. Toque em SALVAR pra tentar de novo.");
+      if (digitado) RANK.guardarNome(digitado);
+      const pos = res.posicao ? ` Você ficou em <b>${res.posicao}º</b> na semana.` : "";
+      statusRelatorio(trocandoNome ? `Nome atualizado pra <b>${escaparHtml(nome)}</b>.${pos}`
+        : digitado ? `Salvo no ranking!${pos}`
+        : `Salvo como <b>Visitante</b>.${pos} Escreva seu nome e toque em SALVAR pra trocar.`);
     }
     const escaparHtml = (t) => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -12106,15 +12093,17 @@
       },
       nomeSalvo() { try { return localStorage.getItem("pickingpanic_nome") || ""; } catch (e) { return ""; } },
       guardarNome(n) { try { localStorage.setItem("pickingpanic_nome", n); } catch (e) {} },
-      codigos() { try { return JSON.parse(localStorage.getItem("pickingpanic_codigos")) || {}; } catch (e) { return {}; } },
-      guardarCodigo(k, c) { try { const t = this.codigos(); t[k] = c; localStorage.setItem("pickingpanic_codigos", JSON.stringify(t)); } catch (e) {} },
-      gerarCodigo() { const a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; let c = ""; for (let i = 0; i < 4; i++) c += a[Math.floor(Math.random() * a.length)]; return c; },
       iniciar() {
         try {
           if (!window.firebase) throw new Error("sem firebase");
           firebase.initializeApp(FIREBASE_CONFIG);
           this.db = firebase.database();
-          this.login = new Promise(res => firebase.auth().onAuthStateChanged(u => { if (u) { this.uid = u.uid; res(u.uid); } }));
+          this.login = new Promise(res => firebase.auth().onAuthStateChanged(u => {
+            if (!u) return;
+            this.uid = u.uid; res(u.uid);
+            const pegar = () => u.getIdToken().then(t => { this.token = t; }).catch(() => {});
+            pegar(); setInterval(pegar, 40 * 60 * 1000);
+          }));
           firebase.auth().signInAnonymously().catch(() => {});
           const lista = (snap) => { const l = []; snap.forEach(c => { l.push({ k: c.key, ...c.val() }); }); return l.reverse(); };
           this.db.ref("semanal/" + this.semana).orderByChild("pontos").limitToLast(10).on("value", sn => { this.top.semana = lista(sn); desenharRanking(); }, () => {});
@@ -12126,37 +12115,33 @@
         if (!this.login) return null;
         return Promise.race([this.login, new Promise(r => setTimeout(() => r(null), ms))]);
       },
-      async salvar(nome, r, codigo) {
+      dados(nome, r, servidor) {
+        return { nome: nome.slice(0, 16), pontos: r.total, quando: servidor ? { ".sv": "timestamp" } : firebase.database.ServerValue.TIMESTAMP,
+                 pedidos: r.pedidos, segundos: r.segundos, cargo: r.cargo, disp: r.disp, versao: "1.1", uid: this.uid };
+      },
+      // Cada turno vira uma linha nova no ranking geral e no da semana (pode repetir nome)
+      async salvar(nome, r) {
         if (!this.db) return { st: "offline" };
         try {
           const uid = await this.esperarLogin(6000);
           if (!uid) return { st: "offline" };
-          const k = this.chave(nome);
-          const dono = (await this.db.ref("donos/" + k).once("value")).val();
-          if (!dono) {
-            const novo = this.gerarCodigo();
-            await this.db.ref().update({ ["donos/" + k]: uid, ["segredos/" + k]: novo });
-            this.guardarCodigo(k, novo);
-          } else if (dono !== uid) {
-            const tentar = codigo || this.codigos()[k];
-            if (!tentar) return { st: "dono-outro" };
-            try { await this.db.ref().update({ [`provas/${k}/${uid}`]: tentar, ["donos/" + k]: uid }); }
-            catch (e) { return { st: codigo ? "codigo-errado" : "dono-outro" }; }
-            this.guardarCodigo(k, tentar);
-          }
-          const dados = { nome: nome.slice(0, 16), pontos: r.total, quando: firebase.database.ServerValue.TIMESTAMP,
-                          pedidos: r.pedidos, segundos: r.segundos, cargo: r.cargo, disp: r.disp, versao: "1.0" };
-          const gravarSeMaior = async (ref) => {
-            const atual = (await ref.child("pontos").once("value")).val();
-            if (atual !== null && atual >= r.total) return false;
-            await ref.set(dados); return true;
-          };
-          const novoGeral = await gravarSeMaior(this.db.ref("ranking/" + k));
-          const novoSemana = await gravarSeMaior(this.db.ref(`semanal/${this.semana}/${k}`));
-          const meu = (await this.db.ref(`semanal/${this.semana}/${k}/pontos`).once("value")).val() || r.total;
-          const acima = await this.db.ref("semanal/" + this.semana).orderByChild("pontos").startAt(meu + 1).once("value");
-          return { st: "ok", novoGeral, novoSemana, posicao: acima.numChildren() + 1, codigo: this.codigos()[k] };
+          if (!r.ids) r.ids = { g: this.db.ref("ranking").push().key, w: this.db.ref("semanal/" + this.semana).push().key };
+          const d = this.dados(nome, r);
+          await this.db.ref().update({ ["ranking/" + r.ids.g]: d, [`semanal/${this.semana}/${r.ids.w}`]: d });
+          r.salvo = true;
+          const acima = await this.db.ref("semanal/" + this.semana).orderByChild("pontos").startAt(r.total + 1).once("value");
+          return { st: "ok", posicao: acima.numChildren() + 1 };
         } catch (e) { return { st: "erro" }; }
+      },
+      // Fechou a página no meio do turno: manda o resultado mesmo assim (sendBeacon sobrevive ao fechamento)
+      salvarAoSair(r) {
+        if (!this.token || !this.uid || !navigator.sendBeacon) return;
+        const nome = this.nomeSalvo() || "Visitante";
+        const corpo = JSON.stringify(this.dados(nome, r, true));
+        const base = FIREBASE_CONFIG.databaseURL;
+        navigator.sendBeacon(`${base}/ranking.json?auth=${this.token}`, new Blob([corpo], { type: "text/plain" }));
+        navigator.sendBeacon(`${base}/semanal/${this.semana}.json?auth=${this.token}`, new Blob([corpo], { type: "text/plain" }));
+        r.salvo = true;
       }
     };
 
@@ -12204,9 +12189,9 @@
       if (!RANK.db) { lista.innerHTML = '<li class="rk-vazio">Ranking offline agora.</li>'; return; }
       if (!top) { lista.innerHTML = '<li class="rk-vazio">Carregando ranking...</li>'; return; }
       if (!top.length) { lista.innerHTML = `<li class="rk-vazio">${RANK.aba === "semana" ? "Ninguém jogou essa semana ainda." : "Ranking vazio. Seja o primeiro!"}</li>`; }
-      else lista.innerHTML = top.map((x, i) => `<li class="${x.k === eu ? "eu" : ""}"><span class="rk-pos">${i + 1}º</span>` +
+      else lista.innerHTML = top.map((x, i) => `<li class="${RANK.chave(x.nome) === eu ? "eu" : ""}"><span class="rk-pos">${i + 1}º</span>` +
         `<span class="rk-nome">${escaparHtml(x.nome)}</span><span>${x.disp === "celular" ? "📱" : "💻"}</span><span class="rk-pts">${fmtPts(x.pontos)}</span></li>`).join("");
-      const dentro = top.some(x => x.k === eu);
+      const dentro = top.some(x => RANK.chave(x.nome) === eu);
       document.getElementById("rk-eu").textContent = eu && !dentro && top.length ? "Seu nome ainda não está no top 10 dessa lista." : "";
     }
 
@@ -12420,11 +12405,18 @@
     }));
     document.getElementById("start-nome").addEventListener("input", () => desenharRanking());
     document.getElementById("rel-salvar").addEventListener("click", () => salvarNoRanking());
-    ["start-nome", "rel-nome", "rel-codigo"].forEach(id => document.getElementById(id).addEventListener("keydown", e => {
+    ["start-nome", "rel-nome"].forEach(id => document.getElementById(id).addEventListener("keydown", e => {
       e.stopPropagation(); // digitar o nome não mexe a personagem
       if (e.key === "Enter" && id !== "start-nome") salvarNoRanking();
     }));
     RANK.iniciar();
+    window.addEventListener("pagehide", () => {
+      if (!MISSAO_ATUAL || !MISSAO_ATUAL.semFim || estadoJogo === "MENU" || estadoJogo === "FALHOU") return;
+      if (!cronometroIniciado && !(pont.total > 0)) return;
+      if (!(pont.total > 0)) return;
+      RANK.salvarAoSair({ total: Math.round(pont.total), cargo: cargoDe(pont.total), pedidos: pont.pedidos,
+                          segundos: Math.round(tempoDecorrido), disp: EH_TOQUE ? "celular" : "computador" });
+    });
     document.getElementById("btn-sem-fim").addEventListener("click", () => {
       entrarModoCelular();
       initAudio();
