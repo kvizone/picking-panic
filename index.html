@@ -1647,7 +1647,8 @@
     .rp-msg b { font-weight: normal; display: block; }
     .rp-msg.sistema { color: #fde047; justify-content: center; text-align: center; }
     @keyframes rpEntra { from { opacity: 0; transform: translateY(4px); } }
-    html.toque .radio-peao { left: 3%; right: 3%; width: auto; top: var(--rp-topo, 70px); font-size: calc(7.5px * var(--escala)); }
+    html.toque .radio-peao { left: 3%; right: 3%; width: auto; top: auto; bottom: var(--rp-baixo, 160px); font-size: calc(7px * var(--escala)); transform: translateY(30px); transition: opacity 0.2s, transform 0.2s, bottom 0.25s; }
+    html.toque .radio-peao.visivel { transform: none; }
     @font-face {
       font-family: "Permanent Marker";
       src: url("assets/fonts/permanent-marker.woff2") format("woff2");
@@ -2856,14 +2857,14 @@
       ],
       brigaSaiu: ["Ninguém chamou o RH e a briga parou a expedição.", "A briga virou plateia e o galpão inteiro parou pra assistir."],
       falasBriga: [
-        "Essa bancada é minha, eu cheguei primeiro!",
-        "Quem pegou minha fita adesiva?!",
-        "Foi você que comeu meu marmitex?!",
-        "Meu coletor tava carregando! Quem tirou da tomada?!",
-        "Para de cantar enquanto separa, eu me perco!",
-        "Você estacionou o carrinho na MINHA vaga!",
-        "Eu vi você trocando a estação da rádio!",
-        "Não fui eu! Foi o pessoal do turno da noite!"
+        "Hmpf.",
+        "Não acabou não, viu?",
+        "Tô de olho em você.",
+        "Pode chamar o RH, eu tô certo!",
+        "Nem vem.",
+        "Depois a gente conversa. Ou não.",
+        "Eu tenho testemunha!",
+        "Isso vai pro grupo da firma."
       ],
       falasRH: [
         "Vocês dois, na minha sala. Agora.",
@@ -2873,7 +2874,7 @@
       ],
       chefeBriga: [
         "Briga no MEU galpão? Chama o RH antes que vire novela!",
-        "Tão brigando por causa de fita adesiva? Liga pro RH, rápido!",
+        "Tão brigando pelo quê agora? Não quero nem saber. Liga pro RH, rápido!",
         "Ou vocês trabalham ou vocês brigam. Os dois não dá. RH, já!"
       ],
       abandonoAtrasou: ["O pedido do colega ficou parado e o cliente cancelou.", "Ninguém terminou o pedido e o caminhão saiu sem ele."],
@@ -9806,12 +9807,19 @@
       [...box.children].forEach((el, i) => el.classList.toggle("velha", i < box.children.length - 1));
     }
     // No celular, logo abaixo da faixa da urgência (ou do topo do HUD)
+    // No celular o chat fica no rodapé: logo acima dos botões, do minimapa e do popup do chefe (o meio do mapa fica livre)
     function posicionarRadioPeao() {
       const stage = document.getElementById("stage");
-      const ref = [document.getElementById("emergencia-banner"), document.getElementById("hud-obj-box")]
-        .find(el => el && el.offsetParent !== null && el.getBoundingClientRect().height > 0);
-      const topo = ref ? ref.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 6 : 70;
-      document.documentElement.style.setProperty("--rp-topo", Math.max(0, Math.round(topo)) + "px");
+      const st = stage.getBoundingClientRect();
+      let topoRodape = st.bottom;
+      ["btn-acao", "btn-carrinho", "btn-empilhadeira", "btn-buzina", "minimap-card", "chefe-popup"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || el.offsetParent === null) return;
+        if (id === "chefe-popup" && !el.classList.contains("visivel")) return;
+        const r = el.getBoundingClientRect();
+        if (r.height > 0 && r.top > st.top + st.height * 0.4) topoRodape = Math.min(topoRodape, r.top);
+      });
+      document.documentElement.style.setProperty("--rp-baixo", Math.max(0, Math.round(st.bottom - topoRodape + 8)) + "px");
     }
     function fecharRadioPeao() {
       radioPeao.aberto = false;
