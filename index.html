@@ -2554,7 +2554,7 @@
       falaInicio: "inicioSemFim",
       estrelas: { tres: 99999, duas: 99999 },
       tempoColetaPorVolume: 1.0,
-      geracao: { intervalo: 35, meta: Infinity, armazenagem: false, numeroInicial: 2000 },
+      geracao: { intervalo: 95, meta: Infinity, armazenagem: false, numeroInicial: 2000 }, // +1 min entre pedidos novos
       urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 120, telaRoxa: 120, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75, cafe: 999 } },
       bateriaSegundos: 55,
       pedidos: [
@@ -2837,11 +2837,11 @@
       armazOk1: ["Guardou, mas o recebimento ficou entupido um tempo.", "Atrasou, mas tá no rack. Segue."],
 
       chefeBravo: [
-        "{n} pedidos parados no balcão?! O cliente pagou frete expresso, não frete paciência!",
-        "Tô olhando o painel: {n} pedidos na fila. Isso é balcão ou sala de espera?",
+        "{n} pedidos atrasados parados no balcão?! O cliente pagou frete expresso, não frete paciência!",
+        "Tô olhando o painel: {n} pedidos atrasados na fila. Isso é balcão ou sala de espera?",
         "Bonito, hein? {n} pedidos esperando. Quer que eu leve um cafezinho pra eles também?",
-        "{n} na fila! Se fosse fila de banco eu até entendia. Bora separar!",
-        "A diretoria acabou de perguntar dos {n} pedidos parados. Eu disse que você tava resolvendo. Tá, né?"
+        "{n} atrasados na fila! Se fosse fila de banco eu até entendia. Bora separar!",
+        "A diretoria acabou de perguntar dos {n} pedidos atrasados. Eu disse que você tava resolvendo. Tá, né?"
       ],
       chefeAtraso: [
         "O {n} atrasou. O cliente já mandou e-mail com CAIXA ALTA.",
@@ -3031,7 +3031,7 @@
         "Sem sistema não sai pedido! Liga pra TI lá no balcão!",
         "Quem apertou o botão errado? Não importa. Chama a TI!"
       ],
-      brigaSaiu: ["Ninguém chamou o RH e a briga parou a expedição.", "A briga virou plateia e o galpão inteiro parou pra assistir."],
+      brigaSaiu: ["Ninguém chamou a Gisele do RH e a briga parou a expedição.", "A briga virou plateia e o galpão inteiro parou pra assistir."],
       falasBriga: [
         "Hmpf.",
         "Não acabou não, viu?",
@@ -8044,7 +8044,7 @@
       atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR",
       entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
       conversar: "FALAR", entregar_cafe: "ENTREGAR", fucar_mesa: "FUÇAR", fucar_arquivo: "FUÇAR", fucar_mural: "OLHAR",
-      chamar_rh: "CHAMAR RH", conversar_rh: "FALAR", conversar_ti: "FALAR",
+      chamar_rh: "CHAMAR GISELE", conversar_rh: "FALAR", conversar_ti: "FALAR",
       fucar_sugestoes: "ABRIR", fucar_aniversarios: "OLHAR", fucar_ocorrencias: "FUÇAR", fucar_quadro: "OLHAR", fucar_chamados: "ESPIAR", fucar_cabos: "FUÇAR"
     };
     let rotuloAcaoAtual = "";
@@ -8561,12 +8561,12 @@
           chefeReclama("chefeParado", `${h.getHours()}h${String(h.getMinutes()).padStart(2, "0")}`);
         }
       } else tempoParada = 0;
-      // Chefe reclama quando a fila do balcão chega a 3 pedidos esperando (de novo só se a fila baixar)
-      const naFila = pedidosEsperando().length;
-      if (naFila >= 3 && !fila.chefeAvisou) {
+      // Chefe reclama quando 5 pedidos atrasados ficam parados no balcão (de novo só se baixar)
+      const naFila = pedidosEsperando().filter(estaAtrasado).length;
+      if (naFila >= 5 && !fila.chefeAvisou) {
         fila.chefeAvisou = true;
         chefeReclama(naFila);
-      } else if (naFila < 3) {
+      } else if (naFila < 5) {
         fila.chefeAvisou = false;
       }
       // A cada minuto cai um pedido aleatório. Com o balcão vazio e nada na mão, não precisa esperar o minuto.
@@ -9163,7 +9163,7 @@
         if (MISSAO_ATUAL.semFim) abrirAvisoDemanda("🚨", "BRIGA NO GALPÃO!", [
           `${bonito2(n1)} e ${bonito2(n2)} estão discutindo.`,
           "Vá até a sala do RH (porta RH, na parede de cima).",
-          "Chame o RH na mesa dela. Ela resolve o resto."
+          "Chame a Gisele na mesa dela. Ela resolve o resto."
         ], "Você tem 2 minutos. A seta mostra o caminho.", "alerta");
         falaDaBriga(a, 0);
         if (a.dialogo.tema === "rádio" && RADIO_MUSICA.trocarTemporaria(RADIO_CAIPIRA.url)) {
@@ -9222,7 +9222,7 @@
         visita: "A DIRETORIA VEM AÍ! Limpe a bagunça antes do diretor chegar.",
         caminhao: "Chegou caminhão! Sem pressa: leve os 3 pallets do recebimento pro estoque. Os pedidos ficam congelados.",
         treino: "O Enzo vai te seguir nos próximos 3 pedidos. Cada passo só conta com ele do lado. Não deixe ele se perder!",
-        briga: `${a.brigoes ? a.brigoes[0].nome + " e " + a.brigoes[1].nome : "Dois colegas"} estão brigando! Vá até a sala do RH e chame o RH.`,
+        briga: `${a.brigoes ? a.brigoes[0].nome + " e " + a.brigoes[1].nome : "Dois colegas"} estão brigando! Vá até a sala do RH e chame a Gisele.`,
         abandono: `${a.colega} largou o emprego! O pedido ${a.pedido ? a.pedido.def.numero : ""} ${ROSTOS_COLEGAS[a.colega] ? ROSTOS_COLEGAS[a.colega].pronome : "dele"} está no topo do balcão.`,
         coletor: "O coletor sumiu! Sem ele, sem WMS. Siga o bip.",
         descarga: `Descarga urgente: leve o pallet até a ${a.pos ? a.pos.idCompleto : ""}.`
@@ -9402,8 +9402,8 @@
       if (a.tipo === "caminhao" && !veiculo.pilotando) return `Pallet ${a.feito + 1} de ${a.total}: suba na empilhadeira${fimE}.`;
       if (a.tipo === "caminhao" && a.etapa === "PEGAR") return `Pallet ${a.feito + 1} de ${a.total}: pegue no recebimento${fimE}.`;
       if (a.tipo === "abandono") return `Pegue o ${a.pedido.def.numero} no balcão e entregue antes do tempo acabar.`;
-      if (a.tipo === "briga") return a.chamado ? "O RH está a caminho. Pode voltar pros pedidos."
-        : cena === "rh" ? `Chame o RH na mesa dela${fimE}.` : "Vá até a sala do RH (porta RH, na parede de cima) e chame o RH.";
+      if (a.tipo === "briga") return a.chamado ? "A Gisele do RH está a caminho. Pode voltar pros pedidos."
+        : cena === "rh" ? `Chame a Gisele na mesa dela${fimE}.` : "Vá até a sala do RH (porta RH, na parede de cima) e chame a Gisele.";
       if (a.tipo === "telaRoxa") return a.chamado ? "O Vini da TI está consertando o WMS. Aguenta aí que o balcão já volta."
         : cena === "ti" ? `Chame o Vini na mesa dele${fimE}.` : "Vá até a sala da TI (porta TI, ao lado do balcão) e chame o Vini.";
       if (temFogo(a)) {
@@ -9970,7 +9970,7 @@
                   b: "#1f1a17", w: "#ffffff", e: "#111827", m: "#4a1d14", t: "#ffffff", d: "#7f1d1d", r: "#a8604a",
                   V: "#8b5cf6", c: "#3b2f4f", R: "#e8eef5" }
       },
-      "RH": {
+      "GISELE": {
         sobrancelha: "ssbbbssbbbss", bochecha: true, cabeloLongo: true, fundo: "#e9d5ff", corTag: "#6d28d9",
         paleta: { o: ARTE.contorno, H: "#f4f6fa", L: "#ffffff", B: "#b8c0cc", h: "#3b2416", s: "#d9a07a", S: "#b9805a",
                   b: "#2a170d", w: "#ffffff", e: "#111827", m: "#7f1d1d", t: "#ffffff", d: "#9f1239", r: "#c9846a",
@@ -10120,11 +10120,11 @@
     function chefeReclama(evento, n) {
       if (typeof evento === "number") { n = evento; evento = "chefeBravo"; }
       if (ronda.escoltando) return; // o Geraldo está ocupado sorrindo pro diretor
+      // Geraldo mais calmo: só abre a boca com 5 pedidos atrasados parados na fila (e pra lembrar da água)
+      if (evento !== "chefeBravo" && evento !== "chefeAgua") return;
       // Fila cheia e urgências sempre passam; o resto respeita o intervalo
       const prioridade = ["chefeAgua", "chefeBravo", "chefeIncendio", "chefeColetor", "chefeDescarga", "chefeAbandono", "chefeBatida"].includes(evento);
       if (tempoDecorrido - ultimaBronca < INTERVALO_CHEFE && !prioridade) return;
-      // Mesmo as urgentes: 1 em cada 5 ele deixa passar (a da água sempre avisa)
-      if (prioridade && evento !== "chefeAgua" && Math.random() < 0.2) return;
       if (estadoJogo !== "JOGANDO" && estadoJogo !== "MINIGAME" && estadoJogo !== "CARD_PEDIDO") return;
       // Colega falando no rádio: o Geraldo espera (o que é urgente entra logo depois; o resto fica pra próxima)
       if (colegaFalando()) {
@@ -10607,7 +10607,7 @@
     // Fala de quem está na sala: aparece no balão em cima da mesa
     function mostrarFalaSala(texto) {
       const sl = salaAtual();
-      const falante = { nome: cena === "rh" ? "RH" : cena === "ti" ? "VINI" : "GERALDO", x: sl.ox + 120, y: sl.oy + 44 };
+      const falante = { nome: cena === "rh" ? "GISELE" : cena === "ti" ? "VINI" : "GERALDO", x: sl.ox + 120, y: sl.oy + 44 };
       mostrarBalaoNpc(falante, texto);
       SFX.notificacao();
     }
@@ -10697,7 +10697,7 @@
           const precisa = a && !a.chamado && a.tipo === (ehRH ? "briga" : "telaRoxa");
           player.currentZone = { tipo: precisa ? (ehRH ? "chamar_rh" : "chamar_ti") : (ehRH ? "conversar_rh" : "conversar_ti") };
           if (interactPressedThisFrame) {
-            if (npc.ativo) falarTexto(ehRH ? "A mesa do RH está vazia: ela saiu pra resolver uma treta." : "O Vini saiu pra atender um chamado. A cadeira ainda está girando.", "#e2e8f0");
+            if (npc.ativo) falarTexto(ehRH ? "A mesa da Gisele está vazia: ela saiu pra resolver uma treta." : "O Vini saiu pra atender um chamado. A cadeira ainda está girando.", "#e2e8f0");
             else if (precisa) {
               if (ehRH) chamarRH(a); else chamarTI(a);
               mostrarFalaSala(ehRH ? "Briga de novo? Já tô indo! Vou levar os lencinhos." : "Tela roxa de novo? Abrindo chamado... pronto, já tô indo.");
@@ -11107,7 +11107,7 @@
       { v: "pote", emoji: "🍕", titulo: "Pizza da reunião", etiqueta: "GERALDO", linhas: ["\"Sobrou pra equipe\", disse ele.", "Tem o nome dele."] },
       { v: "pote", emoji: "🧃", titulo: "Suquinho de caixinha", etiqueta: "ENZO ♥", linhas: ["Etiqueta com letra de mãe."] },
       { v: "pote", emoji: "🥛", titulo: "Iogurte", etiqueta: "???", linhas: ["Validade: 03/2024.", "Ninguém assume."] },
-      { v: "pote", emoji: "🥤", titulo: "Garrafa d'água de 2 litros", etiqueta: "RH", linhas: ["Com horários marcados de hidratação.", "Tá atrasada desde as 10h."] },
+      { v: "pote", emoji: "🥤", titulo: "Garrafa d'água de 2 litros", etiqueta: "GISELE (RH)", linhas: ["Com horários marcados de hidratação.", "Tá atrasada desde as 10h."] },
       { v: "pote", emoji: "🍅", titulo: "Sachês de ketchup", etiqueta: "DE TODO MUNDO", linhas: ["37 sachês de delivery.", "Ninguém nunca usou um."] }
     ] };
     ARQUIVOS_CHEFE.canecas = { tema: "armario", aba: "ARMÁRIO DE CANECAS", itens: [
@@ -11117,7 +11117,7 @@
       { v: "caneca", cor: "#111827", cor2: "#a855f7", texto: "ROCK", dono: "Kauã", linhas: ["De banda, lascada na borda.", "\"Dá personalidade.\""] },
       { v: "caneca", cor: "#fde047", cor2: "#16a34a", texto: "PRIMEIRO EMPREGO!", dono: "Enzo", linhas: ["Presente da mãe. Ainda com o laço."] },
       { v: "caneca", cor: "#0f172a", cor2: "#22c55e", texto: "JÁ TENTOU DESLIGAR E LIGAR?", dono: "Vini (TI)", linhas: ["Tem um adesivo de tela roxa colado."] },
-      { v: "caneca", cor: "#ede9fe", cor2: "#7c3aed", texto: "GRATIDÃO", dono: "RH", linhas: ["Com um sachê de camomila dentro. Sempre."] },
+      { v: "caneca", cor: "#ede9fe", cor2: "#7c3aed", texto: "GRATIDÃO", dono: "GISELE (RH)", linhas: ["Com um sachê de camomila dentro. Sempre."] },
       { v: "caneca", cor: "#f8fafc", cor2: "#2563eb", texto: "BRINDE DE FORNECEDOR", dono: "Você", linhas: ["Todo mundo tem uma igual.", "A sua é a da alça meio torta."] }
     ] };
     let arquivoAbertoEm = 0;
@@ -11827,7 +11827,7 @@
       id: "rh", capacete: "#f4f6fa", cabelo: "#3b2416", pele: "#d9a07a", bochecha: "#c9846a",
       camisa: "#6d28d9", colete: "#a78bfa", calca: "#1f2937", cabeloLongo: true
     };
-    const rh = { nome: "RH", ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 62, fase: "", t: 0, parado: 0, vestColor: "#7c3aed" };
+    const rh = { nome: "GISELE", ativo: false, x: 0, y: 0, dir: "DOWN", rota: null, speed: 62, fase: "", t: 0, parado: 0, vestColor: "#7c3aed" };
 
     /* Discussões da briga: falas em ordem, alternando (quem começa é o que ficou parado).
        {eu} = nome de quem fala, {outro} = nome de quem ouve. O RH responde sobre o mesmo assunto. */
@@ -11944,7 +11944,7 @@
       // Toque de telefone
       [0, 0.18].forEach(d => setTimeout(() => SFX.playTone(1320, "sine", 0.12, 0.06, 0.01), d * 1000));
       JUICE.textoFlutuante(player.x, player.y - 16, "RH CHAMADO!", "#c4b5fd");
-      falarTexto("Chamou o RH. Ela já está indo pra briga. Pode voltar pros pedidos.", "#c4b5fd");
+      falarTexto("Chamou a Gisele. Ela já está indo pra briga. Pode voltar pros pedidos.", "#c4b5fd");
       Object.assign(rh, { ativo: true, x: PORTA_RH.x, y: PORTA_RH.y - 4, fase: "indo", t: 0, parado: 0 });
       rh.rota = [{ x: PORTA_RH.x, y: PORTA_RH.y + 8 }, ...rotaAte(PORTA_RH.x, PORTA_RH.y + 8, a.x, a.y + 14)];
       atualizarHUD();
@@ -11959,8 +11959,8 @@
           rh.t = 3.6; // tempo de ler a solução do RH
           rh.dir = "UP";
           a.brigoes.forEach(n => { n.dir = "DOWN"; });
-          mensagemRadioPeao(null, "O RH chegou.");
-          mensagemRadioPeao("RH", a.dialogo ? a.dialogo.rh : sortearTexto("falasRH"));
+          mensagemRadioPeao(null, "A Gisele do RH chegou.");
+          mensagemRadioPeao("GISELE", a.dialogo ? a.dialogo.rh : sortearTexto("falasRH"));
         }
       } else if (rh.fase === "conversando") {
         rh.t -= dt;
@@ -11972,7 +11972,7 @@
           concluirEmergencia();
           if (a.trocouRadio) {
             RADIO_MUSICA.voltarDaTemporaria();
-            falarTexto("📻 O RH devolveu a rádio pra 89 FM.", "#c4b5fd");
+            falarTexto("📻 A Gisele devolveu a rádio pra 89 FM.", "#c4b5fd");
             mensagemRadioPeao(null, "📻 Rádio de volta na 89 FM.");
           } else if (a.dialogo.tema === "ar") mensagemRadioPeao(null, "🌡️ Ar travado em 22 °C. Paz no galpão.");
           else if (a.dialogo.tema === "café") mensagemRadioPeao(null, "☕ Café novo passado. Paz no galpão.");
@@ -13251,8 +13251,8 @@
         fucar_mesa: ["[E] FUCAR A GAVETA", "#422006", "#fde68a", "#ffffff"],
         fucar_arquivo: ["[E] FUCAR O ARQUIVO", "#422006", "#fde68a", "#ffffff"],
         fucar_mural: ["[E] OLHAR O MURAL", "#422006", "#fde68a", "#ffffff"],
-        chamar_rh: ["[E] CHAMAR O RH", "#4c1d95", "#ddd6fe", "#ffffff"],
-        conversar_rh: ["[E] FALAR COM O RH", "#1f2937", "#ddd6fe", "#ffffff"],
+        chamar_rh: ["[E] CHAMAR A GISELE", "#4c1d95", "#ddd6fe", "#ffffff"],
+        conversar_rh: ["[E] FALAR COM A GISELE", "#1f2937", "#ddd6fe", "#ffffff"],
         conversar_ti: ["[E] FALAR COM O VINI", "#1f2937", "#bfdbfe", "#ffffff"],
         fucar_sugestoes: ["[E] CAIXA DE SUGESTOES", "#422006", "#fde68a", "#ffffff"],
         fucar_aniversarios: ["[E] MURAL DE ANIVERSARIOS", "#422006", "#fde68a", "#ffffff"],
