@@ -259,7 +259,7 @@ Robson, Jéssica e Kauã podem largar o emprego. O pedido largado sempre tem 2 i
 
 ## Foto do Geraldo com o Roupa Nova
 
-No mural atrás da mesa do Geraldo tem uma polaroid presa com clipe: ele com "o Roupa Nova" num show (foto feita por IA, com microfone derretendo e faixa "TURNE"). Do lado, um post-it: "Foto 100% real. Não precisa perguntar pro Vini." A imagem fica em `assets/img/geraldo-roupa-nova.jpg`.
+No mural atrás da mesa do Geraldo tem uma polaroid presa com clipe: ele com "o Roupa Nova" num show (foto feita por IA, com faixa "SHOW ROUPA NOVA" e todo mundo com o mesmo sorriso). Do lado, um post-it: "Foto 100% real. Não precisa perguntar pro Vini." A imagem fica em `assets/img/geraldo-roupa-nova.jpg`.
 
 ## A empresa: ASAP Logística
 
