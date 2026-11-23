@@ -10875,7 +10875,7 @@
     const PORTA_REUNIAO = { x: 632, y: 30 };  // sala de reunião, entre o relógio e a placa de PERIGO // porta da sala da TI, entre a placa de EPI e a janela, ao lado do balcão
     const SALAS = {
       cozinha: { ox: 5000, oy: 5000, w: 240, h: 150, fundo: 54, porta: PORTA_COZINHA,
-                 blocos: [[194, 40, 36, 22], [178, 44, 14, 14], [96, 88, 46, 16]] },
+                 blocos: [[194, 40, 36, 22], [178, 44, 14, 14], [46, 88, 46, 16], [160, 98, 62, 22], [225, 108, 12, 14]] },
       chefe: { ox: 6000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_ESCRITORIO,
                blocos: [[76, 44, 88, 30], [6, 40, 28, 26], [206, 40, 28, 30]] },
       rh: { ox: 7000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_RH,
@@ -10964,7 +10964,7 @@
       }
       if (a && a.tipo === "relatorio" && cena === "chefe" && a.etapa === "levar") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "pegar") return { x: sl.ox + 205, y: sl.oy + 66 };
-      if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "vela") return { x: sl.ox + 118, y: sl.oy + 84 };
+      if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "vela") return { x: sl.ox + 69, y: sl.oy + 122 };
       if (a && a.tipo === "bolo" && cena === "chefe" && a.etapa === "entregar" && !a.npc) return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a && a.tipo === "briga" && !a.chamado && cena === "rh") return { x: sl.ox + 79, y: sl.oy + 84 };
       if (a && a.tipo === "telaRoxa" && !a.chamado && cena === "ti") return { x: sl.ox + 120, y: sl.oy + 80 };
@@ -11036,7 +11036,7 @@
           if (interactPressedThisFrame) { geladeiraAberta = true; abrirArquivo("geladeira"); }
           return;
         }
-        if (a && a.tipo === "bolo" && a.etapa === "vela" && ly >= 76 && ly < 128 && Math.abs(lx - 118) < 38) {
+        if (a && a.tipo === "bolo" && a.etapa === "vela" && ly >= 76 && ly < 128 && Math.abs(lx - 69) < 40) {
           player.currentZone = { tipo: "acender_vela" };
           if (keys["KeyE"]) {
             a.vela = Math.min(1, a.vela + dt / 2);
@@ -11357,7 +11357,7 @@
     /* Prestação de contas: 3 recibos espalhados pelas salas, pra Pri fechar o mês */
     function iniciarRecibos(a) {
       Object.assign(a, { etapa: "coletar", recibos: [
-        { sala: "cozinha", onde: "COZINHA", x: 40, y: 112, achado: "Recibo do café, embaixo da geladeira. Tem mancha de café, claro." },
+        { sala: "cozinha", onde: "COZINHA", x: 150, y: 132, achado: "Recibo do café, embaixo da geladeira. Tem mancha de café, claro." },
         { sala: "chefe", onde: "sala do CHEFE", x: 196, y: 114, achado: "Recibo amassado no lixo do Geraldo: rodízio de pizza, 'reunião estratégica'. Hmm." },
         { sala: "guarita", onde: "PORTARIA", x: 150, y: 112, achado: "Recibo das pilhas do rádio AM do Seu Dirceu. Ele guardou dentro do caderno de visitas." }
       ] });
@@ -11794,22 +11794,33 @@
         if (frente) { r(x + 1, y + 7, 11, 5, "#854d0e"); r(x + 2, y + 8, 9, 1, "#a16207"); }
         else { r(x + 2, y + 3, 9, 2, "#854d0e"); r(x + 2, y + 7, 9, 2, "#854d0e"); }
       };
-      cadeira(113, 76, false); cadeira(84, 90, false); cadeira(142, 90, false);
+      const DX = -50; // mesa mais pra esquerda
+      const rt = (x, y, w, h, c) => r(x + DX, y, w, h, c);
+      cadeira(113 + DX, 76, false); cadeira(84 + DX, 90, false); cadeira(142 + DX, 90, false);
       // tampo redondo (visto de cima, levemente achatado), borda e sombra colada no chão
       const larg = [26, 34, 40, 44, 46, 46, 46, 46, 46, 46, 46, 46, 44, 40, 34, 26];
-      r(99, 104, 42, 3, "rgba(15,23,42,0.22)"); r(103, 107, 34, 2, "rgba(15,23,42,0.12)");
-      larg.forEach((w, k) => r(119 - w / 2 - 1, 88 + k, w + 2, 1, C));
-      r(119 - 13, 87, 26, 1, C); r(119 - 13, 104, 26, 1, C);
-      larg.forEach((w, k) => r(119 - w / 2, 88 + k, w, 1, k < 2 ? "#e0b088" : k > 12 ? "#7c4a22" : k > 10 ? "#9a6236" : "#b9814f"));
-      r(103, 93, 14, 1, "#a8703f"); r(122, 98, 16, 1, "#a8703f");
+      rt(99, 104, 42, 3, "rgba(15,23,42,0.22)"); rt(103, 107, 34, 2, "rgba(15,23,42,0.12)");
+      larg.forEach((w, k) => rt(119 - w / 2 - 1, 88 + k, w + 2, 1, C));
+      rt(119 - 13, 87, 26, 1, C); rt(119 - 13, 104, 26, 1, C);
+      larg.forEach((w, k) => rt(119 - w / 2, 88 + k, w, 1, k < 2 ? "#e0b088" : k > 12 ? "#7c4a22" : k > 10 ? "#9a6236" : "#b9814f"));
+      rt(103, 93, 14, 1, "#a8703f"); rt(122, 98, 16, 1, "#a8703f");
       // toalhinha xadrez, vasinho de flor, marmita, caneca com vapor, saleiro e guardanapo
-      for (let yy = 0; yy < 7; yy++) for (let xx = 0; xx < 11; xx++) r(108 + xx * 2, 92 + yy, 2, 1, (xx + yy) % 2 ? "#f8fafc" : "#ef4444");
-      r(117, 88, 4, 5, "#e0f2fe"); r(116, 85, 2, 3, "#f472b6"); r(119, 84, 3, 3, "#facc15"); r(118, 87, 1, 2, "#16a34a");
-      r(100, 94, 9, 6, C); r(101, 95, 7, 4, "#f8fafc"); r(102, 96, 5, 2, "#fb923c"); r(102, 96, 2, 1, "#fde68a");
-      r(131, 93, 6, 6, C); r(132, 94, 4, 4, "#60a5fa"); r(132, 94, 1, 4, "#bfdbfe"); r(137, 95, 1, 2, "#60a5fa");
-      for (let k = 0; k < 2; k++) r(133 + k * 2, 89 - ((t / 150 + k * 4) % 5), 1, 2, "rgba(241,245,249,0.6)");
-      r(124, 100, 2, 3, "#f8fafc"); r(127, 100, 2, 3, "#111827"); r(110, 100, 7, 2, "#fef3c7");
-      cadeira(113, 104, true);
+      for (let yy = 0; yy < 7; yy++) for (let xx = 0; xx < 11; xx++) rt(108 + xx * 2, 92 + yy, 2, 1, (xx + yy) % 2 ? "#f8fafc" : "#ef4444");
+      rt(117, 88, 4, 5, "#e0f2fe"); rt(116, 85, 2, 3, "#f472b6"); rt(119, 84, 3, 3, "#facc15"); rt(118, 87, 1, 2, "#16a34a");
+      rt(100, 94, 9, 6, C); rt(101, 95, 7, 4, "#f8fafc"); rt(102, 96, 5, 2, "#fb923c"); rt(102, 96, 2, 1, "#fde68a");
+      rt(131, 93, 6, 6, C); rt(132, 94, 4, 4, "#60a5fa"); rt(132, 94, 1, 4, "#bfdbfe"); rt(137, 95, 1, 2, "#60a5fa");
+      for (let k = 0; k < 2; k++) rt(133 + k * 2, 89 - ((t / 150 + k * 4) % 5), 1, 2, "rgba(241,245,249,0.6)");
+      rt(124, 100, 2, 3, "#f8fafc"); rt(127, 100, 2, 3, "#111827"); rt(110, 100, 7, 2, "#fef3c7");
+      cadeira(113 + DX, 104, true);
+      // sofá de dois lugares no canto direito, com almofadas e mesinha lateral com revista
+      r(162, 121, 60, 3, "rgba(15,23,42,0.22)");
+      r(160, 96, 62, 25, C); r(161, 97, 60, 9, "#0f766e"); r(161, 97, 60, 1, "#14b8a6");
+      r(161, 106, 60, 14, "#115e59"); r(163, 107, 27, 11, "#0d9488"); r(192, 107, 27, 11, "#0d9488"); r(163, 107, 27, 1, "#2dd4bf"); r(192, 107, 27, 1, "#2dd4bf");
+      r(160, 101, 4, 20, "#134e4a"); r(218, 101, 4, 20, "#134e4a");
+      r(166, 100, 9, 7, "#fbbf24"); r(167, 101, 7, 1, "#fde68a"); r(206, 100, 9, 7, "#f472b6"); r(207, 101, 7, 1, "#f9a8d4");
+      r(196, 110, 10, 5, "#64748b"); r(197, 111, 8, 1, "#94a3b8");                                             // alguém esqueceu o casaco
+      r(226, 122, 12, 2, "rgba(15,23,42,0.22)");
+      r(225, 108, 12, 14, C); r(226, 109, 10, 12, "#a16207"); r(226, 109, 10, 2, "#ca8a04"); r(227, 106, 8, 3, "#f8fafc"); r(228, 107, 4, 1, "#ef4444");
     }
     function desenharSalaRH(sl) {
       const X = sl.ox, Y = sl.oy, C = ARTE.contorno, t = Date.now();
