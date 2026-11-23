@@ -10995,13 +10995,14 @@
         b.type = "button";
         b.textContent = (EH_TOQUE ? "" : (i + 1) + ". ") + op.rotulo;
         b.disabled = chatChefe.falando || chatChefe.feitos.has(op.id);
-        b.addEventListener("click", () => pedirAoChefe(op.id));
+        b.addEventListener("click", () => { if (performance.now() - chatChefe.abertoEm > 600) pedirAoChefe(op.id); });
         box.appendChild(b);
       });
     }
     function abrirChatChefe() {
       if (ronda.ativo) { falarTexto("O Geraldo saiu pra ronda. Na mesa tem um bilhete: 'Volto já. Ou não.'", "#e2e8f0"); return; }
       chatChefe.aberto = true;
+      chatChefe.abertoEm = performance.now();
       chatChefe.falando = false;
       chatChefe.feitos = new Set();
       limparInputs();
@@ -13127,8 +13128,12 @@
     }));
     document.getElementById("start-nome").addEventListener("input", () => desenharRanking());
     document.getElementById("rel-salvar").addEventListener("click", () => salvarNoRanking());
-    document.getElementById("cc-fechar").addEventListener("click", () => fecharChatChefe());
-    document.getElementById("btn-arq-fechar").addEventListener("click", () => { SFX.menuBlip(); fecharArquivo(); });
+    document.getElementById("cc-fechar").addEventListener("click", () => { if (performance.now() - chatChefe.abertoEm > 600) fecharChatChefe(); });
+    document.getElementById("btn-arq-fechar").addEventListener("click", () => {
+      // O mesmo toque que abriu a pasta (botão de ação no celular) não pode fechar ela
+      if (performance.now() - arquivoAbertoEm < 600) return;
+      SFX.menuBlip(); fecharArquivo();
+    });
     ["start-nome", "rel-nome"].forEach(id => document.getElementById(id).addEventListener("keydown", e => {
       e.stopPropagation(); // digitar o nome não mexe a personagem
       if (e.key === "Enter" && id !== "start-nome") salvarNoRanking();
