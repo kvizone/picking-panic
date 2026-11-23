@@ -263,4 +263,4 @@ No mural atrás da mesa do Geraldo tem uma polaroid presa com clipe: ele com "o 
 
 ## A empresa: ASAP Logística
 
-O galpão é da **ASAP Logística** ("seu pedido pra ontem"). O nome aparece embaixo do logo na tela inicial, no título da aba, no cabeçalho dos relatórios do Geraldo e numa fala dele na ronda. O relatório 360° continua com "[Nome da Empresa]" no rodapé, porque a IA esqueceu de preencher.
+O galpão é da **ASAP Logística** ("seu pedido pra ontem"). O nome aparece embaixo do logo na tela inicial, no título da aba, no cabeçalho dos relatórios do Geraldo e numa fala dele na ronda. Os rodapés dos três relatórios também levam o nome.
