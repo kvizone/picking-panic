@@ -1692,6 +1692,39 @@
     .arq-foto { background: #1e3a8a; background-image: none; color: #fde68a; border: 6px solid #fafaf9; }
     .arq-foto b { color: #f97316; font-size: 10px; }
     .arq-fechar { margin-top: 6px; background: #3b2410 !important; color: #fde68a !important; }
+    /* Geladeira: por dentro, branca e iluminada, com prateleiras de vidro */
+    .pasta-arq.tema-geladeira { background: #f8fafc; background-image: linear-gradient(#ffffff, #e0f2fe); border-color: #475569; box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(186, 230, 253, 0.9); }
+    .tema-geladeira .arq-aba { background: #e2e8f0; border-color: #475569; color: #1e293b; }
+    .tema-geladeira .arq-corpo { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px 0; }
+    /* cada fileira termina numa prateleira de vidro (os itens da mesma linha têm a mesma altura) */
+    .arq-pote { position: relative; text-align: center; padding: 8px 8px 10px; font-size: 8px; line-height: 1.6; color: #334155;
+      border-bottom: 3px solid rgba(148, 163, 184, 0.7); box-shadow: 0 2px 0 rgba(255, 255, 255, 0.9); }
+    .arq-pote > * { transform: rotate(var(--rot)); }
+    .pote-emoji { display: block; font-size: 34px; line-height: 1.1; filter: drop-shadow(2px 3px 0 rgba(15, 23, 42, 0.25)); }
+    .pote-etiqueta {
+      display: inline-block; margin: 4px 0 6px; padding: 2px 8px; background: #fef3c7; transform: rotate(-3deg);
+      font-family: "Permanent Marker", cursive; font-size: 12px; color: #1e293b; box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.15);
+    }
+    .arq-pote b { display: block; font-weight: normal; color: #0f172a; margin-bottom: 3px; }
+    .arq-pote p { margin: 0; }
+    /* Armário de canecas: madeira com prateleiras */
+    .pasta-arq.tema-armario { background: #8b5a2b; border-color: #3b2410; }
+    .tema-armario .arq-aba { background: #8b5a2b; color: #fde68a; }
+    .tema-armario .arq-corpo { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px 0; }
+    .arq-caneca { text-align: center; color: #fef3c7; font-size: 8px; line-height: 1.6; padding: 4px 8px 12px; border-bottom: 8px solid #5b3a1a; box-shadow: 0 3px 0 #3b2410; }
+    .arq-caneca b { display: block; font-family: "Permanent Marker", cursive; font-weight: normal; font-size: 15px; color: #fde68a; margin: 6px 0 2px; }
+    .arq-caneca p { margin: 0; color: #fde7c4; }
+    .caneca {
+      position: relative; width: 74px; height: 66px; margin: 6px auto 0; background: var(--c1); border: 3px solid #111827;
+      border-radius: 4px 4px 12px 12px; box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35); display: flex; align-items: center; justify-content: center; padding: 4px;
+    }
+    .caneca::after {
+      content: ""; position: absolute; right: -16px; top: 14px; width: 12px; height: 26px; border: 4px solid #111827;
+      border-left: 0; border-radius: 0 12px 12px 0; background: transparent; box-shadow: inset -3px 0 0 var(--c1);
+    }
+    .caneca::before { content: ""; position: absolute; left: 4px; right: 4px; top: 3px; height: 4px; background: rgba(255, 255, 255, 0.35); border-radius: 2px; }
+    .caneca span { font-size: 7px; line-height: 1.35; color: var(--c2); text-align: center; word-break: break-word; }
+    html.toque .tema-geladeira .arq-corpo, html.toque .tema-armario .arq-corpo { grid-template-columns: 1fr 1fr; }
     html.toque .arq-corpo { grid-template-columns: 1fr; }
     html.toque .arq-item { font-size: 9px; }
     /* ===== Chat na sala do chefe ===== */
@@ -7994,7 +8027,7 @@
       receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
       extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER",
       atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR",
-      entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", pia: "LAVAR",
+      entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
       conversar: "FALAR", entregar_cafe: "ENTREGAR", fucar_mesa: "FUÇAR", fucar_arquivo: "FUÇAR", fucar_mural: "OLHAR"
     };
     let rotuloAcaoAtual = "";
@@ -10608,15 +10641,16 @@
           return;
         }
         if (Math.abs(lx - 205) < 22 && ly < 80) {
-          player.currentZone = { tipo: geladeiraAberta ? "fechar_geladeira" : "geladeira" };
-          if (interactPressedThisFrame) {
-            geladeiraAberta = !geladeiraAberta;
-            SFX.playTone(geladeiraAberta ? 300 : 180, "square", 0.05, 0.05, 0.01);
-            if (geladeiraAberta) falarTexto(sortearTexto("geladeira"), "#e2e8f0");
-          }
+          player.currentZone = { tipo: "geladeira" };
+          if (interactPressedThisFrame) { geladeiraAberta = true; abrirArquivo("geladeira"); }
           return;
         }
-        geladeiraAberta = false; // se afastou: a porta fecha sozinha
+        geladeiraAberta = false;
+        if (lx >= 46 && lx < 96 && ly < 72) {
+          player.currentZone = { tipo: "canecas" };
+          if (interactPressedThisFrame) abrirArquivo("canecas");
+          return;
+        }
         if (Math.abs(lx - 30) < 14 && ly < 72) {
           player.currentZone = { tipo: "pia" };
           if (interactPressedThisFrame) { SFX.playTone(900, "sine", 0.08, 0.03, 0.02); falarTexto(sortearTexto("pia"), "#e2e8f0"); }
@@ -10873,16 +10907,42 @@
         { v: "postit", linhas: ["Reunião c/ diretor:", "dizer que a ideia", "do café foi MINHA"] }
       ] }
     };
+    ARQUIVOS_CHEFE.geladeira = { tema: "geladeira", aba: "GELADEIRA DA FIRMA", itens: [
+      { v: "pote", emoji: "🍱", titulo: "Marmita", etiqueta: "KAUÃ", linhas: ["Strogonoff. Agora com nome, depois do incidente."] },
+      { v: "pote", emoji: "🎂", titulo: "Bolo de pote", etiqueta: "NÃO MEXE · ASS: JÉSSICA", linhas: ["Falta uma colherada. Os suspeitos negam."] },
+      { v: "pote", emoji: "🍦", titulo: "Pote de sorvete", etiqueta: "MÃE DO ROBSON", linhas: ["Dentro: feijão. Clássico."] },
+      { v: "pote", emoji: "🍕", titulo: "Pizza da reunião", etiqueta: "GERALDO", linhas: ["\"Sobrou pra equipe\", disse ele.", "Tem o nome dele."] },
+      { v: "pote", emoji: "🧃", titulo: "Suquinho de caixinha", etiqueta: "ENZO ♥", linhas: ["Etiqueta com letra de mãe."] },
+      { v: "pote", emoji: "🥛", titulo: "Iogurte", etiqueta: "???", linhas: ["Validade: 03/2024.", "Ninguém assume."] },
+      { v: "pote", emoji: "🥤", titulo: "Garrafa d'água de 2 litros", etiqueta: "RH", linhas: ["Com horários marcados de hidratação.", "Tá atrasada desde as 10h."] },
+      { v: "pote", emoji: "🍅", titulo: "Sachês de ketchup", etiqueta: "DE TODO MUNDO", linhas: ["37 sachês de delivery.", "Ninguém nunca usou um."] }
+    ] };
+    ARQUIVOS_CHEFE.canecas = { tema: "armario", aba: "ARMÁRIO DE CANECAS", itens: [
+      { v: "caneca", cor: "#1e3a8a", cor2: "#f97316", texto: "ROUPA NOVA 98", dono: "Geraldo", linhas: ["Lavada à mão. Ninguém mais pode usar.", "Nem pra olhar."] },
+      { v: "caneca", cor: "#f9a8d4", cor2: "#ffffff", texto: "NÃO FALE COMIGO ANTES DO CAFÉ", dono: "Jéssica", linhas: ["Rosa com glitter. Leve a sério."] },
+      { v: "caneca", cor: "#ea580c", cor2: "#111827", texto: "1 LITRO", dono: "Robson", linhas: ["Térmica gigante, fita crepe com o nome há 6 anos."] },
+      { v: "caneca", cor: "#111827", cor2: "#a855f7", texto: "ROCK", dono: "Kauã", linhas: ["De banda, lascada na borda.", "\"Dá personalidade.\""] },
+      { v: "caneca", cor: "#fde047", cor2: "#16a34a", texto: "PRIMEIRO EMPREGO!", dono: "Enzo", linhas: ["Presente da mãe. Ainda com o laço."] },
+      { v: "caneca", cor: "#0f172a", cor2: "#22c55e", texto: "JÁ TENTOU DESLIGAR E LIGAR?", dono: "Vini (TI)", linhas: ["Tem um adesivo de tela roxa colado."] },
+      { v: "caneca", cor: "#ede9fe", cor2: "#7c3aed", texto: "GRATIDÃO", dono: "RH", linhas: ["Com um sachê de camomila dentro. Sempre."] },
+      { v: "caneca", cor: "#f8fafc", cor2: "#2563eb", texto: "BRINDE DE FORNECEDOR", dono: "Você", linhas: ["Todo mundo tem uma igual.", "A sua é a da alça meio torta."] }
+    ] };
     let arquivoAbertoEm = 0;
     function abrirArquivo(onde) {
       const pasta = ARQUIVOS_CHEFE[onde];
       document.getElementById("arq-aba").textContent = pasta.aba;
+      document.querySelector("#modal-arquivo .pasta-arq").className = "pasta-arq" + (pasta.tema ? " tema-" + pasta.tema : "");
+      document.getElementById("btn-arq-fechar").textContent = pasta.tema === "geladeira" ? "FECHAR A GELADEIRA" : pasta.tema === "armario" ? "FECHAR O ARMÁRIO" : "GUARDAR TUDO DE VOLTA";
       const clipe = '<svg class="arq-clipe" viewBox="0 0 16 40" aria-hidden="true"><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#64748b" stroke-width="2.6" stroke-linecap="round" transform="translate(0.7 0.7)"/><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/></svg>';
       document.getElementById("arq-corpo").innerHTML = pasta.itens.map((it, i) => {
         const rot = [-2.5, 1.8, -1.2, 2.4][i % 4];
         const linhas = (it.linhas || []).map(l => `<p>${escaparHtml(l)}</p>`).join("");
         const lista = it.lista ? `<ol>${it.lista.map(([t, riscado]) => `<li${riscado ? ' class="riscado"' : ""}>${escaparHtml(t)}</li>`).join("")}</ol>` : "";
         const carimbo = it.carimbo ? `<span class="arq-carimbo ${it.cor || ""}">${it.carimbo}</span>` : "";
+        if (it.v === "pote") return `<div class="arq-pote" style="--rot:${rot / 2}deg"><span class="pote-emoji">${it.emoji}</span>` +
+          `<span class="pote-etiqueta">${escaparHtml(it.etiqueta)}</span><b>${escaparHtml(it.titulo)}</b>${linhas}</div>`;
+        if (it.v === "caneca") return `<div class="arq-caneca"><div class="caneca" style="--c1:${it.cor};--c2:${it.cor2}">` +
+          `<span>${escaparHtml(it.texto)}</span></div><b>${escaparHtml(it.dono)}</b>${linhas}</div>`;
         return `<div class="arq-item arq-${it.v}" style="--rot:${rot}deg">${it.v === "postit" ? "" : clipe}` +
                `${it.titulo ? `<b>${escaparHtml(it.titulo)}</b>` : ""}${linhas}${lista}${carimbo}</div>`;
       }).join("");
@@ -10899,6 +10959,7 @@
       estadoJogo = "JOGANDO";
       limparInputs();
       // O Geraldo na sala às vezes pega no flagra
+      geladeiraAberta = false;
       if (cena === "chefe" && !ronda.ativo && Math.random() < 0.5) popupRadio(sortearTexto("chefeFlagra"), { tag: "GERALDO · DE OLHO", duracao: 5500 });
       arquivoAberto = null;
     }
@@ -13002,6 +13063,7 @@
         cafeteira: ["SEGURE [E] FAZER CAFE", "#422006", "#fde68a", "#ffffff"],
         geladeira: ["[E] ABRIR GELADEIRA", "#1f2937", "#cbd5e1", "#ffffff"],
         fechar_geladeira: ["[E] FECHAR GELADEIRA", "#1f2937", "#cbd5e1", "#ffffff"],
+        canecas: ["[E] ARMARIO DE CANECAS", "#1f2937", "#fde68a", "#ffffff"],
         pia: ["[E] LAVAR CANECA", "#1f2937", "#cbd5e1", "#ffffff"],
         conversar: ["[E] FALAR COM O GERALDO", "#1f2937", "#fde68a", "#ffffff"],
         fucar_mesa: ["[E] FUCAR A GAVETA", "#422006", "#fde68a", "#ffffff"],

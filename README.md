@@ -148,7 +148,9 @@ A etiqueta mostra os horários no relógio do turno: entrada do pedido, prazo e 
 
 Na parede de cima tem duas portas que dá pra entrar (ação perto da porta):
 
-- **Cozinha** (porta à direita da placa PERIGO): pia, micro-ondas, cafeteira, geladeira com bilhete "NÃO MEXE" e mesa. A geladeira e a pia têm piadinhas.
+- **Cozinha** (porta à direita da placa PERIGO): pia, micro-ondas, cafeteira, geladeira com bilhete "NÃO MEXE" e mesa. A pia tem piadinha. Dá pra abrir (mesma pasta da sala do chefe, com a cara de cada lugar):
+  - **Geladeira**: por dentro, com prateleiras de vidro e etiquetas de fita crepe escritas à mão: a marmita do Kauã (agora com nome), o bolo de pote "NÃO MEXE" da Jéssica, o pote de sorvete com feijão, a pizza da reunião com o nome do Geraldo, o suquinho do Enzo com letra de mãe, o iogurte de 2024, a garrafa de 2 litros do RH e 37 sachês de ketchup.
+  - **Armário de canecas** (armários de cima, na frente do micro-ondas): uma caneca com o estilo de cada um: Geraldo (Roupa Nova 98), Jéssica (rosa com glitter, "não fale comigo antes do café"), Robson (térmica de 1 litro), Kauã (de banda, lascada), Enzo ("primeiro emprego!"), Vini ("já tentou desligar e ligar?"), RH ("gratidão") e a sua (brinde de fornecedor, alça torta).
 - **Sala do chefe** (porta CHEFE): o Geraldo atrás da mesa (se não estiver na ronda), quadro de "funcionário do mês" com a cara dele e gráfico de META. Falando com ele abre um chat com quatro pedidos: **aumento, férias, folga e sair mais cedo**. Ele sempre tem uma desculpa diferente. Dá pra **fuçar** três lugares (abre uma pasta de arquivo com papéis presos por clipe; o jogo pausa enquanto você lê):
   - **Gaveta da mesa** (lado esquerdo da mesa): o pedido de aumento do próprio Geraldo, carimbado APROVADO; um post-it pra ensaiar o "vou ver o que posso fazer"; um pente novinho (ele é careca).
   - **Arquivo** (gaveteiro da direita): a lista de desculpas pra não dar folga, com as já usadas riscadas; ingresso do show do Roupa Nova de 1998; carteirinha do fã-clube com foto de quando tinha cabelo.
