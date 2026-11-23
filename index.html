@@ -1735,6 +1735,18 @@
     html.toque .tema-geladeira .arq-corpo, html.toque .tema-armario .arq-corpo { grid-template-columns: 1fr 1fr; }
     html.toque .arq-corpo { grid-template-columns: 1fr; }
     html.toque .arq-item { font-size: 9px; }
+    /* ===== Câmeras de segurança ===== */
+    #modal-cameras { background: rgba(2, 6, 4, 0.92); }
+    .cctv-caixa { width: min(560px, 94%); background: #1c1917; border: 4px solid #44403c; box-shadow: 6px 6px 0 #000, inset 0 0 0 2px #0c0a09; padding: 10px; }
+    .cctv-topo { display: flex; justify-content: space-between; font-size: 8px; letter-spacing: 1px; color: #a8a29e; margin-bottom: 8px; }
+    .cctv-aovivo { color: #ef4444; }
+    #cctv-canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; border: 3px solid #0c0a09; border-radius: 6px; background: #000; }
+    .cctv-legenda { font-size: 9px; color: #86efac; margin: 8px 2px 6px; min-height: 22px; text-align: left; line-height: 1.5; }
+    .cctv-botoes { display: flex; gap: 6px; justify-content: center; }
+    .cctv-botoes button { flex: 1; max-width: 64px; padding: 10px 0; font: inherit; font-size: 11px; background: #292524; color: #d6d3d1; border: 2px solid #57534e; cursor: pointer; }
+    .cctv-botoes button.ativo { background: #14532d; color: #bbf7d0; border-color: #22c55e; }
+    .cctv-dica { font-size: 7px; color: #78716c; margin: 8px 0 0; }
+    .cctv-fechar { display: block; width: 100%; margin-top: 8px; background: #facc15 !important; color: #111 !important; }
     /* ===== Impressão do relatório ===== */
     #modal-impressao { align-items: flex-start; overflow-y: auto; }
     .imp-caixa { width: min(560px, 94%); margin: 28px auto 24px; }
@@ -1988,6 +2000,17 @@
           <div id="imp-folhas"></div>
           <button type="button" class="btn imp-btn" id="imp-pegar">PEGAR AS FOLHAS</button>
         </div>
+      </div>
+    </div>
+    <!-- Câmeras de segurança (portaria) -->
+    <div id="modal-cameras" class="modal-overlay">
+      <div class="cctv-caixa" role="dialog" aria-label="Câmeras de segurança">
+        <div class="cctv-topo"><span>📹 MONITORAMENTO · PORTARIA</span><span class="cctv-aovivo">● AO VIVO</span></div>
+        <canvas id="cctv-canvas" width="480" height="300"></canvas>
+        <p id="cctv-legenda" class="cctv-legenda"></p>
+        <div class="cctv-botoes" id="cctv-botoes"></div>
+        <p class="cctv-dica">O turno continua enquanto você assiste.</p>
+        <button type="button" class="btn cctv-fechar" id="cctv-fechar">VOLTAR PRO TRABALHO</button>
       </div>
     </div>
     <!-- Conversa na sala do chefe -->
@@ -3012,6 +3035,23 @@
         "A impressora funciona. O Vini colou um papel: 'NÃO ENCOSTA. ELA ESTÁ FELIZ'.",
         "Toner cheio, papel na bandeja, nenhuma luz piscando. Ninguém sabe explicar.",
         "Impressora ligada e sem atolar papel. O Vini chama isso de 'o milagre de 2026'."
+      ],
+      falasPorteiro: [
+        "Bom dia! Assina o caderno? Não? Então me conta uma fofoca que eu libero.",
+        "Daqui eu vejo tudo. Vi até o Geraldo ensaiando Roupa Nova na doca 3.",
+        "Rádio AM, palavra cruzada e café. Isso é segurança de verdade.",
+        "Sete letras, 'quem nunca está na sala quando precisa'. Geraldo? Não cabe.",
+        "O caminhão das 7h chegou às 7h hoje. Anotei. Vai que não acontece de novo.",
+        "Tem um gato no estacionamento. O pessoal chama de Pallet. Ele manda mais que o Geraldo."
+      ],
+      entrouReuniao: [
+        "Sala de reunião vazia. Ainda tem cheiro de café da reunião de ontem.",
+        "O ar aqui é 18 °C. Só aqui. Ninguém sabe por quê.",
+        "Projetor ligado sozinho. Ninguém tem coragem de desligar."
+      ],
+      cadeiraDiretor: [
+        "A cadeira do diretor: couro, encosto alto e um adesivo 'RESERVADO'. Ninguém senta. Nem o diretor.",
+        "Você pensou em sentar na cadeira do diretor. A cadeira pensou também. Melhor não."
       ],
       falasRHSala: [
         "Oi! Tudo bem com você? Tá se hidratando?",
@@ -4550,6 +4590,14 @@
         if ((e.code === "Escape" || e.code === "KeyE" || e.code === "Enter") && !e.repeat && performance.now() - arquivoAbertoEm > 500) fecharArquivo();
         return;
       }
+      if (cctv.aberta) {
+        if (e.repeat) return;
+        if (e.code === "ArrowRight" || e.code === "ArrowDown") trocarCamera(cctv.cam + 1);
+        else if (e.code === "ArrowLeft" || e.code === "ArrowUp") trocarCamera(cctv.cam - 1);
+        else if (/^(Digit|Numpad)[1-5]$/.test(e.code)) trocarCamera(Number(e.code.slice(-1)) - 1);
+        else if ((e.code === "Escape" || e.code === "KeyE" || e.code === "Enter") && performance.now() - cctv.abertoEm > 500) fecharCameras();
+        return;
+      }
       if (chatChefe.aberto) {
         if (e.code === "Escape") fecharChatChefe();
         const n = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Numpad1: 0, Numpad2: 1, Numpad3: 2, Numpad4: 3 }[e.code];
@@ -5321,7 +5369,7 @@
       let tocouEmpilhadeira = false;
       if (estadoJogo === "JOGANDO" && veiculo.pilotando) {
         atualizarVeiculo(dt);
-      } else if (estadoJogo === "JOGANDO" && !chatChefe.aberto) {
+      } else if (estadoJogo === "JOGANDO" && !chatChefe.aberto && !cctv.aberta) {
         let moveX = 0;
         let moveY = 0;
 
@@ -6027,7 +6075,8 @@
     }
 
     function renderPixelArt() {
-      if (cena) return renderSala();
+      const camCCTV = cameraCCTV();
+      if (cena && !camCCTV) return renderSala();
       medirHUD();
 
       // 1. Câmera
@@ -6036,6 +6085,8 @@
 
       targetCamX = limitarCameraX(targetCamX);
       targetCamY = limitarCameraY(targetCamY);
+      // Câmera de segurança: o mundo é desenhado de onde a câmera está (sem animação)
+      if (camCCTV) { targetCamX = camera.x = camCCTV.x; targetCamY = camera.y = camCCTV.y; }
 
       // Fundo fora do galpão (aparece atrás do HUD quando a câmera passa da borda)
       ctx.fillStyle = "#05070c";
@@ -6104,6 +6155,8 @@
       desenharPortaEscritorio();
       desenharPortaCozinha();
       desenharPortasRHeTI();
+      desenharPortaSala(PORTA_GUARITA, "PORTARIA", "#475569", "#64748b", (x, y) => { ret(ctx, x + 6, y + 11, 10, 7, "#0f172a"); ret(ctx, x + 7, y + 12, 8, 5, "#64748b"); ret(ctx, x + 13, y + 12, 1, 1, "#ef4444"); });
+      desenharPortaSala(PORTA_REUNIAO, "REUNIAO", "#92400e", "#b45309", (x, y) => { ret(ctx, x + 4, y + 12, 14, 3, "#451a03"); ret(ctx, x + 5, y + 15, 2, 3, "#451a03"); ret(ctx, x + 15, y + 15, 2, 3, "#451a03"); });
       desenharBebedouro();
       desenharSujeira();
       desenharBatida();
@@ -8132,7 +8185,9 @@
       receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
       extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER",
       atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR",
-      entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", entrar_rh: "ENTRAR", entrar_ti: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
+      entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", entrar_rh: "ENTRAR", entrar_ti: "ENTRAR", entrar_guarita: "ENTRAR", entrar_reuniao: "ENTRAR",
+      cameras: "CÂMERAS", conversar_porteiro: "FALAR", cadeira_diretor: "OLHAR",
+      fucar_chaves: "OLHAR", fucar_caderno: "LER", fucar_achados: "FUÇAR", fucar_postits: "LER", fucar_telao: "OLHAR", fucar_ata: "LER", fucar_flipchart: "LER", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
       conversar: "FALAR", entregar_cafe: "ENTREGAR", fucar_mesa: "FUÇAR", fucar_arquivo: "FUÇAR", fucar_mural: "OLHAR",
       imprimir: "IMPRIMIR", impressora: "OLHAR", entregar_relatorio: "ENTREGAR", pegar_bolo: "PEGAR BOLO", acender_vela: "ACENDER", entregar_bolo: "SURPRESA!",
       chamar_rh: "CHAMAR GISELE", conversar_rh: "FALAR", conversar_ti: "FALAR",
@@ -10680,7 +10735,9 @@
        enquanto ela está lá dentro. O relógio, os pedidos e os problemas continuam correndo. */
     const PORTA_COZINHA = { x: 757, y: 30 };
     const PORTA_RH = { x: 258, y: 30 }; // porta da sala do RH (onde ficava o ramal)
-    const PORTA_TI = { x: 343, y: 30 }; // porta da sala da TI, entre a placa de EPI e a janela, ao lado do balcão
+    const PORTA_TI = { x: 343, y: 30 };
+    const PORTA_GUARITA = { x: 112, y: 30 };  // portaria, ao lado da placa de SAÍDA
+    const PORTA_REUNIAO = { x: 632, y: 30 };  // sala de reunião, entre o relógio e a placa de PERIGO // porta da sala da TI, entre a placa de EPI e a janela, ao lado do balcão
     const SALAS = {
       cozinha: { ox: 5000, oy: 5000, w: 240, h: 150, fundo: 54, porta: PORTA_COZINHA,
                  blocos: [[194, 40, 36, 22], [178, 44, 14, 14], [94, 92, 48, 16]] },
@@ -10688,6 +10745,10 @@
                blocos: [[76, 44, 88, 30], [6, 40, 28, 26], [206, 40, 28, 30]] },
       rh: { ox: 7000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_RH,
             blocos: [[82, 44, 76, 28], [12, 42, 22, 20], [206, 38, 28, 30], [16, 112, 28, 18], [200, 112, 24, 18]] },
+      guarita: { ox: 9000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_GUARITA,
+                 blocos: [[56, 42, 96, 26], [168, 40, 64, 24], [14, 110, 34, 20], [206, 112, 18, 18]] },
+      reuniao: { ox: 10000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_REUNIAO,
+                 blocos: [[46, 64, 148, 30], [12, 104, 24, 26], [208, 110, 18, 20]] },
       ti: { ox: 8000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_TI,
             blocos: [[78, 44, 84, 28], [172, 42, 30, 20], [204, 38, 30, 32], [16, 108, 30, 18], [196, 106, 32, 20]] }
     };
@@ -10709,7 +10770,7 @@
     }
     function tratarPortasSalas() {
       if (veiculo.pilotando) return false;
-      for (const [tipo, porta] of [["chefe", PORTA_ESCRITORIO], ["cozinha", PORTA_COZINHA], ["rh", PORTA_RH], ["ti", PORTA_TI]]) {
+      for (const [tipo, porta] of [["chefe", PORTA_ESCRITORIO], ["cozinha", PORTA_COZINHA], ["rh", PORTA_RH], ["ti", PORTA_TI], ["guarita", PORTA_GUARITA], ["reuniao", PORTA_REUNIAO]]) {
         if (Math.abs(player.x - porta.x) < 13 && player.y < porta.y + 24) {
           player.currentZone = { tipo: "entrar_" + tipo };
           if (interactPressedThisFrame) entrarNaSala(tipo);
@@ -10727,13 +10788,15 @@
       player.x = sl.ox + sl.w / 2; player.y = sl.oy + sl.h - 14; player.dir = "UP";
       SFX.playTone(520, "square", 0.04, 0.05, 0.005);
       if (tipo === "cozinha" && !(emerg.ativa && emerg.ativa.tipo === "cafe")) falarTexto(sortearTexto("entrouCozinha"), "#e2e8f0");
+      if (tipo === "reuniao") falarTexto(sortearTexto("entrouReuniao"), "#e2e8f0");
       atualizarHUD();
       atualizarBannerEmergencia();
     }
     // Fala de quem está na sala: aparece no balão em cima da mesa
     function mostrarFalaSala(texto) {
       const sl = salaAtual();
-      const falante = { nome: cena === "rh" ? "GISELE" : cena === "ti" ? "VINI" : "GERALDO", x: sl.ox + 120, y: sl.oy + 44 };
+      const falante = { nome: cena === "rh" ? "GISELE" : cena === "ti" ? "VINI" : cena === "guarita" ? "SEU DIRCEU" : "GERALDO",
+                        x: sl.ox + (cena === "guarita" ? 124 : 120), y: sl.oy + 44 };
       mostrarBalaoNpc(falante, texto);
       SFX.notificacao();
     }
@@ -10765,7 +10828,7 @@
       player.currentZone = null;
       const sl = salaAtual();
       const lx = player.x - sl.ox, ly = player.y - sl.oy;
-      if (chatChefe.aberto) return;
+      if (chatChefe.aberto || cctv.aberta) return;
       if (ly > sl.h + 2) { sairDaSala(); return; }
       if (ly > sl.h - 24 && Math.abs(lx - sl.w / 2) < 16) {
         player.currentZone = { tipo: "sair" };
@@ -10835,6 +10898,28 @@
         if (Math.abs(lx - 30) < 14 && ly < 72) {
           player.currentZone = { tipo: "pia" };
           if (interactPressedThisFrame) { SFX.playTone(900, "sine", 0.08, 0.03, 0.02); falarTexto(sortearTexto("pia"), "#e2e8f0"); }
+          return;
+        }
+      } else if (cena === "guarita" || cena === "reuniao") {
+        const pontos = cena === "guarita"
+          ? [["chaves", 6, 54, 42, 72], ["caderno", 162, 238, 48, 84], ["achados", 4, 60, 96, 136]]
+          : [["postits", 6, 72, 40, 64], ["telao", 74, 166, 40, 64], ["ata", 70, 170, 94, 116], ["flipchart", 4, 46, 96, 136]];
+        for (const [id, x0, x1, y0, y1] of pontos) {
+          if (lx >= x0 && lx < x1 && ly >= y0 && ly < y1) {
+            player.currentZone = { tipo: "fucar_" + id };
+            if (interactPressedThisFrame) abrirArquivo(id);
+            return;
+          }
+        }
+        if (cena === "guarita" && ly >= 68 && ly < 100 && lx >= 52 && lx < 156) {
+          const cam = lx < 104;
+          player.currentZone = { tipo: cam ? "cameras" : "conversar_porteiro" };
+          if (interactPressedThisFrame) { if (cam) abrirCameras(); else mostrarFalaSala(sortearTexto("falasPorteiro")); }
+          return;
+        }
+        if (cena === "reuniao" && lx < 46 && ly >= 64 && ly < 96) {
+          player.currentZone = { tipo: "cadeira_diretor" };
+          if (interactPressedThisFrame) falarTexto(sortearTexto("cadeiraDiretor"), "#e2e8f0");
           return;
         }
       } else if (cena === "rh" || cena === "ti") {
@@ -11105,6 +11190,70 @@
       setTimeout(() => popupRadio(sortear(falas), npc ? { tag: `${bonito2(npc).toUpperCase()} · ANIVERSARIANTE`, colega: npc.nome, duracao: 7000 } : { tag: "GERALDO · EMOCIONADO", duracao: 7000 }), 300);
       falarTexto("🎶 O galpão inteiro cantou parabéns. Desafinado, mas com muito amor.", "#f472b6");
     }
+    /* Câmeras de segurança da portaria: o galpão ao vivo (o jogo continua rodando) */
+    const CAMERAS = [
+      { nome: "CAM 01 · RUAS R01-R04", x: 190, y: 300, legenda: "Ruas de picking. Tudo dentro do normal." },
+      { nome: "CAM 02 · BALCÃO WMS", x: 430, y: 110, legenda: "Balcão do WMS. A tela ainda não ficou roxa. Ainda." },
+      { nome: "CAM 03 · BANCADAS", x: 790, y: 240, legenda: "Bancadas de embalagem. Ninguém achou o estilete." },
+      { nome: "CAM 04 · DOCAS", x: 1110, y: 390, legenda: "Docas. O caminhão chegou no horário. Seu Dirceu anotou." },
+      { nome: "CAM 05 · SALA DO CHEFE", sinal: false, legenda: "Desligada a pedido do Geraldo. \"Por questões de privacidade.\"" }
+    ];
+    const cctv = { aberta: false, cam: 0, abertoEm: 0 };
+    function abrirCameras() {
+      cctv.aberta = true; cctv.cam = 0; cctv.abertoEm = performance.now();
+      limparInputs();
+      document.getElementById("cctv-botoes").innerHTML = CAMERAS.map((c, i) => `<button type="button" data-cam="${i}">${i + 1}</button>`).join("");
+      trocarCamera(0);
+      document.getElementById("modal-cameras").style.display = "flex";
+      SFX.playTone(220, "square", 0.05, 0.04, 0.01);
+    }
+    function trocarCamera(i) {
+      cctv.cam = (i + CAMERAS.length) % CAMERAS.length;
+      document.querySelectorAll("#cctv-botoes button").forEach((b, k) => b.classList.toggle("ativo", k === cctv.cam));
+      document.getElementById("cctv-legenda").textContent = CAMERAS[cctv.cam].legenda;
+      SFX.playTone(900, "square", 0.02, 0.03, 0.005);
+    }
+    function fecharCameras() {
+      cctv.aberta = false;
+      document.getElementById("modal-cameras").style.display = "none";
+      limparInputs();
+    }
+    function cameraCCTV() {
+      const c = CAMERAS[cctv.cam];
+      if (!cctv.aberta || c.sinal === false) return null;
+      return { x: limitarCameraX(c.x - VIEW_W / 2), y: limitarCameraY(c.y - VIEW_H / 2) };
+    }
+    function desenharCCTV() {
+      if (!cctv.aberta) return;
+      const cv = document.getElementById("cctv-canvas"), g = cv.getContext("2d");
+      const W = cv.width, H = cv.height, c = CAMERAS[cctv.cam], t = Date.now();
+      g.imageSmoothingEnabled = false;
+      g.globalCompositeOperation = "source-over";
+      if (c.sinal === false) {
+        g.fillStyle = "#111"; g.fillRect(0, 0, W, H);
+        for (let i = 0; i < 1400; i++) { const v = Math.random() * 200 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(Math.random() * W | 0, Math.random() * H | 0, 3, 2); }
+        g.fillStyle = "rgba(0,0,0,0.6)"; g.fillRect(0, H / 2 - 22, W, 44);
+        g.fillStyle = "#f8fafc"; g.font = "bold 18px monospace"; g.textAlign = "center"; g.fillText("SEM SINAL", W / 2, H / 2 + 6);
+      } else {
+        // Recorte do centro da tela do jogo (a câmera do mundo já está apontada pra cá)
+        const sw = Math.min(VIEW_W, VIEW_H * (W / H)), sh = sw * (H / W);
+        g.drawImage(bufferCanvas, (VIEW_W - sw) / 2, (VIEW_H - sh) / 2, sw, sh, 0, 0, W, H);
+        g.globalCompositeOperation = "saturation"; g.fillStyle = "hsl(0,0%,50%)"; g.fillRect(0, 0, W, H);
+        g.globalCompositeOperation = "multiply"; g.fillStyle = "#b7d9bf"; g.fillRect(0, 0, W, H);
+        g.globalCompositeOperation = "source-over";
+        g.fillStyle = "rgba(255,255,255,0.05)"; g.fillRect(0, (t / 12) % H, W, 14);
+      }
+      g.fillStyle = "rgba(0,0,0,0.25)"; for (let y = 0; y < H; y += 3) g.fillRect(0, y, W, 1);
+      // textos da câmera
+      g.font = "bold 13px monospace"; g.textAlign = "left"; g.fillStyle = "#f8fafc";
+      g.fillText(c.nome, 10, 20);
+      const min = 7 * 60 + Math.floor(tempoDecorrido / 60) * 4 + Math.floor((tempoDecorrido % 60) / 15); // o turno começa às 7h e corre mais rápido
+      const hh = String(Math.floor(min / 60) % 24).padStart(2, "0"), mm = String(min % 60).padStart(2, "0"), ss = String(Math.floor(tempoDecorrido * 4) % 60).padStart(2, "0");
+      g.fillText(`ASAP LOGÍSTICA · ${hh}:${mm}:${ss}`, 10, H - 10);
+      g.textAlign = "right";
+      if (Math.floor(t / 500) % 2) { g.fillStyle = "#ef4444"; g.beginPath(); g.arc(W - 46, 15, 5, 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = "#f8fafc"; g.fillText("REC", W - 10, 20);
+    }
     function levandoCafe() { const a = emerg.ativa; return !!(a && a.tipo === "cafe" && a.etapa === "levar"); }
     function desenharGarrafaNaMao() {
       const a = emerg.ativa;
@@ -11177,6 +11326,8 @@
       if (cena === "cozinha") desenharCozinha(sl);
       else if (cena === "rh") desenharSalaRH(sl);
       else if (cena === "ti") desenharSalaTI(sl);
+      else if (cena === "guarita") desenharGuarita(sl);
+      else if (cena === "reuniao") desenharSalaReuniao(sl);
       else desenharSalaChefe(sl);
       if (player.invulnerableTimer <= 0 || Math.floor(Date.now() / 80) % 2 === 0) {
         renderPixelCharacter(player.x, player.y, player.dir, player.walkFrame, "#facc15", (volumesColetados > 0), pacoteEmbalado,
@@ -11433,6 +11584,107 @@
       r(203, 98 + (imprimindo ? -3 : 0), 14, 5 + (imprimindo ? 3 : 0), "#ffffff");
       r(205, 116, 12, 8, "#fef08a"); r(206, 118, 10, 1, "#1d4ed8"); r(206, 120, 8, 1, "#1d4ed8");
     }
+    function desenharGuarita(sl) {
+      const X = sl.ox, Y = sl.oy, C = ARTE.contorno;
+      const r = (x, y, w, h, c) => ret(ctx, X + x, Y + y, w, h, c);
+      const t = Date.now();
+      desenharCascaSala(sl, "#cbd5e1", "#94a3b8", "#b8b2a6", "#aca597", 40);
+      r(0, 30, sl.w, 2, "#64748b");
+      // quadro de chaves
+      r(10, 4, 38, 28, C); r(11, 5, 36, 26, "#a16207"); r(12, 6, 34, 4, "#854d0e");
+      desenharBitmap("CHAVES", X + 29, Y + 6, "#fde68a", 1, "center");
+      [["#facc15", 14, 13], ["#ef4444", 22, 13], ["#38bdf8", 30, 13], ["#22c55e", 38, 13], ["#f472b6", 14, 22], ["#a78bfa", 22, 22], ["#cbd5e1", 30, 22]].forEach(([c, x, y]) => {
+        r(x + 1, y, 1, 2, "#e2e8f0"); r(x, y + 2, 3, 5, c); r(x + 1, y + 7, 1, 2, "#94a3b8");
+      });
+      r(38, 22, 4, 7, "#78716c"); // a chave misteriosa
+      // monitores das câmeras (2x2) em cima da mesa
+      r(58, 2, 50, 34, C); r(59, 3, 48, 32, "#111827");
+      for (let i = 0; i < 4; i++) {
+        const mx = 61 + (i % 2) * 23, my = 5 + Math.floor(i / 2) * 15;
+        r(mx, my, 21, 13, "#1f2937");
+        if (i === 3) { for (let k = 0; k < 6; k++) r(mx + ((t / 40 + k * 7) % 19), my + ((k * 5 + t / 90) % 11), 2, 1, "#9ca3af"); }
+        else { r(mx + 2, my + 8, 17, 3, "#374151"); r(mx + 4 + i * 4, my + 4, 3, 4, "#6b7280"); r(mx + 1, my + 1 + Math.floor(t / 70 + i * 4) % 11, 19, 1, "rgba(134,239,172,0.25)"); }
+        r(mx + 17, my + 1, 2, 2, Math.floor(t / 500) % 2 ? "#ef4444" : "#7f1d1d");
+      }
+      desenharBitmap("CAM", X + 83, Y + 30, "#86efac", 1, "center");
+      // relógio e calendário de borracharia
+      r(116, 6, 9, 9, C); r(117, 7, 7, 7, "#f8fafc"); r(120, 8, 1, 3, C); r(120, 10, 3, 1, C);
+      r(130, 4, 20, 26, C); r(131, 5, 18, 24, "#f8fafc"); r(131, 5, 18, 7, "#dc2626"); desenharBitmap("DEZ", X + 140, Y + 6, "#ffffff", 1, "center");
+      for (let k = 0; k < 4; k++) r(133, 15 + k * 3, 14, 1, "#cbd5e1");
+      // janela pro estacionamento com a cancela
+      r(168, 3, 66, 30, C); r(169, 4, 64, 28, "#7dd3fc"); r(169, 22, 64, 10, "#64748b"); r(169, 21, 64, 1, "#475569");
+      r(176, 14, 3, 9, "#334155");
+      const aberta = Math.floor(t / 4000) % 3 === 0;
+      if (aberta) for (let k = 0; k < 5; k++) r(178, 14 - k * 2, 2, 2, k % 2 ? "#f8fafc" : "#ef4444");
+      else for (let k = 0; k < 8; k++) r(179 + k * 5, 14, 5, 2, k % 2 ? "#f8fafc" : "#ef4444");
+      r(206, 16, 18, 8, "#f59e0b"); r(208, 13, 10, 4, "#fbbf24"); r(207, 24, 3, 2, "#111827"); r(220, 24, 3, 2, "#111827"); // caminhãozinho lá fora
+      r(200, 7, 3, 3, "#f8fafc"); r(196, 8, 10, 2, "#f8fafc"); // nuvem
+      r(200, 4, 1, 28, "#e2e8f0");
+      // Seu Dirceu na mesa (atrás da mesa: a mesa cobre as pernas)
+      renderPixelCharacter(X + 124, Y + 46, "DOWN", 0, "#334155", false, false, 1, 1, false, false, APARENCIA_PORTEIRO);
+      // mesa com rádio AM, garrafa térmica, palavra cruzada e cafezinho
+      r(56, 42, 96, 26, C); r(57, 43, 94, 8, "#78716c"); r(57, 43, 94, 1, "#a8a29e"); r(57, 51, 94, 16, "#57534e");
+      r(60, 54, 40, 11, "#44403c"); r(104, 54, 44, 11, "#44403c");
+      r(62, 40, 14, 8, C); r(63, 41, 12, 6, "#92400e"); r(65, 43, 5, 3, "#fde68a"); r(72, 42, 2, 2, "#111827"); r(73, 33, 1, 8, "#94a3b8"); // rádio
+      r(80, 38, 5, 10, "#dc2626"); r(80, 38, 5, 2, "#f8fafc");                                                                    // garrafa térmica
+      r(134, 44, 12, 7, "#f8fafc"); for (let k = 0; k < 3; k++) r(135 + k * 4, 45, 3, 5, "#cbd5e1"); r(146, 43, 1, 6, "#1d4ed8"); // palavra cruzada
+      r(90, 45, 4, 4, "#f8fafc"); r(91, 45, 2, 1, "#7c2d12");                                                                     // copinho de café
+      // balcão de atendimento com o caderno de visitas
+      r(168, 40, 64, 24, C); r(169, 41, 62, 7, "#a8a29e"); r(169, 48, 62, 15, "#78716c");
+      r(186, 40, 18, 7, "#1d4ed8"); r(187, 41, 16, 5, "#f8fafc"); r(195, 41, 1, 5, "#1d4ed8"); r(205, 42, 1, 5, "#111827"); // caderno e caneta
+      desenharBitmap("VISITAS", X + 200, Y + 52, "#fde68a", 1, "center");
+      // achados e perdidos
+      r(14, 110, 34, 20, C); r(15, 111, 32, 18, "#b45309"); r(15, 111, 32, 4, "#d97706");
+      desenharBitmap("ACHADOS", X + 31, Y + 118, "#fef3c7", 1, "center");
+      r(18, 106, 6, 5, "#facc15"); r(28, 105, 2, 7, "#1d4ed8"); r(34, 107, 8, 4, "#ef4444");
+      // cones e ventilador
+      [0, 1, 2].forEach(k => { r(209 + k, 128 - k * 6, 12 - k * 2, 6, "#f97316"); r(210 + k, 126 - k * 6, 10 - k * 2, 1, "#f8fafc"); });
+      r(186, 118, 12, 12, C); r(187, 119, 10, 10, "#cbd5e1");
+      const p = Math.floor(t / 60) % 2; r(p ? 188 : 191, p ? 123 : 120, p ? 8 : 2, p ? 2 : 8, "#64748b"); r(191, 129, 2, 4, "#475569");
+    }
+    function desenharSalaReuniao(sl) {
+      const X = sl.ox, Y = sl.oy, C = ARTE.contorno;
+      const r = (x, y, w, h, c) => ret(ctx, X + x, Y + y, w, h, c);
+      desenharCascaSala(sl, "#ede4d3", "#c8b48c", "#3f4a5e", "#44506a", 40);
+      r(0, 28, sl.w, 2, "#a16207");
+      // quadro branco com post-its
+      r(8, 5, 60, 27, C); r(9, 6, 58, 25, "#f8fafc");
+      [["#fde047", 12, 9], ["#f9a8d4", 24, 8], ["#86efac", 36, 10], ["#93c5fd", 48, 8], ["#fde047", 18, 19], ["#fdba74", 32, 20], ["#f9a8d4", 50, 19]].forEach(([c, x, y]) => {
+        r(x, y, 9, 8, c); r(x + 1, y + 3, 6, 1, "rgba(0,0,0,0.25)"); r(x + 1, y + 5, 4, 1, "rgba(0,0,0,0.25)");
+      });
+      r(9, 31, 58, 2, "#94a3b8");
+      // telão com o slide aberto
+      r(76, 2, 90, 34, C); r(77, 3, 88, 32, "#f8fafc"); r(77, 3, 88, 7, "#1e3a8a");
+      desenharBitmap("PAUTA", X + 121, Y + 4, "#fde68a", 1, "center");
+      for (let k = 0; k < 3; k++) { r(82, 14 + k * 6, 3, 3, "#f97316"); r(88, 15 + k * 6, 30 + ((k * 13) % 26), 1, "#334155"); }
+      r(136, 14, 24, 16, "#e2e8f0"); r(138, 24, 4, 5, "#2563eb"); r(144, 20, 4, 9, "#22c55e"); r(150, 16, 4, 13, "#f97316");
+      desenharBitmap("1/87", X + 157, Y + 30, "#94a3b8", 1, "center");
+      // janela
+      r(180, 6, 48, 24, C); r(181, 7, 46, 22, "#bae6fd"); r(181, 7, 46, 4, "#e0f2fe"); r(204, 7, 1, 22, "#f8fafc");
+      r(178, 4, 4, 28, "#b45309"); r(226, 4, 4, 28, "#b45309");
+      // cadeiras de cima
+      for (let k = 0; k < 6; k++) { r(58 + k * 22, 52, 14, 12, C); r(59 + k * 22, 53, 12, 10, "#1f2937"); r(60 + k * 22, 54, 10, 3, "#374151"); }
+      // cadeira do diretor (na cabeceira)
+      r(22, 62, 18, 30, C); r(23, 63, 16, 28, "#7f1d1d"); r(25, 65, 12, 10, "#991b1b"); r(26, 80, 10, 2, "#facc15");
+      // mesa comprida
+      r(46, 64, 148, 30, C); r(47, 65, 146, 28, "#78350f"); r(47, 65, 146, 2, "#92400e"); r(47, 91, 146, 2, "#451a03");
+      for (let k = 0; k < 3; k++) r(70 + k * 50, 70, 1, 18, "#5b2708");
+      // em cima da mesa: projetor ligado, notebook, jarra d'água, copos e a ata
+      r(110, 74, 16, 9, C); r(111, 75, 14, 7, "#e2e8f0"); r(123, 77, 3, 3, Math.floor(Date.now() / 600) % 2 ? "#facc15" : "#fde68a");
+      r(64, 72, 18, 12, C); r(65, 73, 16, 10, "#334155"); r(66, 74, 14, 7, "#1e3a8a");
+      r(160, 70, 7, 10, "#bae6fd"); r(160, 70, 7, 2, "#e0f2fe");
+      [150, 172, 180].forEach(x => { r(x, 77, 4, 5, "#e0f2fe"); });
+      r(96, 82, 12, 9, "#f8fafc"); r(97, 84, 9, 1, "#94a3b8"); r(97, 86, 7, 1, "#94a3b8");
+      // cadeiras de baixo
+      for (let k = 0; k < 6; k++) { r(58 + k * 22, 96, 14, 12, C); r(59 + k * 22, 97, 12, 10, "#1f2937"); r(60 + k * 22, 104, 10, 3, "#374151"); }
+      // flipchart com a agenda
+      r(14, 100, 20, 22, C); r(15, 101, 18, 20, "#f8fafc"); r(15, 101, 18, 3, "#1e3a8a");
+      for (let k = 0; k < 4; k++) r(17, 106 + k * 4, 12 - (k % 2) * 4, 1, "#dc2626");
+      r(16, 122, 2, 10, "#475569"); r(30, 122, 2, 10, "#475569");
+      // planta e garrafa de café
+      r(210, 120, 14, 10, C); r(211, 121, 12, 8, "#9a3412"); r(206, 104, 22, 18, "#15803d"); r(211, 98, 12, 8, "#22c55e");
+      r(190, 112, 8, 14, "#dc2626"); r(190, 112, 8, 2, "#f8fafc");
+    }
     function desenharMesaChefeFrente(sl) {
       const X = sl.ox, Y = sl.oy;
       ret(ctx, X + 76, Y + 55, 88, 20, ARTE.contorno);
@@ -11479,6 +11731,44 @@
       { v: "foto", titulo: "FESTA JUNINA 2025", linhas: ["O Geraldo de caipira,", "cantando Roupa Nova.", "Ninguém entendeu nada."] },
       { v: "postit", linhas: ["Dinâmica de grupo:", "sexta, 16h.", "Trazer sorriso", "(obrigatório)"] }
     ] };
+    ARQUIVOS_CHEFE.caderno = { aba: "CADERNO DE VISITAS · PORTARIA", itens: [
+      { v: "papel", titulo: "REGISTRO DE HOJE", lista: [["07:00 · Caminhão das 7h. Chegou às 7h. Registrado por ser inédito.", 0], ["09:15 · Entregador de pizza. Ninguém pediu pizza. Ficou pro almoço.", 0], ["10:40 · Diretor. Não assinou. Disse: 'sabe quem eu sou?'", 0], ["11:30 · Mãe do Enzo trouxe o casaco dele", 0], ["14:00 · Técnico da impressora. Não tinha nada quebrado. Saiu confuso.", 0]] },
+      { v: "postit", linhas: ["Geraldo saiu 15h", "\"pro banco\".", "Voltou 17h", "bronzeado."] },
+      { v: "papel", titulo: "OCORRÊNCIA Nº 47", linhas: ["Gato no estacionamento.", "Nome dado pelo turno: Pallet.", "Status: adotado. Tem crachá."], carimbo: "RESOLVIDO", cor: "verde" }
+    ] };
+    ARQUIVOS_CHEFE.chaves = { aba: "QUADRO DE CHAVES", itens: [
+      { v: "papel", titulo: "CHAVES (CONFERIDO PELO SEU DIRCEU)", lista: [["Sala do chefe (2 cópias, 1 sumiu)", 0], ["Almoxarifado", 0], ["Empilhadeira 2 (chaveiro de pelúcia)", 0], ["Armário do Geraldo (NÃO EMPRESTAR)", 0], ["Chave misteriosa: ninguém sabe de onde é, há 9 anos", 0]] },
+      { v: "postit", linhas: ["Pegou chave?", "Assina aqui.", "Não assinou?", "Eu sei quem foi."] },
+      { v: "postit", linhas: ["Chave reserva da", "sala do chefe:", "escondida no vaso.", "(não conta pra ele)"] }
+    ] };
+    ARQUIVOS_CHEFE.achados = { aba: "ACHADOS E PERDIDOS", tema: "armario", itens: [
+      { v: "pote", emoji: "🔪", titulo: "Estilete com nome", etiqueta: "ROBSON", linhas: ["O da briga. Estava na bancada 2 o tempo todo."] },
+      { v: "pote", emoji: "🪪", titulo: "Crachá", etiqueta: "ENZO", linhas: ["Terceiro crachá perdido no mês."] },
+      { v: "pote", emoji: "🎛️", titulo: "Controle do ar", etiqueta: "???", linhas: ["Travado em 16 °C. Explica muita coisa."] },
+      { v: "pote", emoji: "☂️", titulo: "Guarda-chuva", etiqueta: "NINGUÉM", linhas: ["Está aqui desde 2019. Já é da equipe."] },
+      { v: "pote", emoji: "🎧", titulo: "Fone de ouvido", etiqueta: "KAUÃ", linhas: ["Só o lado esquerdo funciona. Rock em mono."] },
+      { v: "pote", emoji: "🍱", titulo: "Tampa de marmita", etiqueta: "SEM NOME", linhas: ["A marmita nunca foi encontrada."] }
+    ] };
+    ARQUIVOS_CHEFE.postits = { aba: "QUADRO DA SALA DE REUNIÃO", itens: [
+      { v: "postit", linhas: ["Trocar a cadeira", "que range.", "(a 4ª da esquerda)"] },
+      { v: "postit", linhas: ["Happy hour >", "happy minute"] },
+      { v: "postit", linhas: ["Ar em 22 °C.", "De novo.", "— anônimo (Jéssica)"] },
+      { v: "postit", linhas: ["Cadê o estilete", "com nome?"] },
+      { v: "postit", linhas: ["Ideia: playlist", "da equipe.", "Veto: Geraldo", "(só Roupa Nova)"] }
+    ] };
+    ARQUIVOS_CHEFE.telao = { aba: "TELÃO · APRESENTAÇÃO ABERTA", itens: [
+      { v: "papel", titulo: "SLIDE 1 DE 87", linhas: ["Alinhamento estratégico do 4º trimestre", "Apresentador: Geraldo", "(ele nunca passou do slide 3)"] },
+      { v: "papel", titulo: "SLIDE 3: NOSSOS VALORES", lista: [["Agilidade (é ASAP, né)", 0], ["Trabalho em equipe", 0], ["Roupa Nova", 0]] },
+      { v: "postit", linhas: ["Senha do projetor:", "1234.", "Não conta pro Vini."] }
+    ] };
+    ARQUIVOS_CHEFE.ata = { aba: "ATA DA ÚLTIMA REUNIÃO", itens: [
+      { v: "papel", titulo: "ATA · REUNIÃO DE SEGUNDA", linhas: ["Presentes: Geraldo, Gisele, Vini (câmera desligada)", "Pauta: amigo secreto de fim de ano", "Decisão: valor de R$ 30. Geraldo sugeriu R$ 300 'pra ele'."], carimbo: "APROVADO (R$ 30)", cor: "verde" },
+      { v: "papel", titulo: "ANOTAÇÕES NA MARGEM", linhas: ["Um foguete desenhado (Vini)", "Uma lista de compras (Gisele)", "\"Quando cai o VR?\" (Geraldo)"] }
+    ] };
+    ARQUIVOS_CHEFE.flipchart = { aba: "FLIPCHART · AGENDA DA SALA", itens: [
+      { v: "papel", titulo: "AGENDA DE DEZEMBRO", lista: [["Seg 9h · Palestra: ergonomia no picking (Gisele)", 0], ["Ter 14h · Dinâmica do amigo secreto (Gisele)", 0], ["Qua 10h · Treinamento do WMS (Vini)", 0], ["Qui 16h · Palestra motivacional (convidado surpresa)", 0], ["Sex 16h · Happy minute (1 minuto)", 0]] },
+      { v: "postit", linhas: ["Cadeira boa:", "RESERVADA", "pro diretor.", "Sempre."] }
+    ] };
     ARQUIVOS_CHEFE.quadro = { aba: "QUADRO BRANCO DA TI", itens: [
       { v: "papel", titulo: "REDE DO GALPÃO (DESENHO)", linhas: ["Internet → roteador → fita isolante → tudo", "Coletores → Wi-Fi → reza", "Impressora → ninguém sabe"] },
       { v: "papel", titulo: "TELA ROXA: CAUSAS", lista: [["Atualização", 1], ["Cabo solto", 1], ["Estagiário", 1], ["???", 0]] },
@@ -11520,7 +11810,7 @@
       const pasta = ARQUIVOS_CHEFE[onde];
       document.getElementById("arq-aba").textContent = pasta.aba;
       document.querySelector("#modal-arquivo .pasta-arq").className = "pasta-arq" + (pasta.tema ? " tema-" + pasta.tema : "");
-      document.getElementById("btn-arq-fechar").textContent = pasta.tema === "geladeira" ? "FECHAR A GELADEIRA" : pasta.tema === "armario" ? "FECHAR O ARMÁRIO" : "GUARDAR TUDO DE VOLTA";
+      document.getElementById("btn-arq-fechar").textContent = pasta.tema === "geladeira" ? "FECHAR A GELADEIRA" : pasta.tema === "armario" ? (onde === "achados" ? "GUARDAR NA CAIXA" : "FECHAR O ARMÁRIO") : "GUARDAR TUDO DE VOLTA";
       const clipe = '<svg class="arq-clipe" viewBox="0 0 16 40" aria-hidden="true"><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#64748b" stroke-width="2.6" stroke-linecap="round" transform="translate(0.7 0.7)"/><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/></svg>';
       document.getElementById("arq-corpo").innerHTML = pasta.itens.map((it, i) => {
         const rot = [-2.5, 1.8, -1.2, 2.4][i % 4];
@@ -12133,6 +12423,10 @@
     }
 
     /* ---------- Tela roxa no WMS e a TI ---------- */
+    const APARENCIA_PORTEIRO = {
+      id: "porteiro", capacete: "#1e3a8a", cabelo: "#9ca3af", pele: "#b07a52", bochecha: "#a86a4c",
+      camisa: "#1e3a8a", colete: "#334155", calca: "#1f2937", cabeloLongo: false
+    };
     const APARENCIA_TI = {
       id: "ti", capacete: "#f4f6fa", cabelo: "#111827", pele: "#8d5a3b", bochecha: "#a86a4c",
       camisa: "#111827", colete: "#0ea5e9", calca: "#334155", cabeloLongo: false
@@ -13640,6 +13934,18 @@
         entrar_cozinha: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
         entrar_rh: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
         entrar_ti: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
+        entrar_guarita: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
+        entrar_reuniao: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
+        cameras: ["[E] VER AS CAMERAS", "#0f172a", "#86efac", "#ffffff"],
+        conversar_porteiro: ["[E] FALAR COM O SEU DIRCEU", "#1f2937", "#cbd5e1", "#ffffff"],
+        cadeira_diretor: ["[E] CADEIRA DO DIRETOR", "#1f2937", "#fde68a", "#ffffff"],
+        fucar_chaves: ["[E] QUADRO DE CHAVES", "#422006", "#fde68a", "#ffffff"],
+        fucar_caderno: ["[E] CADERNO DE VISITAS", "#422006", "#fde68a", "#ffffff"],
+        fucar_achados: ["[E] ACHADOS E PERDIDOS", "#422006", "#fde68a", "#ffffff"],
+        fucar_postits: ["[E] LER OS POST-ITS", "#422006", "#fde68a", "#ffffff"],
+        fucar_telao: ["[E] OLHAR O TELAO", "#422006", "#fde68a", "#ffffff"],
+        fucar_ata: ["[E] LER A ATA", "#422006", "#fde68a", "#ffffff"],
+        fucar_flipchart: ["[E] AGENDA DA SALA", "#422006", "#fde68a", "#ffffff"],
         sair: ["[E] SAIR", "#1f2937", "#cbd5e1", "#ffffff"],
         cafeteira: ["SEGURE [E] FAZER CAFE", "#422006", "#fde68a", "#ffffff"],
         geladeira: ["[E] ABRIR GELADEIRA", "#1f2937", "#cbd5e1", "#ffffff"],
@@ -13725,6 +14031,8 @@
     document.getElementById("rel-salvar").addEventListener("click", () => salvarNoRanking());
     document.getElementById("cc-fechar").addEventListener("click", () => { if (performance.now() - chatChefe.abertoEm > 600) fecharChatChefe(); });
     document.getElementById("imp-btn").addEventListener("click", () => avancarImpressao());
+    document.getElementById("cctv-botoes").addEventListener("click", e => { const b = e.target.closest("button"); if (b) trocarCamera(Number(b.dataset.cam)); });
+    document.getElementById("cctv-fechar").addEventListener("click", () => { if (performance.now() - cctv.abertoEm > 600) fecharCameras(); });
     document.getElementById("imp-pegar").addEventListener("click", () => pegarFolhas());
     document.getElementById("btn-arq-fechar").addEventListener("click", () => {
       // O mesmo toque que abriu a pasta (botão de ação no celular) não pode fechar ela
@@ -13850,6 +14158,7 @@
         SFX.atualizarHum();
       }
       renderPixelArt();
+      desenharCCTV();
 
       requestAnimationFrame(gameLoop);
     }
