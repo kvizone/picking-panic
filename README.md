@@ -260,3 +260,7 @@ Robson, Jéssica e Kauã podem largar o emprego. O pedido largado sempre tem 2 i
 ## Foto do Geraldo com o Roupa Nova
 
 No mural atrás da mesa do Geraldo tem uma polaroid presa com clipe: ele com "o Roupa Nova" num show (foto feita por IA, com microfone derretendo e faixa "TURNE"). Do lado, um post-it: "Foto 100% real. Não precisa perguntar pro Vini." A imagem fica em `assets/img/geraldo-roupa-nova.jpg`.
+
+## A empresa: ASAP Logística
+
+O galpão é da **ASAP Logística** ("seu pedido pra ontem"). O nome aparece embaixo do logo na tela inicial, no título da aba, no cabeçalho dos relatórios do Geraldo e numa fala dele na ronda. O relatório 360° continua com "[Nome da Empresa]" no rodapé, porque a IA esqueceu de preencher.
