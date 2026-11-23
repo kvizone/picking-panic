@@ -149,7 +149,11 @@ A etiqueta mostra os horários no relógio do turno: entrada do pedido, prazo e 
 Na parede de cima tem duas portas que dá pra entrar (ação perto da porta):
 
 - **Cozinha** (porta à direita da placa PERIGO): pia, micro-ondas, cafeteira, geladeira com bilhete "NÃO MEXE" e mesa. A geladeira e a pia têm piadinhas.
-- **Sala do chefe** (porta CHEFE): o Geraldo atrás da mesa (se não estiver na ronda), quadro de "funcionário do mês" com a cara dele e gráfico de META. Falando com ele abre um chat com quatro pedidos: **aumento, férias, folga e sair mais cedo**. Ele sempre tem uma desculpa diferente.
+- **Sala do chefe** (porta CHEFE): o Geraldo atrás da mesa (se não estiver na ronda), quadro de "funcionário do mês" com a cara dele e gráfico de META. Falando com ele abre um chat com quatro pedidos: **aumento, férias, folga e sair mais cedo**. Ele sempre tem uma desculpa diferente. Dá pra **fuçar** três lugares (abre uma pasta de arquivo com papéis presos por clipe; o jogo pausa enquanto você lê):
+  - **Gaveta da mesa** (lado esquerdo da mesa): o pedido de aumento do próprio Geraldo, carimbado APROVADO; um post-it pra ensaiar o "vou ver o que posso fazer"; um pente novinho (ele é careca).
+  - **Arquivo** (gaveteiro da direita): a lista de desculpas pra não dar folga, com as já usadas riscadas; ingresso do show do Roupa Nova de 1998; carteirinha do fã-clube com foto de quando tinha cabelo.
+  - **Mural de cortiça** (parede, à direita do gráfico de META): pôster do Roupa Nova, a setlist dele pro karaokê da firma, a escala de folgas de dezembro (só ele folga, carimbo CONFIDENCIAL) e o lembrete de dizer pro diretor que a ideia do café foi dele.
+  - Se o Geraldo estiver na sala, metade das vezes ele pega você no flagra.
 
 O relógio, os pedidos e os problemas continuam correndo enquanto você está numa sala (as salas ficam fora do mapa, então nada do galpão esbarra em você lá dentro). O carrinho fica do lado de fora, na porta. Se tem coisa pra fazer no galpão, a seta aponta pra SAÍDA.
 
