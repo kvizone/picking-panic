@@ -10875,11 +10875,11 @@
     const PORTA_REUNIAO = { x: 632, y: 30 };  // sala de reunião, entre o relógio e a placa de PERIGO // porta da sala da TI, entre a placa de EPI e a janela, ao lado do balcão
     const SALAS = {
       cozinha: { ox: 5000, oy: 5000, w: 240, h: 150, fundo: 54, porta: PORTA_COZINHA,
-                 blocos: [[194, 40, 36, 22], [178, 44, 14, 14], [94, 92, 48, 16]] },
+                 blocos: [[194, 40, 36, 22], [178, 44, 14, 14], [96, 88, 46, 16]] },
       chefe: { ox: 6000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_ESCRITORIO,
                blocos: [[76, 44, 88, 30], [6, 40, 28, 26], [206, 40, 28, 30]] },
       rh: { ox: 7000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_RH,
-            blocos: [[82, 44, 76, 28], [12, 42, 22, 20], [206, 38, 28, 30], [16, 112, 28, 18], [158, 100, 64, 22]] },
+            blocos: [[44, 44, 70, 28], [118, 44, 70, 28], [12, 42, 22, 20], [206, 38, 28, 30], [16, 112, 28, 18], [170, 112, 50, 18]] },
       guarita: { ox: 9000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_GUARITA,
                  blocos: [[56, 42, 96, 26], [168, 40, 64, 24], [14, 110, 34, 20], [206, 112, 18, 18]] },
       reuniao: { ox: 10000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_REUNIAO,
@@ -10932,13 +10932,13 @@
     // Fala de quem está na sala: aparece no balão em cima da mesa
     function mostrarFalaPri(texto) {
       const sl = salaAtual();
-      mostrarBalaoNpc({ nome: "PRI", x: sl.ox + 190, y: sl.oy + 98 }, texto);
+      mostrarBalaoNpc({ nome: "PRI", x: sl.ox + 153, y: sl.oy + 44 }, texto);
       SFX.notificacao();
     }
     function mostrarFalaSala(texto) {
       const sl = salaAtual();
       const falante = { nome: cena === "rh" ? "GISELE" : cena === "ti" ? "VINI" : cena === "guarita" ? "SEU DIRCEU" : "GERALDO",
-                        x: sl.ox + (cena === "guarita" ? 124 : 120), y: sl.oy + 44 };
+                        x: sl.ox + (cena === "guarita" ? 124 : cena === "rh" ? 79 : 120), y: sl.oy + 44 };
       mostrarBalaoNpc(falante, texto);
       SFX.notificacao();
     }
@@ -10957,7 +10957,7 @@
       if (a && a.tipo === "cafe" && cena === "cozinha" && a.etapa === "fazer") return { x: sl.ox + 111, y: sl.oy + 58 };
       if (a && a.tipo === "cafe" && cena === "chefe" && a.etapa === "levar") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a && a.tipo === "relatorio" && cena === "ti" && a.etapa === "imprimir") return { x: sl.ox + 209, y: sl.oy + 100 };
-      if (a && cena === "rh" && ((a.tipo === "notaFiscal" && a.etapa === "pegar") || (a.tipo === "recibos" && a.etapa === "entregar"))) return { x: sl.ox + 200, y: sl.oy + 134 };
+      if (a && cena === "rh" && ((a.tipo === "notaFiscal" && a.etapa === "pegar") || (a.tipo === "recibos" && a.etapa === "entregar"))) return { x: sl.ox + 165, y: sl.oy + 84 };
       if (a && a.tipo === "recibos" && a.etapa === "coletar") {
         const rec = a.recibos.find(r => r.sala === cena && !r.pego);
         if (rec) return { x: sl.ox + rec.x, y: sl.oy + rec.y };
@@ -10966,7 +10966,7 @@
       if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "pegar") return { x: sl.ox + 205, y: sl.oy + 66 };
       if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "vela") return { x: sl.ox + 118, y: sl.oy + 84 };
       if (a && a.tipo === "bolo" && cena === "chefe" && a.etapa === "entregar" && !a.npc) return { x: sl.ox + 120, y: sl.oy + 80 };
-      if (a && a.tipo === "briga" && !a.chamado && cena === "rh") return { x: sl.ox + 120, y: sl.oy + 80 };
+      if (a && a.tipo === "briga" && !a.chamado && cena === "rh") return { x: sl.ox + 79, y: sl.oy + 84 };
       if (a && a.tipo === "telaRoxa" && !a.chamado && cena === "ti") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a || fila.ativo || pedidosEsperando().length || hidra.seca) return { x: sl.ox + sl.w / 2, y: sl.oy + sl.h }; // tem coisa lá fora
       return null;
@@ -11086,7 +11086,7 @@
         }
       } else if (cena === "rh" || cena === "ti") {
         const pontos = cena === "rh"
-          ? [["sugestoes", 8, 44, 48, 76], ["aniversarios", 164, 192, 48, 64], ["ocorrencias", 190, 240, 48, 86]]
+          ? [["sugestoes", 8, 44, 48, 76], ["aniversarios", 189, 205, 40, 74], ["ocorrencias", 205, 240, 48, 86]]
           : [["quadro", 10, 72, 48, 64], ["chamados", 164, 204, 48, 76], ["cabos", 8, 58, 96, 132]];
         if (cena === "ti" && lx >= 180 && ly >= 90 && ly < 134) {
           const imprimir = a && a.tipo === "relatorio" && a.etapa === "imprimir";
@@ -11104,8 +11104,8 @@
             return;
           }
         }
-        if (cena === "rh" && ly >= 120 && lx >= 154 && lx < 226) {
-          if (lx < 180) {
+        if (cena === "rh" && ly >= 72 && ly < 104 && lx >= 118 && lx < 190) {
+          if (lx < 136) {
             player.currentZone = { tipo: "fucar_planilha" };
             if (interactPressedThisFrame) abrirArquivo("planilha");
             return;
@@ -11125,7 +11125,7 @@
           }
           return;
         }
-        if (ly >= 72 && ly < 104 && Math.abs(lx - 120) < 42) {
+        if (ly >= 72 && ly < 104 && (cena === "rh" ? lx >= 40 && lx < 118 : Math.abs(lx - 120) < 42)) {
           const ehRH = cena === "rh";
           const npc = ehRH ? rh : ti;
           const precisa = a && !a.chamado && a.tipo === (ehRH ? "briga" : "telaRoxa");
@@ -11787,20 +11787,29 @@
       r(11, 68, 12, 2, "rgba(15,23,42,0.22)");
       r(10, 58, 13, 10, C); r(11, 59, 11, 8, "#9a3412"); r(11, 59, 11, 2, "#c2410c"); r(12, 61, 2, 5, "#c2410c");
       [[6, 49, 9, 7, "#15803d"], [15, 47, 9, 8, "#16a34a"], [10, 43, 7, 7, "#22c55e"], [14, 52, 7, 6, "#22c55e"]].forEach(([x, y, w, h, c]) => { r(x, y, w, h, c); r(x + 1, y + 1, w - 3, 1, "#4ade80"); });
-      // tapete com franja, mesa com veio e cadeiras com encosto
-      r(80, 86, 76, 30, "#f59e0b"); r(82, 88, 72, 26, "#fcd34d");
-      for (let x = 84; x < 152; x += 6) { r(x, 90, 3, 1, "#f59e0b"); r(x + 3, 111, 3, 1, "#f59e0b"); }
-      for (let x = 81; x < 156; x += 3) { r(x, 84, 1, 2, "#fde68a"); r(x, 116, 1, 2, "#fde68a"); }
-      [[84, 93], [144, 93]].forEach(([bx, by]) => {
-        r(bx + 1, by + 14, 9, 2, "rgba(15,23,42,0.22)");
-        r(bx, by, 10, 14, C); r(bx + 1, by + 1, 8, 12, "#64748b"); r(bx + 1, by + 1, 8, 2, "#94a3b8"); r(bx + 2, by + 4, 6, 1, "#475569");
-      });
-      sombraMovel(X, Y, 94, 92, 48, 16);
-      r(94, 92, 48, 16, C); r(95, 93, 46, 11, "#c08457"); r(95, 93, 46, 1, "#e0b088"); r(97, 97, 12, 1, "#a86b3f"); r(118, 100, 16, 1, "#a86b3f"); r(95, 104, 46, 3, "#7c3f12");
-      r(98, 94, 12, 8, "#fef3c7"); r(100, 95, 8, 5, "#f8fafc"); r(101, 96, 6, 3, "#fb923c"); r(102, 96, 2, 1, "#fde68a");   // marmita aberta no jogo americano
-      r(126, 95, 6, 6, C); r(127, 96, 4, 4, "#60a5fa"); r(127, 96, 1, 4, "#bfdbfe"); r(132, 97, 1, 2, "#60a5fa");          // caneca
-      for (let k = 0; k < 2; k++) r(128 + k * 2, 91 - ((t / 150 + k * 4) % 5), 1, 2, "rgba(241,245,249,0.6)");          // vapor
-      r(112, 96, 9, 4, "#fef3c7"); r(112, 96, 9, 1, "#fde68a");                                                           // guardanapo
+      // mesa redonda de madeira com toalhinha xadrez e quatro cadeiras em volta
+      const cadeira = (x, y, frente) => {
+        r(x + 1, y + 13, 11, 2, "rgba(15,23,42,0.2)");
+        r(x, y, 13, 13, C); r(x + 1, y + 1, 11, 11, "#a16207"); r(x + 1, y + 1, 11, 1, "#ca8a04");
+        if (frente) { r(x + 1, y + 7, 11, 5, "#854d0e"); r(x + 2, y + 8, 9, 1, "#a16207"); }
+        else { r(x + 2, y + 3, 9, 2, "#854d0e"); r(x + 2, y + 7, 9, 2, "#854d0e"); }
+      };
+      cadeira(113, 76, false); cadeira(84, 90, false); cadeira(142, 90, false);
+      // tampo redondo (visto de cima, levemente achatado), borda e sombra colada no chão
+      const larg = [26, 34, 40, 44, 46, 46, 46, 46, 46, 46, 46, 46, 44, 40, 34, 26];
+      r(99, 104, 42, 3, "rgba(15,23,42,0.22)"); r(103, 107, 34, 2, "rgba(15,23,42,0.12)");
+      larg.forEach((w, k) => r(119 - w / 2 - 1, 88 + k, w + 2, 1, C));
+      r(119 - 13, 87, 26, 1, C); r(119 - 13, 104, 26, 1, C);
+      larg.forEach((w, k) => r(119 - w / 2, 88 + k, w, 1, k < 2 ? "#e0b088" : k > 12 ? "#7c4a22" : k > 10 ? "#9a6236" : "#b9814f"));
+      r(103, 93, 14, 1, "#a8703f"); r(122, 98, 16, 1, "#a8703f");
+      // toalhinha xadrez, vasinho de flor, marmita, caneca com vapor, saleiro e guardanapo
+      for (let yy = 0; yy < 7; yy++) for (let xx = 0; xx < 11; xx++) r(108 + xx * 2, 92 + yy, 2, 1, (xx + yy) % 2 ? "#f8fafc" : "#ef4444");
+      r(117, 88, 4, 5, "#e0f2fe"); r(116, 85, 2, 3, "#f472b6"); r(119, 84, 3, 3, "#facc15"); r(118, 87, 1, 2, "#16a34a");
+      r(100, 94, 9, 6, C); r(101, 95, 7, 4, "#f8fafc"); r(102, 96, 5, 2, "#fb923c"); r(102, 96, 2, 1, "#fde68a");
+      r(131, 93, 6, 6, C); r(132, 94, 4, 4, "#60a5fa"); r(132, 94, 1, 4, "#bfdbfe"); r(137, 95, 1, 2, "#60a5fa");
+      for (let k = 0; k < 2; k++) r(133 + k * 2, 89 - ((t / 150 + k * 4) % 5), 1, 2, "rgba(241,245,249,0.6)");
+      r(124, 100, 2, 3, "#f8fafc"); r(127, 100, 2, 3, "#111827"); r(110, 100, 7, 2, "#fef3c7");
+      cadeira(113, 104, true);
     }
     function desenharSalaRH(sl) {
       const X = sl.ox, Y = sl.oy, C = ARTE.contorno, t = Date.now();
@@ -11857,197 +11866,213 @@
       r(206, 38, 28, 32, C); r(207, 39, 26, 30, "#c4b5fd"); r(207, 39, 26, 1, "#ddd6fe"); r(232, 39, 1, 30, "#a78bfa");
       [0, 1, 2].forEach(i => { r(209, 41 + i * 9, 22, 7, "#a78bfa"); r(209, 41 + i * 9, 22, 1, "#c4b5fd"); r(211, 42 + i * 9, 6, 2, "#f8fafc"); r(219, 44 + i * 9, 8, 2, "#4c1d95"); });
       r(209, 34, 4, 5, "#facc15"); r(213, 33, 4, 6, "#38bdf8"); r(217, 35, 4, 4, "#f472b6"); r(226, 34, 5, 5, "#a16207"); r(226, 31, 5, 4, "#22c55e");
-      // cadeira e Gisele na mesa (se não saiu pra resolver briga)
-      r(110, 29, 20, 15, C); r(111, 30, 18, 13, "#4c1d95"); r(112, 31, 16, 3, "#6d28d9"); r(112, 31, 16, 1, "#7c3aed");
-      if (!rh.ativo) renderPixelCharacter(X + 120, Y + 46, "DOWN", 0, rh.vestColor, false, false, 1, 1, false, false, APARENCIA_RH);
-      // mesa clarinha: tampo, gaveteiros com puxador e sombra
-      sombraMovel(X, Y, 82, 44, 76, 28);
-      r(82, 44, 76, 28, C); r(83, 45, 74, 9, "#f5e6d3"); r(83, 45, 74, 1, "#fffbf5"); r(83, 53, 74, 1, "#e0c9a6"); r(83, 54, 74, 17, "#d6b48c");
-      [86, 122].forEach(x => { r(x, 57, 32, 12, "#c9a275"); r(x, 57, 32, 1, "#dcbb8f"); r(x + 14, 60, 4, 1, "#7c5b34"); r(x + 14, 65, 4, 1, "#7c5b34"); r(x, 63, 32, 1, "#b58f62"); });
-      // na mesa: monitor com o portal do RH, teclado, mouse, plaquinha, difusor, lenços e plantinha
-      r(87, 34, 18, 12, C); r(88, 35, 16, 9, "#ede9fe"); r(88, 35, 16, 2, "#7c3aed"); r(89, 38, 6, 1, "#a78bfa"); r(89, 40, 9, 1, "#c4b5fd"); r(99, 38, 4, 4, "#f472b6");
-      r(94, 46, 4, 2, "#475569"); r(88, 48, 13, 3, "#e2e8f0"); r(88, 48, 13, 1, "#f8fafc"); r(102, 48, 3, 4, "#e2e8f0");
-      r(106, 47, 27, 6, C); r(107, 48, 25, 4, "#7c3aed"); desenharBitmap("GISELE", X + 119, Y + 48, "#fef3c7", 1, "center");
-      r(134, 46, 6, 5, C); r(135, 47, 4, 3, "#c2410c"); r(134, 42, 6, 4, "#22c55e"); r(136, 41, 2, 2, "#4ade80");
-      r(141, 44, 7, 7, C); r(142, 45, 5, 5, "#e0f2fe"); r(142, 45, 2, 5, "#ffffff");
-      for (let k = 0; k < 3; k++) r(143 + (k % 2), 42 - ((t / 160 + k * 3) % 7), 2, 1, "rgba(226,232,240,0.7)");
-      r(149, 45, 8, 6, C); r(150, 46, 6, 4, "#f8fafc"); r(150, 46, 6, 1, "#f9a8d4"); r(152, 43, 2, 3, "#ffffff");
-      if (rh.ativo) { r(103, 22, 34, 9, C); r(104, 23, 32, 7, "#fef3c7"); desenharBitmap("JA VOLTO", X + 120, Y + 24, "#7c3aed", 1, "center"); }
+      // Duas mesas lado a lado: Gisele (RH) à esquerda, Pri (financeiro) à direita
+      const mesa = (mx, cadeira, cadeira2, npcVisivel, npcX, aparencia, cor, placa, corPlaca, corTexto) => {
+        r(mx + 26, 29, 20, 15, C); r(mx + 27, 30, 18, 13, cadeira); r(mx + 28, 31, 16, 3, cadeira2); r(mx + 28, 31, 16, 1, "rgba(255,255,255,0.25)");
+        if (npcVisivel) renderPixelCharacter(X + npcX, Y + 46, "DOWN", 0, cor, false, false, 1, 1, false, false, aparencia);
+        sombraMovel(X, Y, mx, 44, 70, 28);
+        r(mx, 44, 70, 28, C); r(mx + 1, 45, 68, 9, "#f5e6d3"); r(mx + 1, 45, 68, 1, "#fffbf5"); r(mx + 1, 53, 68, 1, "#e0c9a6"); r(mx + 1, 54, 68, 17, "#d6b48c");
+        [mx + 3, mx + 36].forEach(x => { r(x, 57, 31, 12, "#c9a275"); r(x, 57, 31, 1, "#dcbb8f"); r(x + 13, 60, 4, 1, "#7c5b34"); r(x + 13, 65, 4, 1, "#7c5b34"); r(x, 63, 31, 1, "#b58f62"); });
+        const w = placa.length * 4 + 6, px = mx + 35 - Math.round(w / 2);
+        r(px, 47, w, 6, C); r(px + 1, 48, w - 2, 4, corPlaca); desenharBitmap(placa, X + mx + 35, Y + 48, corTexto, 1, "center");
+      };
+      // Gisele: monitor com o portal do RH, teclado, difusor, lenços e plantinha
+      mesa(44, "#4c1d95", "#6d28d9", !rh.ativo, 79, APARENCIA_RH, rh.vestColor, "GISELE", "#7c3aed", "#fef3c7");
+      r(46, 34, 18, 12, C); r(47, 35, 16, 9, "#ede9fe"); r(47, 35, 16, 2, "#7c3aed"); r(48, 38, 6, 1, "#a78bfa"); r(48, 40, 9, 1, "#c4b5fd"); r(58, 38, 4, 4, "#f472b6");
+      r(53, 46, 4, 1, "#475569");
+      r(97, 46, 6, 5, C); r(98, 47, 4, 3, "#c2410c"); r(97, 42, 6, 4, "#22c55e"); r(99, 41, 2, 2, "#4ade80");
+      r(104, 44, 7, 7, C); r(105, 45, 5, 5, "#e0f2fe"); r(105, 45, 2, 5, "#ffffff");
+      for (let k = 0; k < 3; k++) r(106 + (k % 2), 42 - ((t / 160 + k * 3) % 7), 2, 1, "rgba(226,232,240,0.7)");
+      if (rh.ativo) { r(62, 22, 34, 9, C); r(63, 23, 32, 7, "#fef3c7"); desenharBitmap("JA VOLTO", X + 79, Y + 24, "#7c3aed", 1, "center"); }
+      // Pri: planilha no monitor, calculadora com bobina, cofrinho e pilha de notas
+      mesa(118, "#065f46", "#047857", true, 153, APARENCIA_PRI, "#22c55e", "PRI", "#065f46", "#bbf7d0");
+      r(120, 33, 20, 13, C); r(121, 34, 18, 10, "#f8fafc"); r(121, 34, 18, 2, "#16a34a");
+      for (let k = 0; k < 3; k++) for (let j = 0; j < 4; j++) r(122 + j * 4, 37 + k * 2, 3, 1, (k + j) % 3 ? "#bbf7d0" : "#22c55e");
+      r(135, 37, 3, 5, "#22c55e"); r(128, 46, 4, 1, "#475569");
+      r(166, 44, 8, 7, C); r(167, 45, 6, 5, "#334155"); r(167, 45, 6, 1, "#86efac"); r(167, 47, 2, 1, "#cbd5e1"); r(170, 47, 2, 1, "#cbd5e1"); r(167, 49, 5, 1, "#f97316");
+      r(168, 40, 4, 4, "#f8fafc"); r(169, 41, 2, 1, "#94a3b8");
+      r(176, 45, 9, 6, "#f9a8d4"); r(176, 45, 9, 1, "#fbcfe8"); r(177, 44, 2, 1, "#f9a8d4"); r(184, 46, 1, 2, "#f9a8d4"); r(178, 46, 1, 1, "#111827"); r(180, 44, 3, 1, "#111827");
+      r(133, 46, 9, 5, "#fef9c3"); r(134, 45, 7, 1, "#fef08a"); r(133, 48, 9, 1, "#fde68a");
       // puff capitonê
       r(18, 130, 26, 2, "rgba(15,23,42,0.22)");
       r(16, 112, 28, 18, C); r(17, 113, 26, 16, "#ec4899"); r(17, 113, 26, 5, "#f472b6"); r(18, 113, 24, 1, "#f9a8d4");
       [[22, 120], [30, 120], [38, 120], [26, 125], [34, 125]].forEach(([x, y]) => r(x, y, 1, 1, "#be185d"));
-      // Cantinho do financeiro: a Pri, com planilha, calculadora com bobina, cofrinho e pilha de notas
+      // sofazinho de espera e planta no canto
+      r(172, 130, 50, 2, "rgba(15,23,42,0.22)");
+      r(170, 112, 50, 18, C); r(171, 113, 48, 6, "#7c3aed"); r(171, 113, 48, 1, "#a78bfa"); r(171, 119, 48, 10, "#6d28d9");
+      r(172, 120, 22, 7, "#8b5cf6"); r(196, 120, 22, 7, "#8b5cf6"); r(172, 120, 22, 1, "#a78bfa"); r(196, 120, 22, 1, "#a78bfa");
+      r(200, 115, 8, 5, "#fde047"); r(201, 116, 6, 3, "#facc15");                                         // almofada
       r(225, 106, 12, 2, "rgba(15,23,42,0.22)");
       r(224, 92, 12, 14, C); r(225, 93, 10, 12, "#9a3412"); r(225, 93, 10, 2, "#c2410c");
       [[220, 82, 8, 7, "#15803d"], [228, 80, 9, 8, "#16a34a"], [223, 76, 8, 7, "#22c55e"]].forEach(([x, y, w, h, c]) => { r(x, y, w, h, c); r(x + 1, y + 1, w - 3, 1, "#4ade80"); });
-      r(181, 87, 18, 14, C); r(182, 88, 16, 12, "#065f46"); r(183, 89, 14, 3, "#047857"); // cadeira da Pri
-      renderPixelCharacter(X + 190, Y + 102, "DOWN", 0, "#22c55e", false, false, 1, 1, false, false, APARENCIA_PRI);
-      sombraMovel(X, Y, 158, 100, 64, 22);
-      r(158, 100, 64, 22, C); r(159, 101, 62, 7, "#e7e5e4"); r(159, 101, 62, 1, "#fafaf9"); r(159, 108, 62, 13, "#a8a29e"); r(159, 108, 62, 1, "#d6d3d1");
-      r(170, 111, 40, 8, "#065f46"); r(170, 111, 40, 1, "#10b981"); desenharBitmap("FINANCEIRO", X + 190, Y + 112, "#bbf7d0", 1, "center");
-      r(161, 89, 20, 13, C); r(162, 90, 18, 10, "#f8fafc"); r(162, 90, 18, 2, "#16a34a");             // monitor com a planilha
-      for (let k = 0; k < 3; k++) for (let j = 0; j < 4; j++) r(163 + j * 4, 93 + k * 2, 3, 1, (k + j) % 3 ? "#bbf7d0" : "#22c55e");
-      r(176, 93, 3, 5, "#22c55e"); r(168, 101, 6, 1, "#475569");
-      r(198, 100, 8, 7, C); r(199, 101, 6, 5, "#334155"); r(199, 101, 6, 1, "#86efac"); r(199, 103, 2, 1, "#cbd5e1"); r(202, 103, 2, 1, "#cbd5e1"); r(199, 105, 5, 1, "#f97316");
-      r(200, 96, 4, 4, "#f8fafc"); r(201, 97, 2, 1, "#94a3b8");                                          // bobina da calculadora
-      r(209, 101, 9, 6, "#f9a8d4"); r(209, 101, 9, 1, "#fbcfe8"); r(210, 100, 2, 1, "#f9a8d4"); r(217, 102, 1, 2, "#f9a8d4"); r(211, 102, 1, 1, "#111827"); r(213, 100, 3, 1, "#111827");
-      r(184, 101, 10, 6, "#fef9c3"); r(185, 100, 8, 1, "#fef08a"); r(184, 103, 10, 1, "#fde68a"); r(186, 99, 6, 1, "#f8fafc"); // pilha de notas
-    }
-    function desenharSalaChefe(sl) {
-      const X = sl.ox, Y = sl.oy;
-      desenharCascaSala(sl, "#5b3a24", "#3b2416", "#475569", "#3f4a5c", 40);
-      for (let tx = X; tx < X + sl.w; tx += 10) ret(ctx, tx, Y, 1, 37, "#4a2f1d");
-      // janela com persiana
-      ret(ctx, X + 40, Y + 6, 40, 24, ARTE.contorno); ret(ctx, X + 41, Y + 7, 38, 22, "#93c5fd");
-      for (let i = 0; i < 6; i++) ret(ctx, X + 41, Y + 8 + i * 4, 38, 2, "#e5e7eb");
-      // quadro "funcionário do mês" atrás da cadeira (é ele mesmo)
-      ret(ctx, X + 108, Y + 3, 24, 22, "#d4a017"); ret(ctx, X + 110, Y + 5, 20, 18, "#fef3c7");
-      ret(ctx, X + 115, Y + 8, 10, 8, "#e9b28a"); ret(ctx, X + 117, Y + 11, 2, 1, "#111827"); ret(ctx, X + 121, Y + 11, 2, 1, "#111827");
-      ret(ctx, X + 113, Y + 17, 14, 5, "#eef1f5");
-      // gráfico da META
-      ret(ctx, X + 138, Y + 6, 24, 18, ARTE.contorno); ret(ctx, X + 139, Y + 7, 22, 16, "#f8fafc");
-      ret(ctx, X + 141, Y + 17, 3, 4, "#22c55e"); ret(ctx, X + 146, Y + 14, 3, 7, "#22c55e"); ret(ctx, X + 151, Y + 11, 3, 10, "#22c55e"); ret(ctx, X + 156, Y + 19, 3, 2, "#ef4444");
-      desenharBitmap("META", X + 150, Y + 26, "#fde047", 1, "center");
-      // mural de cortiça cheio de papel (dá pra olhar)
-      ret(ctx, X + 166, Y + 3, 34, 30, "#3b2410"); ret(ctx, X + 168, Y + 5, 30, 26, "#c08a56");
-      ret(ctx, X + 170, Y + 7, 9, 11, "#1e3a8a"); ret(ctx, X + 171, Y + 8, 7, 4, "#f97316"); ret(ctx, X + 171, Y + 13, 7, 1, "#fde047"); // pôster
-      ret(ctx, X + 181, Y + 7, 8, 9, "#f8fafc"); ret(ctx, X + 182, Y + 9, 6, 1, "#94a3b8"); ret(ctx, X + 182, Y + 11, 6, 1, "#94a3b8"); ret(ctx, X + 182, Y + 13, 4, 1, "#94a3b8");
-      ret(ctx, X + 190, Y + 9, 6, 6, "#fde047");
-      ret(ctx, X + 172, Y + 20, 10, 8, "#f8fafc"); ret(ctx, X + 173, Y + 22, 8, 1, "#94a3b8"); ret(ctx, X + 173, Y + 24, 6, 1, "#ef4444");
-      ret(ctx, X + 185, Y + 19, 10, 9, "#fca5a5");
-      [[174, 7], [184, 7], [192, 9], [176, 20], [189, 19]].forEach(([px, py]) => ret(ctx, X + px, Y + py - 1, 2, 2, "#dc2626"));
-      // brilho na gaveta da mesa e no arquivo, pra dar vontade de fuçar
-      if (Math.floor(Date.now() / 600) % 2 === 0) { ret(ctx, X + 79, Y + 59, 2, 2, "#fde68a"); ret(ctx, X + 230, Y + 38, 2, 2, "#fde68a"); ret(ctx, X + 197, Y + 6, 2, 2, "#fde68a"); }
-      // planta e arquivo
-      ret(ctx, X + 10, Y + 52, 20, 14, ARTE.contorno); ret(ctx, X + 11, Y + 53, 18, 12, "#9a3412");
-      ret(ctx, X + 8, Y + 36, 24, 18, "#15803d"); ret(ctx, X + 12, Y + 32, 16, 8, "#22c55e"); ret(ctx, X + 16, Y + 28, 8, 6, "#16a34a");
-      ret(ctx, X + 206, Y + 34, 28, 36, ARTE.contorno); ret(ctx, X + 207, Y + 35, 26, 34, "#6b7280");
-      [0, 1, 2].forEach(i => { ret(ctx, X + 209, Y + 37 + i * 11, 22, 9, "#9ca3af"); ret(ctx, X + 217, Y + 40 + i * 11, 6, 2, "#374151"); });
-      // cadeira do chefe e o Geraldo (se não estiver na ronda)
-      ret(ctx, X + 110, Y + 30, 20, 14, ARTE.contorno); ret(ctx, X + 111, Y + 31, 18, 12, "#111827");
-      if (!ronda.ativo) {
-        const fala = chatChefe.aberto && chatChefe.falando;
-        renderPixelCharacter(X + 120, Y + 46, "DOWN", 0, ronda.vestColor, false, false, 1, fala && Math.floor(Date.now() / 160) % 2 ? 1.03 : 1, false, false, APARENCIA_CHEFE);
-      }
-      // tampo da mesa (a frente vem depois da personagem)
-      ret(ctx, X + 76, Y + 44, 88, 12, ARTE.contorno); ret(ctx, X + 77, Y + 45, 86, 10, "#9a6234"); ret(ctx, X + 77, Y + 45, 86, 2, "#b87a45");
-      ret(ctx, X + 84, Y + 36, 18, 12, ARTE.contorno); ret(ctx, X + 85, Y + 37, 16, 9, "#1e3a8a"); ret(ctx, X + 91, Y + 46, 4, 2, "#374151"); // monitor
-      ret(ctx, X + 140, Y + 46, 14, 7, "#f8fafc"); ret(ctx, X + 142, Y + 45, 14, 7, "#e5e7eb");                                       // papéis
-      ret(ctx, X + 126, Y + 45, 6, 6, ARTE.contorno); ret(ctx, X + 127, Y + 46, 4, 4, "#facc15");                                      // caneca nº1
     }
     function desenharSalaTI(sl) {
-      const X = sl.ox, Y = sl.oy, C = ARTE.contorno;
+      const X = sl.ox, Y = sl.oy, C = ARTE.contorno, t = Date.now();
       const r = (x, y, w, h, c) => ret(ctx, X + x, Y + y, w, h, c);
-      const pisca = (n) => Math.floor(Date.now() / (180 + n * 37)) % 2 === 0;
-      // parede escura, piso de placas e cabos pelo chão
-      desenharCascaSala(sl, "#1e293b", "#0f172a", "#334155", "#2b3647", 40);
-      r(40, 120, 70, 1, "#0f172a"); r(110, 74, 1, 47, "#0f172a"); r(150, 100, 60, 1, "#1d4ed8"); r(150, 72, 1, 29, "#1d4ed8");
-      // quadro branco rabiscado
-      r(12, 4, 60, 30, C); r(13, 5, 58, 28, "#f8fafc");
+      const pisca = (n) => Math.floor(t / (180 + n * 37)) % 2 === 0;
+      desenharCascaSala(sl, "#1e293b", "#0f172a", "#334155", "#2f3a4d", 40);
+      // piso elevado de data center: placas com parafuso e uma grelha de ventilação
+      for (let y = 40; y < sl.h - 3; y += 12) for (let x = 0; x < sl.w; x += 12) { r(x, y, 12, 1, "#273244"); r(x, y, 1, 12, "#273244"); r(x + 1, y + 1, 1, 1, "#4b5a72"); r(x + 10, y + 10, 1, 1, "#4b5a72"); }
+      for (let k = 0; k < 4; k++) r(146, 122 + k * 2, 22, 1, "#1e293b");
+      // parede escura com painel acústico e fita de LED azul
+      for (let x = 0; x < sl.w; x += 10) for (let y = 4; y < 34; y += 10) r(x + 1, y + 1, 8, 8, "#22304a");
+      r(0, 36, sl.w, 1, Math.floor(t / 1500) % 2 ? "#38bdf8" : "#0ea5e9"); r(0, 37, sl.w, 2, "rgba(56,189,248,0.12)");
+      // cabos no chão (com fita prendendo)
+      r(40, 120, 70, 1, "#0f172a"); r(110, 74, 1, 47, "#0f172a"); r(150, 100, 48, 1, "#1d4ed8"); r(150, 72, 1, 29, "#1d4ed8");
+      r(60, 119, 4, 3, "#a8a29e"); r(108, 96, 4, 3, "#a8a29e"); r(170, 99, 4, 3, "#a8a29e");
+      // quadro branco rabiscado (rede do galpão)
+      r(14, 6, 60, 30, "rgba(0,0,0,0.3)"); r(12, 4, 60, 30, C); r(13, 5, 58, 28, "#cbd5e1"); r(14, 6, 56, 26, "#f8fafc");
       r(16, 9, 10, 6, "#ffffff"); r(16, 9, 10, 1, "#2563eb"); r(16, 14, 10, 1, "#2563eb"); r(16, 9, 1, 6, "#2563eb"); r(25, 9, 1, 6, "#2563eb");
-      r(27, 12, 12, 1, "#2563eb"); r(40, 9, 9, 6, "#fef3c7"); r(50, 12, 10, 1, "#dc2626"); r(60, 9, 8, 6, "#fca5a5");
-      desenharBitmap("???", X + 42, Y + 20, "#dc2626", 1, "center"); r(16, 27, 30, 1, "#16a34a"); r(16, 30, 20, 1, "#16a34a");
-      // pôster
-      r(80, 6, 30, 22, C); r(81, 7, 28, 20, "#0f172a"); desenharBitmap("SEM", X + 95, Y + 9, "#facc15", 1, "center");
+      r(27, 12, 12, 1, "#2563eb"); r(40, 9, 9, 6, "#fef3c7"); r(40, 9, 9, 1, "#d97706"); r(50, 12, 10, 1, "#dc2626"); r(60, 9, 8, 6, "#fca5a5");
+      desenharBitmap("???", X + 42, Y + 18, "#dc2626", 1, "center"); r(16, 27, 30, 1, "#16a34a"); r(16, 30, 20, 1, "#16a34a"); r(52, 25, 14, 6, "#fde047");
+      r(13, 33, 58, 2, "#94a3b8"); r(20, 32, 6, 1, "#dc2626"); r(28, 32, 6, 1, "#2563eb");
+      // pôster "SEM CHAMADO" e prateleira de coletores quebrados
+      r(80, 6, 30, 22, C); r(81, 7, 28, 20, "#0f172a"); r(81, 7, 28, 1, "#1e293b"); desenharBitmap("SEM", X + 95, Y + 9, "#facc15", 1, "center");
       desenharBitmap("CHAMADO", X + 95, Y + 16, "#facc15", 1, "center"); r(84, 23, 22, 2, "#ef4444");
-      // ventiladorzinho e prateleira de coletores quebrados
-      r(120, 10, 40, 3, "#475569");
-      [124, 132, 140, 148].forEach((cx, i) => { r(cx, 4, 6, 6, C); r(cx + 1, 5, 4, 4, i === 2 ? "#a855f7" : "#64748b"); });
-      // rack de servidor com leds piscando
-      r(204, 6, 30, 64, C); r(205, 7, 28, 62, "#111827");
+      r(118, 12, 44, 3, "#475569"); r(118, 12, 44, 1, "#64748b"); r(122, 15, 2, 4, "#334155"); r(156, 15, 2, 4, "#334155");
+      [124, 132, 140, 148].forEach((cx, i) => { r(cx, 4, 7, 8, C); r(cx + 1, 5, 5, 6, i === 2 ? "#a855f7" : "#64748b"); r(cx + 2, 6, 3, 2, i === 2 ? "#e9d5ff" : "#94a3b8"); if (i === 1) r(cx + 1, 8, 5, 1, "#ef4444"); });
+      // rack de servidores: porta de vidro, unidades, leds e cabos coloridos
+      r(206, 8, 30, 64, "rgba(0,0,0,0.3)");
+      r(204, 6, 30, 64, C); r(205, 7, 28, 62, "#0b1220"); r(205, 7, 28, 1, "#1f2937");
       for (let i = 0; i < 6; i++) {
-        r(207, 10 + i * 10, 24, 7, "#1f2937");
-        r(209, 12 + i * 10, 2, 2, pisca(i) ? "#22c55e" : "#14532d");
-        r(213, 12 + i * 10, 2, 2, pisca(i + 3) ? "#38bdf8" : "#0c4a6e");
-        r(218, 12 + i * 10, 10, 1, "#374151");
+        const y = 10 + i * 10;
+        r(207, y, 24, 7, "#1f2937"); r(207, y, 24, 1, "#334155");
+        r(209, y + 2, 2, 2, pisca(i) ? "#22c55e" : "#14532d"); r(213, y + 2, 2, 2, pisca(i + 3) ? "#38bdf8" : "#0c4a6e");
+        for (let k = 0; k < 4; k++) r(218 + k * 3, y + 2, 2, 3, "#111827");
       }
-      // PC de testes no cantinho (os chamados)
-      r(172, 42, 30, 20, C); r(173, 43, 28, 18, "#475569");
-      r(176, 30, 20, 14, C); r(177, 31, 18, 11, "#0f172a"); r(178, 33, 10, 1, "#22c55e"); r(178, 36, 14, 1, "#22c55e"); r(178, 39, 8, 1, "#22c55e");
-      // Vini na mesa (se não saiu pra consertar)
-      r(110, 30, 20, 14, C); r(111, 31, 18, 12, "#0f172a");
+      [["#facc15", 218], ["#38bdf8", 222], ["#f472b6", 226]].forEach(([c, x]) => r(x, 66, 1, 6, c));
+      r(206, 7, 2, 62, "rgba(255,255,255,0.06)");
+      // PC de testes no cantinho (a fila de chamados)
+      sombraMovel(X, Y, 172, 42, 30, 20);
+      r(172, 42, 30, 20, C); r(173, 43, 28, 18, "#475569"); r(173, 43, 28, 1, "#64748b");
+      r(176, 30, 21, 14, C); r(177, 31, 19, 11, "#0f172a"); r(178, 33, 10, 1, "#22c55e"); r(178, 36, 14, 1, "#22c55e"); r(178, 39, 8, 1, "#22c55e");
+      if (pisca(2)) r(187, 39, 2, 1, "#86efac");
+      r(184, 44, 6, 2, "#334155"); r(176, 48, 20, 4, "#1f2937");
+      // Vini na cadeira gamer (se não saiu pra consertar)
+      r(109, 26, 22, 18, C); r(110, 27, 20, 16, "#111827"); r(112, 28, 16, 4, "#dc2626"); r(112, 28, 16, 1, "#f87171"); r(119, 33, 2, 8, "#dc2626");
       if (!ti.ativo) renderPixelCharacter(X + 120, Y + 46, "DOWN", 0, ti.vestColor, false, false, 1, 1, false, false, APARENCIA_TI);
-      // mesa preta com três monitores, latinhas e teclado gamer
+      // mesa preta com fita de LED, dois monitores, monitor em pé, teclado RGB, latinhas e pato de borracha
+      sombraMovel(X, Y, 78, 44, 84, 28);
       r(78, 44, 84, 28, C); r(79, 45, 82, 9, "#334155"); r(79, 45, 82, 1, "#475569"); r(79, 54, 82, 17, "#1f2937");
-      // dois monitores nas pontas (o Vini fica no meio) e um monitor em pé de lado
+      r(79, 54, 82, 1, ["#ef4444", "#22c55e", "#3b82f6", "#a855f7"][Math.floor(t / 400) % 4]);
+      r(82, 58, 32, 11, "#111827"); r(126, 58, 32, 11, "#111827"); r(96, 62, 4, 1, "#475569"); r(140, 62, 4, 1, "#475569");
       [[84, "#1d4ed8"], [134, "#a855f7"]].forEach(([mx, c], i) => {
-        r(mx, 32, 22, 14, C); r(mx + 1, 33, 20, 11, "#0b1220");
+        r(mx, 32, 22, 14, C); r(mx + 1, 33, 20, 11, "#0b1220"); r(mx + 1, 33, 20, 1, "#1f2937");
         for (let l = 0; l < 3; l++) r(mx + 3, 35 + l * 3, 6 + ((l * 7 + i * 5) % 12), 1, c);
+        r(mx + 9, 46, 4, 1, "#475569");
       });
-      r(157, 28, 6, 18, C); r(158, 29, 4, 15, "#0b1220"); r(159, 31, 2, 1, "#22c55e"); r(159, 34, 2, 1, "#22c55e");
-      r(100, 47, 40, 4, "#111827"); for (let k = 0; k < 8; k++) r(102 + k * 5, 48, 3, 2, ["#ef4444", "#f97316", "#facc15", "#22c55e", "#38bdf8", "#6366f1", "#a855f7", "#ec4899"][k]);
-      r(146, 47, 4, 6, "#16a34a"); r(151, 47, 4, 6, "#16a34a"); r(84, 47, 4, 6, "#ef4444");              // latinhas
+      r(157, 28, 6, 18, C); r(158, 29, 4, 15, "#0b1220"); r(159, 31, 2, 1, "#22c55e"); r(159, 34, 2, 1, "#22c55e"); r(159, 37, 2, 1, "#38bdf8");
+      r(100, 47, 40, 4, "#111827"); for (let k = 0; k < 8; k++) r(102 + k * 5, 48, 3, 2, ["#ef4444", "#f97316", "#facc15", "#22c55e", "#38bdf8", "#6366f1", "#a855f7", "#ec4899"][(k + Math.floor(t / 250)) % 8]);
+      r(143, 48, 5, 3, "#111827"); r(144, 48, 3, 1, "#374151");
+      r(146, 44, 4, 7, C); r(147, 45, 2, 5, "#16a34a"); r(151, 44, 4, 7, C); r(152, 45, 2, 5, "#16a34a"); r(84, 45, 4, 7, C); r(85, 46, 2, 5, "#ef4444");
+      r(91, 47, 5, 4, "#facc15"); r(94, 46, 2, 2, "#facc15"); r(96, 47, 1, 1, "#f97316");         // patinho de borracha (debug)
       if (ti.ativo) { r(100, 20, 40, 9, C); r(101, 21, 38, 7, "#0b1220"); desenharBitmap("ATENDENDO", X + 120, Y + 22, "#38bdf8", 1, "center"); }
       // caixa de papelão com cabos saindo
-      r(16, 108, 30, 18, C); r(17, 109, 28, 16, "#b45309"); r(17, 109, 28, 3, "#d97706");
+      r(17, 126, 30, 2, "rgba(0,0,0,0.3)");
+      r(16, 108, 30, 18, C); r(17, 109, 28, 16, "#b45309"); r(17, 109, 28, 3, "#d97706"); r(31, 109, 1, 16, "#a16207");
       desenharBitmap("CABOS", X + 31, Y + 116, "#fde68a", 1, "center");
-      r(20, 104, 2, 6, "#111827"); r(26, 102, 2, 8, "#2563eb"); r(34, 103, 2, 7, "#dc2626"); r(40, 105, 2, 5, "#f8fafc");
+      r(20, 103, 2, 7, "#111827"); r(21, 101, 3, 2, "#111827"); r(26, 101, 2, 9, "#2563eb"); r(34, 102, 2, 8, "#dc2626"); r(40, 104, 2, 6, "#f8fafc"); r(43, 103, 4, 2, "#facc15");
       // impressora (a que funciona) num móvel baixo, com o bilhete do Vini
-      r(196, 114, 32, 14, C); r(197, 115, 30, 12, "#475569");
-      r(198, 102, 28, 14, C); r(199, 103, 26, 12, "#e2e8f0"); r(199, 103, 26, 2, "#f8fafc");
-      r(202, 107, 18, 2, "#334155"); r(222, 106, 2, 2, Math.floor(Date.now() / 500) % 2 ? "#22c55e" : "#15803d");
+      sombraMovel(X, Y, 196, 106, 32, 20);
+      r(196, 114, 32, 14, C); r(197, 115, 30, 12, "#475569"); r(197, 115, 30, 1, "#64748b"); r(210, 120, 4, 1, "#94a3b8");
+      r(198, 102, 28, 14, C); r(199, 103, 26, 12, "#e2e8f0"); r(199, 103, 26, 2, "#f8fafc"); r(199, 113, 26, 1, "#cbd5e1");
+      r(202, 107, 18, 2, "#334155"); r(222, 106, 2, 2, Math.floor(t / 500) % 2 ? "#22c55e" : "#15803d");
       const imprimindo = estadoJogo === "IMPRESSAO" && impressao.passo >= PASSOS_IMPRESSAO.length;
       r(203, 98 + (imprimindo ? -3 : 0), 14, 5 + (imprimindo ? 3 : 0), "#ffffff");
       r(205, 116, 12, 8, "#fef08a"); r(206, 118, 10, 1, "#1d4ed8"); r(206, 120, 8, 1, "#1d4ed8");
+      // frigobar com energético
+      r(55, 128, 16, 2, "rgba(0,0,0,0.3)");
+      r(54, 112, 16, 16, C); r(55, 113, 14, 14, "#e2e8f0"); r(55, 113, 14, 1, "#f8fafc"); r(66, 116, 1, 6, "#94a3b8"); r(57, 116, 6, 5, "#16a34a"); r(58, 117, 4, 1, "#86efac");
     }
     function desenharGuarita(sl) {
-      const X = sl.ox, Y = sl.oy, C = ARTE.contorno;
+      const X = sl.ox, Y = sl.oy, C = ARTE.contorno, t = Date.now();
       const r = (x, y, w, h, c) => ret(ctx, X + x, Y + y, w, h, c);
-      const t = Date.now();
-      desenharCascaSala(sl, "#cbd5e1", "#94a3b8", "#b8b2a6", "#aca597", 40);
-      r(0, 30, sl.w, 2, "#64748b");
-      // quadro de chaves
-      r(10, 4, 38, 28, C); r(11, 5, 36, 26, "#a16207"); r(12, 6, 34, 4, "#854d0e");
+      desenharCascaSala(sl, "#cbd5e1", "#64748b", "#b8b2a6", "#aea798", 40);
+      // piso de cerâmica gasta: rejunte, manchas e o caminho mais pisado até a mesa
+      for (let y = 40; y < sl.h - 3; y += 12) { r(0, y, sl.w, 1, "#9c9586"); for (let x = 0; x < sl.w; x += 12) r(x, y, 1, 12, "#9c9586"); }
+      for (let k = 0; k < 10; k++) r((k * 53) % 230 + 4, 46 + (k * 29) % 96, 3, 2, "#a39c8d");
+      r(108, 72, 24, 76, "rgba(120, 113, 100, 0.18)");
+      // parede: meia parede azul-acinzentada embaixo, faixa e tomada
+      r(0, 22, sl.w, 15, "#94a3b8"); r(0, 22, sl.w, 1, "#e2e8f0"); r(0, 23, sl.w, 1, "#64748b");
+      for (let x = 6; x < sl.w; x += 16) r(x, 26, 1, 9, "#8391a6");
+      r(156, 30, 4, 4, "#f8fafc"); r(157, 31, 1, 1, C); r(158, 31, 1, 1, C);
+      // quadro de chaves com etiquetas e a chave misteriosa
+      r(12, 6, 38, 28, "rgba(15,23,42,0.18)");
+      r(10, 4, 38, 28, C); r(11, 5, 36, 26, "#a16207"); r(11, 5, 36, 1, "#ca8a04"); r(12, 6, 34, 4, "#854d0e");
       desenharBitmap("CHAVES", X + 29, Y + 6, "#fde68a", 1, "center");
       [["#facc15", 14, 13], ["#ef4444", 22, 13], ["#38bdf8", 30, 13], ["#22c55e", 38, 13], ["#f472b6", 14, 22], ["#a78bfa", 22, 22], ["#cbd5e1", 30, 22]].forEach(([c, x, y]) => {
-        r(x + 1, y, 1, 2, "#e2e8f0"); r(x, y + 2, 3, 5, c); r(x + 1, y + 7, 1, 2, "#94a3b8");
+        r(x + 1, y - 1, 1, 1, "#78716c"); r(x + 1, y, 1, 2, "#e2e8f0"); r(x, y + 2, 4, 5, c); r(x, y + 2, 4, 1, "rgba(255,255,255,0.45)"); r(x + 1, y + 7, 1, 2, "#94a3b8");
       });
-      r(38, 22, 4, 7, "#78716c"); // a chave misteriosa
-      // monitores das câmeras (2x2) em cima da mesa
-      r(58, 2, 50, 34, C); r(59, 3, 48, 32, "#111827");
+      r(38, 21, 1, 1, "#78716c"); r(37, 22, 5, 8, "#57534e"); r(38, 23, 3, 1, "#a8a29e"); desenharBitmap("?", X + 40, Y + 24, "#fde68a", 1, "center");
+      // painel dos monitores das câmeras (2x2) num suporte, com fios
+      r(60, 3, 50, 34, "rgba(15,23,42,0.2)");
+      r(58, 1, 50, 34, C); r(59, 2, 48, 32, "#1f2937"); r(59, 2, 48, 1, "#374151");
       for (let i = 0; i < 4; i++) {
-        const mx = 61 + (i % 2) * 23, my = 5 + Math.floor(i / 2) * 15;
-        r(mx, my, 21, 13, "#1f2937");
-        if (i === 3) { for (let k = 0; k < 6; k++) r(mx + ((t / 40 + k * 7) % 19), my + ((k * 5 + t / 90) % 11), 2, 1, "#9ca3af"); }
-        else { r(mx + 2, my + 8, 17, 3, "#374151"); r(mx + 4 + i * 4, my + 4, 3, 4, "#6b7280"); r(mx + 1, my + 1 + Math.floor(t / 70 + i * 4) % 11, 19, 1, "rgba(134,239,172,0.25)"); }
+        const mx = 61 + (i % 2) * 23, my = 4 + Math.floor(i / 2) * 15;
+        r(mx, my, 21, 13, "#0b1220");
+        if (i === 3) { for (let k = 0; k < 8; k++) r(mx + ((t / 40 + k * 7) % 19), my + ((k * 5 + t / 90) % 11), 2, 1, "#9ca3af"); }
+        else {
+          r(mx + 1, my + 8, 19, 4, "#1e3a2a"); r(mx + 3 + i * 4, my + 3, 3, 5, "#4b6b57"); r(mx + 12, my + 5, 6, 3, "#365145");
+          r(mx + 1, my + 1 + Math.floor(t / 70 + i * 4) % 11, 19, 1, "rgba(134,239,172,0.3)");
+        }
         r(mx + 17, my + 1, 2, 2, Math.floor(t / 500) % 2 ? "#ef4444" : "#7f1d1d");
       }
       desenharBitmap("CAM", X + 83, Y + 30, "#86efac", 1, "center");
+      r(70, 35, 1, 7, "#111827"); r(96, 35, 1, 7, "#111827");
       // relógio e calendário de borracharia
-      r(116, 6, 9, 9, C); r(117, 7, 7, 7, "#f8fafc"); r(120, 8, 1, 3, C); r(120, 10, 3, 1, C);
-      r(130, 4, 20, 26, C); r(131, 5, 18, 24, "#f8fafc"); r(131, 5, 18, 7, "#dc2626"); desenharBitmap("DEZ", X + 140, Y + 6, "#ffffff", 1, "center");
-      for (let k = 0; k < 4; k++) r(133, 15 + k * 3, 14, 1, "#cbd5e1");
-      // janela pro estacionamento com a cancela
-      r(168, 3, 66, 30, C); r(169, 4, 64, 28, "#7dd3fc"); r(169, 22, 64, 10, "#64748b"); r(169, 21, 64, 1, "#475569");
-      r(176, 14, 3, 9, "#334155");
+      r(115, 5, 11, 11, C); r(116, 6, 9, 9, "#f8fafc"); r(116, 6, 9, 1, "#e2e8f0"); r(120, 7, 1, 4, C); r(120, 10, 3, 1, "#dc2626");
+      r(131, 4, 20, 27, "rgba(15,23,42,0.18)"); r(129, 2, 20, 27, C); r(130, 3, 18, 25, "#f8fafc"); r(130, 3, 18, 7, "#dc2626");
+      desenharBitmap("DEZ", X + 139, Y + 4, "#ffffff", 1, "center"); r(138, 1, 2, 3, "#94a3b8");
+      for (let k = 0; k < 4; k++) for (let j = 0; j < 5; j++) r(131 + j * 3, 12 + k * 4, 2, 2, (k * 5 + j) === 13 ? "#dc2626" : "#cbd5e1");
+      // janela grande pro estacionamento: céu, cancela que abre e fecha, caminhãozinho e o gato Pallet
+      r(167, 2, 68, 32, C); r(168, 3, 66, 30, "#7dd3fc"); r(168, 3, 66, 9, "#bae6fd");
+      r(176, 6, 12, 3, "#f8fafc"); r(179, 5, 6, 1, "#f8fafc"); r(212, 8, 9, 2, "#f8fafc");
+      r(168, 22, 66, 11, "#64748b"); r(168, 21, 66, 1, "#475569"); for (let x = 172; x < 234; x += 10) r(x, 27, 5, 1, "#f8fafc");
+      r(176, 14, 3, 9, "#334155"); r(175, 13, 5, 2, "#facc15");
       const aberta = Math.floor(t / 4000) % 3 === 0;
-      if (aberta) for (let k = 0; k < 5; k++) r(178, 14 - k * 2, 2, 2, k % 2 ? "#f8fafc" : "#ef4444");
+      if (aberta) for (let k = 0; k < 5; k++) r(178, 13 - k * 2, 2, 2, k % 2 ? "#f8fafc" : "#ef4444");
       else for (let k = 0; k < 8; k++) r(179 + k * 5, 14, 5, 2, k % 2 ? "#f8fafc" : "#ef4444");
-      r(206, 16, 18, 8, "#f59e0b"); r(208, 13, 10, 4, "#fbbf24"); r(207, 24, 3, 2, "#111827"); r(220, 24, 3, 2, "#111827"); // caminhãozinho lá fora
-      r(200, 7, 3, 3, "#f8fafc"); r(196, 8, 10, 2, "#f8fafc"); // nuvem
-      r(200, 4, 1, 28, "#e2e8f0");
-      // Seu Dirceu na mesa (atrás da mesa: a mesa cobre as pernas)
+      r(206, 15, 20, 9, "#f59e0b"); r(206, 15, 20, 1, "#fcd34d"); r(220, 12, 6, 4, "#fbbf24"); r(221, 13, 4, 2, "#bae6fd");
+      r(208, 24, 4, 3, "#111827"); r(220, 24, 4, 3, "#111827"); r(209, 25, 2, 1, "#9ca3af"); r(221, 25, 2, 1, "#9ca3af");
+      r(192, 28, 5, 3, "#f97316"); r(196, 27, 2, 2, "#f97316"); r(191, 27, 1, 2, "#f97316");     // o gato Pallet
+      r(200, 3, 2, 30, "#e2e8f0"); r(165, 33, 72, 3, "#94a3b8"); r(165, 33, 72, 1, "#cbd5e1");
+      luzJanela(X, Y, 170, 62, 40, 36);
+      // Seu Dirceu na cadeira, atrás da mesa
+      r(114, 30, 20, 14, C); r(115, 31, 18, 12, "#1e3a8a"); r(116, 32, 16, 3, "#1d4ed8"); r(116, 32, 16, 1, "#3b82f6");
       renderPixelCharacter(X + 124, Y + 46, "DOWN", 0, "#334155", false, false, 1, 1, false, false, APARENCIA_PORTEIRO);
-      // mesa com rádio AM, garrafa térmica, palavra cruzada e cafezinho
-      r(56, 42, 96, 26, C); r(57, 43, 94, 8, "#78716c"); r(57, 43, 94, 1, "#a8a29e"); r(57, 51, 94, 16, "#57534e");
-      r(60, 54, 40, 11, "#44403c"); r(104, 54, 44, 11, "#44403c");
-      r(62, 40, 14, 8, C); r(63, 41, 12, 6, "#92400e"); r(65, 43, 5, 3, "#fde68a"); r(72, 42, 2, 2, "#111827"); r(73, 33, 1, 8, "#94a3b8"); // rádio
-      r(80, 38, 5, 10, "#dc2626"); r(80, 38, 5, 2, "#f8fafc");                                                                    // garrafa térmica
-      r(134, 44, 12, 7, "#f8fafc"); for (let k = 0; k < 3; k++) r(135 + k * 4, 45, 3, 5, "#cbd5e1"); r(146, 43, 1, 6, "#1d4ed8"); // palavra cruzada
-      r(90, 45, 4, 4, "#f8fafc"); r(91, 45, 2, 1, "#7c2d12");                                                                     // copinho de café
-      // balcão de atendimento com o caderno de visitas
-      r(168, 40, 64, 24, C); r(169, 41, 62, 7, "#a8a29e"); r(169, 48, 62, 15, "#78716c");
-      r(186, 40, 18, 7, "#1d4ed8"); r(187, 41, 16, 5, "#f8fafc"); r(195, 41, 1, 5, "#1d4ed8"); r(205, 42, 1, 5, "#111827"); // caderno e caneta
-      desenharBitmap("VISITAS", X + 200, Y + 52, "#fde68a", 1, "center");
-      // achados e perdidos
-      r(14, 110, 34, 20, C); r(15, 111, 32, 18, "#b45309"); r(15, 111, 32, 4, "#d97706");
-      desenharBitmap("ACHADOS", X + 31, Y + 118, "#fef3c7", 1, "center");
-      r(18, 106, 6, 5, "#facc15"); r(28, 105, 2, 7, "#1d4ed8"); r(34, 107, 8, 4, "#ef4444");
-      // cones e ventilador
-      [0, 1, 2].forEach(k => { r(209 + k, 128 - k * 6, 12 - k * 2, 6, "#f97316"); r(210 + k, 126 - k * 6, 10 - k * 2, 1, "#f8fafc"); });
-      r(186, 118, 12, 12, C); r(187, 119, 10, 10, "#cbd5e1");
-      const p = Math.floor(t / 60) % 2; r(p ? 188 : 191, p ? 123 : 120, p ? 8 : 2, p ? 2 : 8, "#64748b"); r(191, 129, 2, 4, "#475569");
+      // mesa de fórmica com rádio AM, garrafa térmica, palavra cruzada, café e teclado das câmeras
+      sombraMovel(X, Y, 56, 42, 96, 26);
+      r(56, 42, 96, 26, C); r(57, 43, 94, 8, "#a8a29e"); r(57, 43, 94, 1, "#d6d3d1"); r(57, 50, 94, 1, "#78716c"); r(57, 51, 94, 16, "#57534e");
+      [60, 104].forEach(x => { r(x, 54, 40 + (x === 104 ? 4 : 0), 11, "#44403c"); r(x, 54, 40 + (x === 104 ? 4 : 0), 1, "#6b6560"); r(x + 18, 58, 5, 1, "#a8a29e"); });
+      r(61, 39, 15, 9, C); r(62, 40, 13, 7, "#92400e"); r(62, 40, 13, 1, "#b45309"); r(64, 42, 6, 3, "#fde68a"); r(65, 43, 4, 1, "#a16207"); r(72, 42, 2, 2, "#111827"); r(72, 45, 2, 1, "#111827");
+      r(74, 31, 1, 9, "#94a3b8"); r(74, 31, 3, 1, "#94a3b8");
+      if (Math.floor(t / 700) % 2) desenharBitmap("~", X + 70, Y + 33, "#e2e8f0", 1, "center");
+      r(79, 37, 6, 11, C); r(80, 38, 4, 9, "#dc2626"); r(80, 38, 4, 2, "#f8fafc"); r(81, 41, 1, 5, "#f87171");
+      r(88, 44, 14, 4, "#1f2937"); for (let k = 0; k < 6; k++) r(89 + k * 2, 45, 1, 2, "#6b7280");
+      r(134, 43, 13, 8, "#f8fafc"); for (let k = 0; k < 3; k++) for (let j = 0; j < 3; j++) r(135 + j * 4, 44 + k * 2, 3, 1, (k + j) % 2 ? "#cbd5e1" : "#111827"); r(147, 42, 1, 7, "#1d4ed8");
+      r(106, 44, 5, 5, C); r(107, 45, 3, 3, "#f8fafc"); r(108, 45, 1, 1, "#7c2d12");
+      // balcão de atendimento com vidro, caderno de visitas e caneta presa na cordinha
+      sombraMovel(X, Y, 168, 40, 64, 24);
+      r(168, 40, 64, 24, C); r(169, 41, 62, 6, "#d6d3d1"); r(169, 41, 62, 1, "#f5f5f4"); r(169, 47, 62, 16, "#78716c"); r(169, 47, 62, 1, "#a8a29e");
+      for (let x = 172; x < 230; x += 14) r(x, 49, 1, 13, "#6b6560");
+      r(185, 40, 22, 8, C); r(186, 41, 20, 6, "#1d4ed8"); r(187, 41, 8, 5, "#f8fafc"); r(196, 41, 9, 5, "#f8fafc"); r(195, 41, 1, 6, "#1e3a8a");
+      for (let k = 0; k < 2; k++) { r(188, 42 + k * 2, 6, 1, "#94a3b8"); r(197, 42 + k * 2, 7, 1, "#94a3b8"); }
+      r(208, 42, 1, 5, "#111827"); r(209, 44, 6, 1, "#94a3b8");
+      desenharBitmap("VISITAS", X + 200, Y + 53, "#fde68a", 1, "center");
+      // achados e perdidos: caixa de papelão aberta com coisas pra fora
+      r(15, 130, 34, 2, "rgba(15,23,42,0.22)");
+      r(14, 110, 34, 20, C); r(15, 111, 32, 18, "#b45309"); r(15, 111, 32, 4, "#d97706"); r(15, 115, 32, 1, "#92400e"); r(30, 111, 1, 18, "#a16207");
+      desenharBitmap("ACHADOS", X + 31, Y + 119, "#fef3c7", 1, "center");
+      r(12, 108, 5, 4, "#d97706"); r(45, 108, 5, 4, "#d97706");
+      r(18, 105, 6, 6, "#facc15"); r(19, 106, 4, 1, "#fde047"); r(27, 103, 2, 8, "#1d4ed8"); r(34, 106, 8, 5, "#ef4444"); r(35, 106, 6, 1, "#f87171"); r(41, 104, 3, 4, "#a78bfa");
+      // ventilador de pé e cones empilhados
+      r(186, 133, 14, 2, "rgba(15,23,42,0.2)");
+      r(186, 116, 14, 13, C); r(187, 117, 12, 11, "#e2e8f0"); r(187, 117, 12, 1, "#f8fafc");
+      const p = Math.floor(t / 60) % 2; r(p ? 188 : 192, p ? 122 : 118, p ? 10 : 2, p ? 2 : 10, "#94a3b8"); r(192, 122, 2, 2, "#475569");
+      r(192, 129, 2, 4, "#64748b"); r(188, 133, 10, 1, "#475569");
+      r(206, 130, 18, 2, "rgba(15,23,42,0.2)");
+      [0, 1, 2].forEach(k => { r(208 + k * 2, 126 - k * 6, 14 - k * 4, 6, "#f97316"); r(209 + k * 2, 124 - k * 6, 12 - k * 4, 2, "#f8fafc"); r(208 + k * 2, 126 - k * 6, 2, 6, "#fb923c"); });
+      r(206, 128, 18, 3, "#ea580c");
     }
     function desenharMesaChefeFrente(sl) {
       const X = sl.ox, Y = sl.oy;
