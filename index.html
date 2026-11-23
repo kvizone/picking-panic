@@ -9060,6 +9060,7 @@
     // Ritmo do turno sem fim: a cada 3 pedidos entregues vem uma demanda;
     // no meio desses 3 pedidos (depois do 1º ou do 2º) estoura um problema
     const PEDIDOS_POR_CICLO = 3;
+    const TEMPO_ESTREIA = 900; // 15 min de roteiro fixo de demandas antes do rodízio
     const DEMANDAS_SEM_FIM = ["caminhao", "treino", "relatorio", "inventario", "cafe", "bolo"];
 
     const URGENCIA_INFO = {
@@ -9124,7 +9125,10 @@
       emerg.vistos = {};
       emerg.ultimaBrigaEm = 0;
       emerg.temasBriga = [];
-      emerg.visitaEm = MISSAO_ATUAL.semFim ? 540 + Math.random() * 120 : Infinity; // entre 9 e 11 minutos
+      emerg.visitaEm = MISSAO_ATUAL.semFim ? 600 + Math.random() * 60 : Infinity; // entre 10 e 11 minutos
+      // Roteiro de estreia (primeiros 15 min): cada demanda clássica aparece uma vez, pra quem está conhecendo o jogo.
+      // Café aos 2:30, Enzo aos 5:00, caminhão (empilhadeira) aos 7:30; a visita da diretoria vem entre 10 e 11 min.
+      emerg.roteiro = MISSAO_ATUAL.semFim ? [[150, "cafe"], [300, "treino"], [450, "caminhao"]] : [];
       // Turno sem fim: o primeiro problema é sempre a tela roxa (é o problema dos 3 primeiros pedidos);
       // depois, tudo anda pela contagem de pedidos
       if (MISSAO_ATUAL.semFim && u) {
@@ -9175,6 +9179,8 @@
     // Pedido comum entregue no turno sem fim: avança o ciclo de 3
     function contarPedidoNoCiclo() {
       fila.ciclo = (fila.ciclo || 0) + 1;
+      // Nos primeiros 15 min quem manda é o roteiro de estreia; depois, demanda a cada 3 pedidos
+      if (tempoDecorrido < TEMPO_ESTREIA) return;
       if (fila.ciclo % PEDIDOS_POR_CICLO === 0) {
         // Fechou 3 pedidos: a demanda começa assim que fechar a janela do pedido entregue
         // (se o Enzo ainda está treinando, esse ciclo fica sem demanda)
@@ -9374,6 +9380,12 @@
           if (emerg.hud <= 0) { emerg.hud = 0.1; atualizarBannerEmergencia(); }
         }
         if (MISSAO_ATUAL.semFim && estadoJogo === "JOGANDO") {
+          // Roteiro de estreia: chegou a hora, a demanda entra na fila (o Enzo só se não estiver treinando)
+          const prox = emerg.roteiro && emerg.roteiro[0];
+          if (prox && tempoDecorrido >= prox[0] && !emerg.demandaPendente && !(prox[1] === "treino" && treinoAtivo)) {
+            emerg.roteiro.shift();
+            emerg.demandaPendente = prox[1];
+          }
           // Demanda: entre um pedido e outro (nada na mão), começa na hora
           if (emerg.demandaPendente && !fila.ativo && !cargaDepositada) {
             const d = emerg.demandaPendente;

@@ -148,6 +148,19 @@ A etiqueta mostra os horários no relógio do turno: entrada do pedido, prazo e 
 
 O Geraldo só reclama quando 5 pedidos atrasados ficam parados no balcão (e pra lembrar de beber água). Ele não comenta mais penalidade, briga, tela roxa nem pedido atrasado sozinho. No turno sem fim, pedidos novos entram a cada 95 segundos (era 35), mais a folga quando a fila está cheia.
 
+## Primeiros 15 minutos (estreia)
+
+Pra quem está conhecendo o jogo, o turno sem fim tem um roteiro fixo de demandas nos primeiros 15 minutos:
+
+| Quando | Demanda |
+|---|---|
+| 2:30 | ☕ Café do Geraldo |
+| 5:00 | 🎓 Enzo chega pro treino |
+| 7:30 | 🚛 Caminhão (empilhadeira) |
+| 10:00 a 11:00 | 🏢 Visita da diretoria |
+
+Cada uma começa quando você está sem pedido na mão. Os problemas (tela roxa, incêndio, briga...) seguem normais. Depois dos 15 min, volta o rodízio: uma demanda a cada 3 pedidos entregues (caminhão, Enzo, relatório, inventário, café e bolo), o que dá mais ou menos uma a cada 5 ou 6 minutos com os pedidos a cada 95 s.
+
 ## Novas demandas: relatório e bolo surpresa
 
 Entram no rodízio de demandas do turno sem fim (os pedidos congelam enquanto isso, igual ao café):
