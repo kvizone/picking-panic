@@ -8034,6 +8034,8 @@
       resetarRonda();
       rh.ativo = false;
       ti.ativo = false;
+      cctv.aberta = false;       // câmeras da portaria fechadas
+      geladeiraAberta = false;
       RADIO_MUSICA.voltarDaTemporaria();
       enzo.ativo = false;
       enzo.modo = "";
@@ -8054,7 +8056,7 @@
       resetarEmergencias();
       fecharChefe();
       resetarDicasDaPartida();
-      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok", "modal-tela-roxa", "modal-demanda", "modal-inventario", "modal-arquivo"]
+      ["modal-briefing", "modal-erguer", "modal-boot", "modal-falha", "modal-pedido-ok", "modal-tela-roxa", "modal-demanda", "modal-inventario", "modal-arquivo", "modal-cameras", "modal-impressao"]
         .forEach(id => { document.getElementById(id).style.display = "none"; });
 
       encaixarCameraNoJogador();
@@ -12647,7 +12649,6 @@
 
     // Passo do treino sem o Enzo do lado: não conta (devolve true quando bloqueou)
     function treinoBloqueia() {
-      const a = emerg.ativa;
       if (!treinoAtivo || !enzo.ativo || enzo.modo !== "treino") return false;
       if (fila.ativo && fila.ativo.def.urgente) return false; // pedido largado por colega não entra no treino
       if (enzoPerto()) return false;
@@ -14050,6 +14051,10 @@
 
     function falharFase(evento, titulo = "BATERIA ACABOU") {
       fecharChefe();
+      // Fim de turno: fecha o que estiver aberto por cima (câmeras, impressora, pastas, conversa com o Geraldo)
+      if (cctv.aberta) fecharCameras();
+      fecharChatChefe();
+      ["modal-impressao", "modal-arquivo", "modal-demanda"].forEach(id => { const m = document.getElementById(id); if (m) m.style.display = "none"; });
       if (RADIO_MUSICA.urlTemporaria) { RADIO_MUSICA.urlTemporaria = null; RADIO_MUSICA.descartarAudio(); }
       hidra.seca = false;
       cancelarBroncaAgendada();
