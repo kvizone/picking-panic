@@ -10981,11 +10981,7 @@
       const lx = player.x - sl.ox, ly = player.y - sl.oy;
       if (chatChefe.aberto || cctv.aberta) return;
       if (ly > sl.h + 2) { sairDaSala(); return; }
-      if (ly > sl.h - 24 && Math.abs(lx - sl.w / 2) < 16) {
-        player.currentZone = { tipo: "sair" };
-        if (interactPressedThisFrame) sairDaSala();
-        return;
-      }
+      // Sair é só passar pela porta (sem botão)
       const a = emerg.ativa;
       if (a && a.tipo === "recibos" && a.etapa === "coletar") {
         const rec = a.recibos.find(r => r.sala === cena && !r.pego && Math.hypot(lx - r.x, ly - r.y) < 20);
@@ -11920,6 +11916,48 @@
       r(225, 106, 12, 2, "rgba(15,23,42,0.22)");
       r(224, 92, 12, 14, C); r(225, 93, 10, 12, "#9a3412"); r(225, 93, 10, 2, "#c2410c");
       [[220, 82, 8, 7, "#15803d"], [228, 80, 9, 8, "#16a34a"], [223, 76, 8, 7, "#22c55e"]].forEach(([x, y, w, h, c]) => { r(x, y, w, h, c); r(x + 1, y + 1, w - 3, 1, "#4ade80"); });
+    }
+    function desenharSalaChefe(sl) {
+      const X = sl.ox, Y = sl.oy;
+      desenharCascaSala(sl, "#5b3a24", "#3b2416", "#475569", "#3f4a5c", 40);
+      for (let tx = X; tx < X + sl.w; tx += 10) ret(ctx, tx, Y, 1, 37, "#4a2f1d");
+      // janela com persiana
+      ret(ctx, X + 40, Y + 6, 40, 24, ARTE.contorno); ret(ctx, X + 41, Y + 7, 38, 22, "#93c5fd");
+      for (let i = 0; i < 6; i++) ret(ctx, X + 41, Y + 8 + i * 4, 38, 2, "#e5e7eb");
+      // quadro "funcionário do mês" atrás da cadeira (é ele mesmo)
+      ret(ctx, X + 108, Y + 3, 24, 22, "#d4a017"); ret(ctx, X + 110, Y + 5, 20, 18, "#fef3c7");
+      ret(ctx, X + 115, Y + 8, 10, 8, "#e9b28a"); ret(ctx, X + 117, Y + 11, 2, 1, "#111827"); ret(ctx, X + 121, Y + 11, 2, 1, "#111827");
+      ret(ctx, X + 113, Y + 17, 14, 5, "#eef1f5");
+      // gráfico da META
+      ret(ctx, X + 138, Y + 6, 24, 18, ARTE.contorno); ret(ctx, X + 139, Y + 7, 22, 16, "#f8fafc");
+      ret(ctx, X + 141, Y + 17, 3, 4, "#22c55e"); ret(ctx, X + 146, Y + 14, 3, 7, "#22c55e"); ret(ctx, X + 151, Y + 11, 3, 10, "#22c55e"); ret(ctx, X + 156, Y + 19, 3, 2, "#ef4444");
+      desenharBitmap("META", X + 150, Y + 26, "#fde047", 1, "center");
+      // mural de cortiça cheio de papel (dá pra olhar)
+      ret(ctx, X + 166, Y + 3, 34, 30, "#3b2410"); ret(ctx, X + 168, Y + 5, 30, 26, "#c08a56");
+      ret(ctx, X + 170, Y + 7, 9, 11, "#1e3a8a"); ret(ctx, X + 171, Y + 8, 7, 4, "#f97316"); ret(ctx, X + 171, Y + 13, 7, 1, "#fde047"); // pôster
+      ret(ctx, X + 181, Y + 7, 8, 9, "#f8fafc"); ret(ctx, X + 182, Y + 9, 6, 1, "#94a3b8"); ret(ctx, X + 182, Y + 11, 6, 1, "#94a3b8"); ret(ctx, X + 182, Y + 13, 4, 1, "#94a3b8");
+      ret(ctx, X + 190, Y + 9, 6, 6, "#fde047");
+      ret(ctx, X + 172, Y + 20, 10, 8, "#f8fafc"); ret(ctx, X + 173, Y + 22, 8, 1, "#94a3b8"); ret(ctx, X + 173, Y + 24, 6, 1, "#ef4444");
+      ret(ctx, X + 185, Y + 19, 10, 9, "#fca5a5");
+      [[174, 7], [184, 7], [192, 9], [176, 20], [189, 19]].forEach(([px, py]) => ret(ctx, X + px, Y + py - 1, 2, 2, "#dc2626"));
+      // brilho na gaveta da mesa e no arquivo, pra dar vontade de fuçar
+      if (Math.floor(Date.now() / 600) % 2 === 0) { ret(ctx, X + 79, Y + 59, 2, 2, "#fde68a"); ret(ctx, X + 230, Y + 38, 2, 2, "#fde68a"); ret(ctx, X + 197, Y + 6, 2, 2, "#fde68a"); }
+      // planta e arquivo
+      ret(ctx, X + 10, Y + 52, 20, 14, ARTE.contorno); ret(ctx, X + 11, Y + 53, 18, 12, "#9a3412");
+      ret(ctx, X + 8, Y + 36, 24, 18, "#15803d"); ret(ctx, X + 12, Y + 32, 16, 8, "#22c55e"); ret(ctx, X + 16, Y + 28, 8, 6, "#16a34a");
+      ret(ctx, X + 206, Y + 34, 28, 36, ARTE.contorno); ret(ctx, X + 207, Y + 35, 26, 34, "#6b7280");
+      [0, 1, 2].forEach(i => { ret(ctx, X + 209, Y + 37 + i * 11, 22, 9, "#9ca3af"); ret(ctx, X + 217, Y + 40 + i * 11, 6, 2, "#374151"); });
+      // cadeira do chefe e o Geraldo (se não estiver na ronda)
+      ret(ctx, X + 110, Y + 30, 20, 14, ARTE.contorno); ret(ctx, X + 111, Y + 31, 18, 12, "#111827");
+      if (!ronda.ativo) {
+        const fala = chatChefe.aberto && chatChefe.falando;
+        renderPixelCharacter(X + 120, Y + 46, "DOWN", 0, ronda.vestColor, false, false, 1, fala && Math.floor(Date.now() / 160) % 2 ? 1.03 : 1, false, false, APARENCIA_CHEFE);
+      }
+      // tampo da mesa (a frente vem depois da personagem)
+      ret(ctx, X + 76, Y + 44, 88, 12, ARTE.contorno); ret(ctx, X + 77, Y + 45, 86, 10, "#9a6234"); ret(ctx, X + 77, Y + 45, 86, 2, "#b87a45");
+      ret(ctx, X + 84, Y + 36, 18, 12, ARTE.contorno); ret(ctx, X + 85, Y + 37, 16, 9, "#1e3a8a"); ret(ctx, X + 91, Y + 46, 4, 2, "#374151"); // monitor
+      ret(ctx, X + 140, Y + 46, 14, 7, "#f8fafc"); ret(ctx, X + 142, Y + 45, 14, 7, "#e5e7eb");                                       // papéis
+      ret(ctx, X + 126, Y + 45, 6, 6, ARTE.contorno); ret(ctx, X + 127, Y + 46, 4, 4, "#facc15");                                      // caneca nº1
     }
     function desenharSalaTI(sl) {
       const X = sl.ox, Y = sl.oy, C = ARTE.contorno, t = Date.now();
