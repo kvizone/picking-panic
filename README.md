@@ -143,6 +143,26 @@ Por enquanto a marcação é o número de pedidos finalizados, no prazo ou atras
 A etiqueta mostra os horários no relógio do turno: entrada do pedido, prazo e atraso (em vermelho quando passou).
 
 
+
+## Salas: cozinha e sala do chefe
+
+Na parede de cima tem duas portas que dá pra entrar (ação perto da porta):
+
+- **Cozinha** (porta à direita da placa PERIGO): pia, micro-ondas, cafeteira, geladeira com bilhete "NÃO MEXE" e mesa. A geladeira e a pia têm piadinhas.
+- **Sala do chefe** (porta CHEFE): o Geraldo atrás da mesa (se não estiver na ronda), quadro de "funcionário do mês" com a cara dele e gráfico de META. Falando com ele abre um chat com quatro pedidos: **aumento, férias, folga e sair mais cedo**. Ele sempre tem uma desculpa diferente.
+
+O relógio, os pedidos e os problemas continuam correndo enquanto você está numa sala (as salas ficam fora do mapa, então nada do galpão esbarra em você lá dentro). O carrinho fica do lado de fora, na porta. Se tem coisa pra fazer no galpão, a seta aponta pra SAÍDA.
+
+**☕ Café do chefe (demanda nova, sem relógio):** o Geraldo pede café; os pedidos congelam. Entre na cozinha, segure a ação na cafeteira até encher a jarra e leve a garrafa até a mesa dele (+120 pontos). Entra na rotação das demandas junto com caminhão, treino do Enzo e inventário.
+
+## Ritmo dos pedidos
+
+- Um pedido novo a cada 35 s, mas com fila o próximo demora mais: 2 parados +30%, 3 parados +60%, 4 ou mais o dobro.
+- Com 3 ou mais pedidos esperando, o próximo vem com **1 item só**; com 2 esperando, no máximo 2 itens e 1 unidade de cada.
+- Enquanto um problema está na tela, o relógio do próximo pedido anda 40% mais devagar.
+- Os problemas aceleram até ficar um a cada ~33 s (antes chegava a 28 s).
+- O Geraldo ficou ~20% menos reclamão: intervalo entre broncas de 18 para 22,5 s, e 1 em cada 5 broncas urgentes ele deixa passar (o aviso da água sempre vem).
+
 ## Pontuação e ranking
 
 No turno sem fim, o HUD mostra ★ pontos e o combo atual.
