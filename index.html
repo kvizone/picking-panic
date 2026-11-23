@@ -2667,7 +2667,7 @@
       estrelas: { tres: 99999, duas: 99999 },
       tempoColetaPorVolume: 1.0,
       geracao: { intervalo: 95, meta: Infinity, armazenagem: false, numeroInicial: 2000 }, // +1 min entre pedidos novos
-      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 120, telaRoxa: 120, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75, cafe: 999, relatorio: 999, bolo: 999 } },
+      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 120, telaRoxa: 120, notaFiscal: 90, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75, cafe: 999, relatorio: 999, bolo: 999, recibos: 999 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -3023,6 +3023,7 @@
         "Aumento? Esse ano tá difícil. Ano que vem a gente conversa. Ano que vem também vai tá difícil, mas a gente conversa.",
         "Adoraria! Mas o sistema de aumento tá com tela roxa. Chama o Vini.",
         "Aumento de salário não dá. Aumento de responsabilidade eu consigo hoje mesmo!",
+        "Aumento é com a Pri do financeiro. A Pri diz que é comigo. Eu digo que é com ela. E assim a gente vai.",
         "Você vai ganhar algo muito melhor que aumento: meu reconhecimento. Pronto, reconheci."
       ],
       chefeFerias: [
@@ -3062,6 +3063,18 @@
         "Toner cheio, papel na bandeja, nenhuma luz piscando. Ninguém sabe explicar.",
         "Impressora ligada e sem atolar papel. O Vini chama isso de 'o milagre de 2026'."
       ],
+      falasPri: [
+        "Oi! Pri do financeiro. Não, o VR ainda não caiu. Cai na sexta. Qual sexta? Uma delas.",
+        "Reembolso? Manda a nota. Sem nota, não existe. Com nota, talvez.",
+        "A planilha fechou no zero hoje. Eu nunca fui tão feliz.",
+        "O Geraldo pediu adiantamento pro karaokê. Eu disse que karaokê não é centro de custo.",
+        "Dividir sala com a Gisele é ótimo: ela cuida das pessoas, eu cuido do dinheiro das pessoas."
+      ],
+      priNota: [
+        "O caminhão da DOCA 1 cansou de esperar a nota e alguém teve que correr lá. Menos {n} pontos. Eu ainda tô com a caneta na mão. 💚",
+        "Nota fiscal parada é dinheiro parado! O motorista ligou três vezes. Menos {n} pontos pra você."
+      ],
+      notaFalhou: ["O caminhão foi embora sem nota fiscal. A Pri está calculando o prejuízo até agora."],
       rhProblema: [
         "Oi, é a Gisele do RH! O problema \"{nome}\" passou do prazo e outra pessoa resolveu. Desconto de {n} pontos. Sem drama, fica de olho no próximo. 💜",
         "Gisele do RH passando: \"{nome}\" ficou sem solução a tempo. Anotei aqui, tá? Menos {n} pontos. Respira que o turno continua.",
@@ -3079,6 +3092,7 @@
         "O diretor passou e viu a bagunça. O Geraldo tá explicando até agora. Menos {n} pontos pra você. Eu trouxe lencinho pra ele. 💜"
       ],
       falasPorteiro: [
+        "A Pri do financeiro chega todo dia 6h50. Até o rádio AM respeita.",
         "Bom dia! Assina o caderno? Não? Então me conta uma fofoca que eu libero.",
         "Daqui eu vejo tudo. Vi até o Geraldo ensaiando Roupa Nova na doca 3.",
         "Rádio AM, palavra cruzada e café. Isso é segurança de verdade.",
@@ -3099,7 +3113,8 @@
         "Oi! Tudo bem com você? Tá se hidratando?",
         "Lembrete: sexta tem dinâmica de grupo. Traga seu melhor sorriso. É obrigatório.",
         "Minha porta está sempre aberta. Menos quando está fechada.",
-        "Se alguém brigar, você já sabe onde me achar."
+        "Se alguém brigar, você já sabe onde me achar.",
+        "A Pri ali do lado cuida do dinheiro. Eu cuido do resto. Inclusive da Pri."
       ],
       falasTISala: [
         "Abriu chamado? Não? Então eu não te vi aqui.",
@@ -3230,6 +3245,7 @@
       ],
       falaAbandono: ["Cansei! Tô indo embora!", "Pra mim deu. Fui!", "Hoje não dá mais. Tchau, galera!", "Vou abrir uma lojinha de açaí. Fui!"],
       chefeRonda: [
+        "A Pri disse que o VR cai sexta. Eu acredito nela. Eu preciso acreditar.",
         "Aqui na ASAP é assim: o cliente pede pra ontem e a gente entrega anteontem.",
         "Será que o VR cai hoje?",
         "Tô só de olho. Pode continuar.",
@@ -5095,8 +5111,8 @@
 
     /* ---------- Pontuação do turno ---------- */
     const PONTOS_PROBLEMA = { incendio: 150, descarga: 150, batida: 120, abandono: 120, briga: 100, ligacao: 100,
-                              telaRoxa: 80, coletor: 80, limpeza: 80 };
-    const PONTOS_DEMANDA = { caminhao: 200, inventario: 150, treino: 150, visita: 300, cafe: 120, relatorio: 140, bolo: 160 };
+                              telaRoxa: 80, coletor: 80, limpeza: 80, notaFiscal: 120 };
+    const PONTOS_DEMANDA = { caminhao: 200, inventario: 150, treino: 150, visita: 300, cafe: 120, relatorio: 140, bolo: 160, recibos: 150 };
     const CARGOS = [[0, "Novato"], [500, "Auxiliar"], [1500, "Separador"], [3000, "Conferente"],
                     [5000, "Líder de Turno"], [8000, "Supervisor"], [12000, "Lenda do Galpão"]];
     const pont = {};
@@ -6250,6 +6266,7 @@
       }
 
       desenharExtintorNaMao();
+      desenharMotoristaNota();
       desenharGarrafaNaMao();
       JUICE.renderCaixasDaBaia(ctx);
       desenharPainelDeAcao();
@@ -8228,7 +8245,8 @@
       extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER",
       atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR",
       entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", entrar_rh: "ENTRAR", entrar_ti: "ENTRAR", entrar_guarita: "ENTRAR", entrar_reuniao: "ENTRAR",
-      cameras: "CÂMERAS", conversar_porteiro: "FALAR", cadeira_diretor: "OLHAR",
+      cameras: "CÂMERAS", conversar_porteiro: "FALAR", conversar_pri: "FALAR", fucar_planilha: "ESPIAR", pegar_nota: "PEGAR NOTA",
+      entregar_nota: "ENTREGAR", pegar_recibo: "PEGAR", entregar_recibos: "ENTREGAR", fucar_prestacao: "LER", cadeira_diretor: "OLHAR",
       fucar_chaves: "OLHAR", fucar_caderno: "LER", fucar_achados: "FUÇAR", fucar_postits: "LER", fucar_telao: "OLHAR", fucar_ata: "LER", fucar_flipchart: "LER", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
       conversar: "FALAR", entregar_cafe: "ENTREGAR", fucar_mesa: "FUÇAR", fucar_arquivo: "FUÇAR", fucar_mural: "OLHAR",
       imprimir: "IMPRIMIR", impressora: "OLHAR", entregar_relatorio: "ENTREGAR", pegar_bolo: "PEGAR BOLO", acender_vela: "ACENDER", entregar_bolo: "SURPRESA!",
@@ -9144,7 +9162,7 @@
     // no meio desses 3 pedidos (depois do 1º ou do 2º) estoura um problema
     const PEDIDOS_POR_CICLO = 3;
     const TEMPO_ESTREIA = 900; // 15 min de roteiro fixo de demandas antes do rodízio
-    const DEMANDAS_SEM_FIM = ["caminhao", "treino", "relatorio", "inventario", "cafe", "bolo"];
+    const DEMANDAS_SEM_FIM = ["caminhao", "treino", "relatorio", "inventario", "cafe", "recibos", "bolo"];
 
     const URGENCIA_INFO = {
       incendio: { icone: "🔥", nome: "INCÊNDIO", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" },
@@ -9156,6 +9174,8 @@
       inventario: { icone: "📋", nome: "INVENTÁRIO", demanda: true },
       cafe: { icone: "☕", nome: "CAFÉ DO CHEFE", demanda: true },
       relatorio: { icone: "🖨️", nome: "RELATÓRIO DO CHEFE", demanda: true },
+      recibos: { icone: "🧾", nome: "PRESTAÇÃO DE CONTAS", demanda: true },
+      notaFiscal: { icone: "🧾", nome: "NOTA PRESA NA DOCA", falha: "notaFalhou", tituloFalha: "O CAMINHÃO FOI EMBORA SEM NOTA" },
       bolo: { icone: "🎂", nome: "BOLO SURPRESA", demanda: true },
       ligacao: { icone: "📞", nome: "CLIENTE NA LINHA", falha: "ligacaoFalhou", tituloFalha: "O CLIENTE CANCELOU" },
       visita: { icone: "🏢", nome: "VISITA DA DIRETORIA", falha: "visitaFalhou", tituloFalha: "O DIRETOR VIU A BAGUNÇA", especial: true },
@@ -9320,6 +9340,11 @@
         iniciarCafe(a);
       } else if (tipo === "relatorio") {
         iniciarRelatorio(a);
+      } else if (tipo === "recibos") {
+        iniciarRecibos(a);
+      } else if (tipo === "notaFiscal") {
+        Object.assign(a, { etapa: "pegar", x: MOTORISTA_NOTA.x, y: MOTORISTA_NOTA.y });
+        setTimeout(() => popupRadio("O motorista da DOCA 1 não sai sem a nota assinada! Passa aqui na minha mesa, na sala do RH e Financeiro, que eu assino rapidinho.", { colega: "PRI", tag: "PRI · FINANCEIRO", duracao: 6500 }), 600);
       } else if (tipo === "bolo") {
         iniciarBolo(a);
       } else if (tipo === "visita") {
@@ -9412,6 +9437,7 @@
         incendio: `Fogo no pallet ${a.pallet ? a.pallet.label : ""}! Pegue o extintor.`,
         batida: "Cuidado! Duas empilhadeiras vindo de frente no corredor...",
         telaRoxa: "O WMS deu tela roxa! Vá até a sala da TI e chame o Vini.",
+        notaFiscal: "O caminhão da DOCA 1 está preso sem nota fiscal! Pegue a nota assinada com a Pri do financeiro.",
         limpeza: `Alguém derrubou uma caixa na ${a.rua ? a.rua.id : "rua"}! Vá limpar antes que alguém escorregue.`,
         ligacao: "Telefone tocando no balcão! É o cliente do pedido que você está separando. Vá atender.",
         inventario: "Inventário rápido: conte as caixas de 3 endereços e digite no WMS. Os pedidos ficam congelados.",
@@ -9458,9 +9484,10 @@
       const tirou = -somarPontos(-perda, `-${perda} PTS`, "#ef4444");
       pont.perdidos++; pont.ptsPerdidos += tirou;
       SFX.estrelaPerdida();
-      const especial = { briga: "rhBriga", telaRoxa: "rhTelaRoxa", visita: "rhVisita" }[a.tipo];
+      const especial = { briga: "rhBriga", telaRoxa: "rhTelaRoxa", visita: "rhVisita", notaFiscal: "priNota" }[a.tipo];
       const fala = sortearTexto(especial || "rhProblema").replace("{nome}", info.nome.toLowerCase()).replace("{n}", perda);
-      setTimeout(() => popupRadio(fala, { colega: "GISELE", tag: "GISELE · RH", duracao: 8000 }), 400);
+      const daPri = a.tipo === "notaFiscal";
+      setTimeout(() => popupRadio(fala, daPri ? { colega: "PRI", tag: "PRI · FINANCEIRO", duracao: 8000 } : { colega: "GISELE", tag: "GISELE · RH", duracao: 8000 }), 400);
       atualizarHUD();
     }
     function concluirEmergencia() {
@@ -9589,7 +9616,7 @@
       if (!a) { b.classList.remove("visivel"); return; }
       const info = URGENCIA_INFO[a.tipo];
       const onde = a.tipo === "incendio" ? ` · ${a.pallet.label}` : (a.tipo === "descarga" || a.tipo === "caminhao") ? ` · ${a.pos.idCompleto} N${a.nivel}`
-        : a.tipo === "abandono" ? ` · ${a.pedido.def.numero}` : a.tipo === "limpeza" ? ` · ${a.rua.id}`
+        : a.tipo === "abandono" ? ` · ${a.pedido.def.numero}` : a.tipo === "limpeza" ? ` · ${a.rua.id}` : a.tipo === "notaFiscal" ? " · DOCA 1"
         : a.tipo === "visita" ? (a.fase === "tour" ? " · CHEGOU" : ` · ${a.sujeiras.filter(x => x.limpo >= 1).length}/${a.sujeiras.length} LIMPO`) : "";
       document.getElementById("emergencia-titulo").textContent = `${info.icone} ${info.nome}${onde}`;
       b.classList.toggle("demanda", ehDemanda(a));
@@ -9600,6 +9627,7 @@
           : a.tipo === "inventario" ? [a.contados, 4, a.contados < 3 ? `CONTADOS ${a.contados}/3` : "DIGITAR NO WMS"]
           : a.tipo === "cafe" ? [a.etapa === "fazer" ? a.preparo : 1, 2, a.etapa === "fazer" ? "FAZER O CAFÉ" : "LEVAR PRO CHEFE"]
           : a.tipo === "relatorio" ? [a.etapa === "imprimir" ? 0 : 1, 2, a.etapa === "imprimir" ? "IMPRIMIR" : "LEVAR PRO CHEFE"]
+          : a.tipo === "recibos" ? (() => { const n = a.recibos.filter(r => r.pego).length; return [n, 4, n < 3 ? `RECIBOS ${n}/3` : "LEVAR PRA PRI"]; })()
           : a.tipo === "bolo" ? [{ pegar: 0, vela: a.vela, entregar: 2 }[a.etapa], 3, { pegar: "PEGAR O BOLO", vela: "ACENDER A VELA", entregar: "SURPRESA!" }[a.etapa]]
           : progressoTreino(a);
         rel.textContent = rotulo;
@@ -9631,6 +9659,15 @@
       if (a.tipo === "cafe") return a.etapa === "fazer"
         ? (cena === "cozinha" ? `Segure ${E} na cafeteira até o café ficar pronto.` : "Faça um café na COZINHA (porta na parede de cima, à direita do CHEFE).")
         : (cena === "chefe" ? `Entregue o café na mesa do Geraldo${fimE}.` : "Leve a garrafa de café até a sala do CHEFE.");
+      if (a.tipo === "notaFiscal") return a.etapa === "pegar"
+        ? (cena === "rh" ? `Pegue a nota com a Pri, na mesa do financeiro${fimE}.` : "Vá até a sala do RH e Financeiro (porta RH+FIN) e pegue a nota com a Pri.")
+        : (cena ? "Saia e leve a nota até o motorista na DOCA 1." : `Entregue a nota pro motorista na DOCA 1${fimE}.`);
+      if (a.tipo === "recibos") {
+        if (a.etapa === "entregar") return cena === "rh" ? `Entregue os recibos pra Pri${fimE}.` : "Leve os 3 recibos pra Pri, na sala do RH e Financeiro.";
+        const falta = a.recibos.filter(r => !r.pego);
+        const aqui = falta.find(r => r.sala === cena);
+        return aqui ? `Tem um recibo aqui no chão${fimE}.` : `Falta${falta.length > 1 ? "m" : ""} ${falta.length} recibo${falta.length > 1 ? "s" : ""}: ${falta.map(r => r.onde).join(", ")}.`;
+      }
       if (a.tipo === "relatorio") return a.etapa === "imprimir"
         ? (cena === "ti" ? `Use a impressora da TI, no canto${fimE}.` : "Vá até a sala da TI (porta TI, ao lado do balcão) e imprima o relatório.")
         : (cena === "chefe" ? `Entregue o relatório na mesa do Geraldo${fimE}.` : "Leve o relatório até a sala do CHEFE.");
@@ -9672,6 +9709,12 @@
       if (a.tipo === "ligacao") return { x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y + 16 };
       if (a.tipo === "cafe") return a.etapa === "fazer" ? { x: PORTA_COZINHA.x, y: PORTA_COZINHA.y + 14 } : { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 14 };
       if (a.tipo === "relatorio") return a.etapa === "imprimir" ? { x: PORTA_TI.x, y: PORTA_TI.y + 14 } : { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 14 };
+      if (a.tipo === "notaFiscal") return a.etapa === "pegar" ? { x: PORTA_RH.x, y: PORTA_RH.y + 14 } : { x: MOTORISTA_NOTA.x, y: MOTORISTA_NOTA.y };
+      if (a.tipo === "recibos") {
+        if (a.etapa === "entregar") return { x: PORTA_RH.x, y: PORTA_RH.y + 14 };
+        const prox = a.recibos.find(r => !r.pego);
+        return prox ? { x: SALAS[prox.sala].porta.x, y: SALAS[prox.sala].porta.y + 14 } : null;
+      }
       if (a.tipo === "bolo") {
         if (a.etapa !== "entregar") return { x: PORTA_COZINHA.x, y: PORTA_COZINHA.y + 14 };
         return a.npc ? { x: a.npc.x, y: a.npc.y } : { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 14 };
@@ -9824,6 +9867,15 @@
       const a = emerg.ativa;
       if (veiculo.pilotando) { tratarDescarga(); return true; }
       player.currentZone = null;
+      if (a && a.tipo === "notaFiscal" && a.etapa === "levar" && Math.hypot(player.x - MOTORISTA_NOTA.x, player.y - MOTORISTA_NOTA.y) < 28) {
+        player.currentZone = { tipo: "entregar_nota" };
+        if (interactPressedThisFrame) {
+          mostrarBalaoNpc({ nome: "MOTORISTA", x: MOTORISTA_NOTA.x, y: MOTORISTA_NOTA.y }, sortear(["Valeu! Agora sim, pé na estrada.", "Nota assinada? Até carimbo tem! Tô indo, valeu!", "Achei que ia dormir aqui. Valeu, campeão!"]));
+          JUICE.textoFlutuante(player.x, player.y - 20, "NOTA ENTREGUE!", "#86efac");
+          concluirEmergencia();
+        }
+        return true;
+      }
       if (a && a.tipo === "bolo" && a.etapa === "entregar" && a.npc && Math.hypot(player.x - a.npc.x, player.y - a.npc.y) < 26) {
         player.currentZone = { tipo: "entregar_bolo" };
         if (interactPressedThisFrame) entregarBolo(a);
@@ -10228,6 +10280,12 @@
 
     // Rostos que só aparecem no Rádio Peão (não entram no sorteio de quem larga o emprego)
     const ROSTOS_PEAO = {
+      "PRI": {
+        sobrancelha: "sbbbsssbbbbs", bochecha: true, cabeloLongo: true, fundo: "#bbf7d0", corTag: "#047857",
+        paleta: { o: ARTE.contorno, H: "#f4f6fa", L: "#ffffff", B: "#b8c0cc", h: "#111827", s: "#c68642", S: "#a5693a",
+                  b: "#0b0f19", w: "#ffffff", e: "#111827", m: "#7f1d1d", t: "#ffffff", d: "#9f1239", r: "#b0703f",
+                  V: "#22c55e", c: "#065f46", R: "#e8eef5" }
+      },
       "GISELE": {
         sobrancelha: "ssbbbssbbbss", bochecha: true, cabeloLongo: true, fundo: "#e9d5ff", corTag: "#6d28d9",
         paleta: { o: ARTE.contorno, H: "#f4f6fa", L: "#ffffff", B: "#b8c0cc", h: "#3b2416", s: "#d9a07a", S: "#b9805a",
@@ -10821,7 +10879,7 @@
       chefe: { ox: 6000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_ESCRITORIO,
                blocos: [[76, 44, 88, 30], [6, 40, 28, 26], [206, 40, 28, 30]] },
       rh: { ox: 7000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_RH,
-            blocos: [[82, 44, 76, 28], [12, 42, 22, 20], [206, 38, 28, 30], [16, 112, 28, 18], [200, 112, 24, 18]] },
+            blocos: [[82, 44, 76, 28], [12, 42, 22, 20], [206, 38, 28, 30], [16, 112, 28, 18], [158, 100, 64, 22]] },
       guarita: { ox: 9000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_GUARITA,
                  blocos: [[56, 42, 96, 26], [168, 40, 64, 24], [14, 110, 34, 20], [206, 112, 18, 18]] },
       reuniao: { ox: 10000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_REUNIAO,
@@ -10872,6 +10930,11 @@
       atualizarBannerEmergencia();
     }
     // Fala de quem está na sala: aparece no balão em cima da mesa
+    function mostrarFalaPri(texto) {
+      const sl = salaAtual();
+      mostrarBalaoNpc({ nome: "PRI", x: sl.ox + 190, y: sl.oy + 98 }, texto);
+      SFX.notificacao();
+    }
     function mostrarFalaSala(texto) {
       const sl = salaAtual();
       const falante = { nome: cena === "rh" ? "GISELE" : cena === "ti" ? "VINI" : cena === "guarita" ? "SEU DIRCEU" : "GERALDO",
@@ -10894,6 +10957,11 @@
       if (a && a.tipo === "cafe" && cena === "cozinha" && a.etapa === "fazer") return { x: sl.ox + 111, y: sl.oy + 58 };
       if (a && a.tipo === "cafe" && cena === "chefe" && a.etapa === "levar") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a && a.tipo === "relatorio" && cena === "ti" && a.etapa === "imprimir") return { x: sl.ox + 209, y: sl.oy + 100 };
+      if (a && cena === "rh" && ((a.tipo === "notaFiscal" && a.etapa === "pegar") || (a.tipo === "recibos" && a.etapa === "entregar"))) return { x: sl.ox + 200, y: sl.oy + 134 };
+      if (a && a.tipo === "recibos" && a.etapa === "coletar") {
+        const rec = a.recibos.find(r => r.sala === cena && !r.pego);
+        if (rec) return { x: sl.ox + rec.x, y: sl.oy + rec.y };
+      }
       if (a && a.tipo === "relatorio" && cena === "chefe" && a.etapa === "levar") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "pegar") return { x: sl.ox + 205, y: sl.oy + 66 };
       if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "vela") return { x: sl.ox + 118, y: sl.oy + 84 };
@@ -10915,6 +10983,21 @@
         return;
       }
       const a = emerg.ativa;
+      if (a && a.tipo === "recibos" && a.etapa === "coletar") {
+        const rec = a.recibos.find(r => r.sala === cena && !r.pego && Math.hypot(lx - r.x, ly - r.y) < 20);
+        if (rec) {
+          player.currentZone = { tipo: "pegar_recibo" };
+          if (interactPressedThisFrame) {
+            rec.pego = true;
+            SFX.playTone(880, "square", 0.05, 0.05, 0.01);
+            JUICE.textoFlutuante(player.x, player.y - 20, "RECIBO!", "#fde047");
+            falarTexto(rec.achado, "#fde047");
+            if (a.recibos.every(r => r.pego)) { a.etapa = "entregar"; setTimeout(() => falarTexto("Os 3 recibos! Agora leva tudo pra Pri, na sala do RH e Financeiro.", "#86efac"), 2500); }
+            atualizarHUD(); atualizarBannerEmergencia();
+          }
+          return;
+        }
+      }
       if (cena === "cozinha") {
         if (Math.abs(lx - 111) < 14 && ly < 72) {
           player.currentZone = { tipo: "cafeteira" };
@@ -11020,6 +11103,27 @@
             if (interactPressedThisFrame) abrirArquivo(id);
             return;
           }
+        }
+        if (cena === "rh" && ly >= 120 && lx >= 154 && lx < 226) {
+          if (lx < 180) {
+            player.currentZone = { tipo: "fucar_planilha" };
+            if (interactPressedThisFrame) abrirArquivo("planilha");
+            return;
+          }
+          const nota = a && a.tipo === "notaFiscal" && a.etapa === "pegar";
+          const recibos = a && a.tipo === "recibos" && a.etapa === "entregar";
+          player.currentZone = { tipo: nota ? "pegar_nota" : recibos ? "entregar_recibos" : "conversar_pri" };
+          if (interactPressedThisFrame) {
+            if (nota) {
+              a.etapa = "levar";
+              SFX.minigameSucesso();
+              JUICE.textoFlutuante(player.x, player.y - 20, "NOTA ASSINADA!", "#86efac");
+              mostrarFalaPri(sortear(["Assinei, carimbei e conferi duas vezes. Leva voando pro motorista!", "Nota conferida. CNPJ certo, valor certo, milagre certo. Corre pra DOCA 1!"]));
+              atualizarHUD(); atualizarBannerEmergencia();
+            } else if (recibos) entregarRecibos(a);
+            else mostrarFalaPri(sortearTexto("falasPri"));
+          }
+          return;
         }
         if (ly >= 72 && ly < 104 && Math.abs(lx - 120) < 42) {
           const ehRH = cena === "rh";
@@ -11241,6 +11345,46 @@
       popupRadio(sortearTexto("relatorioEntregue"), { tag: "GERALDO · ORGULHOSO", duracao: 7000 });
     }
 
+    /* Nota fiscal: o motorista espera na porta da DOCA 1 */
+    const MOTORISTA_NOTA = { x: 892, y: 176 };
+    function desenharMotoristaNota() {
+      const a = emerg.ativa;
+      if (!a || a.tipo !== "notaFiscal") return;
+      renderPixelCharacter(MOTORISTA_NOTA.x, MOTORISTA_NOTA.y, "LEFT", 0, "#f97316", false, false, 1, 1, false, false, APARENCIA_MOTORISTA);
+      if (Math.floor(Date.now() / 400) % 2) desenharBitmap("NOTA?", MOTORISTA_NOTA.x, MOTORISTA_NOTA.y - 30, "#fde047", 1, "center");
+    }
+
+    /* Prestação de contas: 3 recibos espalhados pelas salas, pra Pri fechar o mês */
+    function iniciarRecibos(a) {
+      Object.assign(a, { etapa: "coletar", recibos: [
+        { sala: "cozinha", onde: "COZINHA", x: 40, y: 112, achado: "Recibo do café, embaixo da geladeira. Tem mancha de café, claro." },
+        { sala: "chefe", onde: "sala do CHEFE", x: 196, y: 114, achado: "Recibo amassado no lixo do Geraldo: rodízio de pizza, 'reunião estratégica'. Hmm." },
+        { sala: "guarita", onde: "PORTARIA", x: 150, y: 112, achado: "Recibo das pilhas do rádio AM do Seu Dirceu. Ele guardou dentro do caderno de visitas." }
+      ] });
+      abrirAvisoDemanda("🧾", "PRESTAÇÃO DE CONTAS", [
+        "A Pri do financeiro precisa fechar o mês e faltam 3 recibos.",
+        "Procure na COZINHA, na sala do CHEFE e na PORTARIA (a seta mostra o caminho).",
+        "Leve tudo pra mesa da Pri, na sala do RH e Financeiro."
+      ], "Sem pressa: os pedidos ficam congelados enquanto isso.");
+      popupRadio("Socorro! O mês fecha hoje e faltam 3 recibos. Um na cozinha, um na sala do Geraldo e um na portaria. Me traz?", { colega: "PRI", tag: "PRI · FINANCEIRO", duracao: 6500 });
+    }
+    function desenharRecibosSala(sl) {
+      const a = emerg.ativa;
+      if (!a || a.tipo !== "recibos" || a.etapa !== "coletar") return;
+      a.recibos.filter(r => r.sala === cena && !r.pego).forEach(r => {
+        const x = sl.ox + r.x - 4, y = sl.oy + r.y - 5, b = Math.floor(Date.now() / 300) % 2;
+        ret(ctx, x - 1, y - 1 - b, 10, 12, ARTE.contorno); ret(ctx, x, y - b, 8, 10, "#fffbeb");
+        ret(ctx, x + 1, y + 2 - b, 6, 1, "#94a3b8"); ret(ctx, x + 1, y + 4 - b, 4, 1, "#94a3b8"); ret(ctx, x + 1, y + 7 - b, 6, 1, "#16a34a");
+      });
+    }
+    function entregarRecibos(a) {
+      SFX.minigameSucesso();
+      JUICE.textoFlutuante(player.x, player.y - 20, "MES FECHADO!", "#86efac");
+      concluirEmergencia();
+      mostrarFalaPri("Fechou! Bateu no centavo. Agora deixa eu ver esse rodízio de pizza aqui...");
+      setTimeout(() => { if (estadoJogo === "JOGANDO") abrirArquivo("prestacao"); }, 900);
+    }
+
     /* Bolo surpresa: geladeira → vela na mesa da cozinha → aniversariante */
     function iniciarBolo(a) {
       const colegas = colegasNoGalpao().filter(n => ROSTOS_COLEGAS[n.nome]);
@@ -11336,7 +11480,7 @@
     function levandoCafe() { const a = emerg.ativa; return !!(a && a.tipo === "cafe" && a.etapa === "levar"); }
     function desenharGarrafaNaMao() {
       const a = emerg.ativa;
-      if (a && !veiculo.pilotando && a.tipo === "relatorio" && a.etapa === "levar") {
+      if (a && !veiculo.pilotando && ((a.tipo === "relatorio" && a.etapa === "levar") || (a.tipo === "notaFiscal" && a.etapa === "levar") || (a.tipo === "recibos" && a.etapa === "entregar"))) {
         const x = Math.round(player.x + (player.dir === "LEFT" ? -11 : 5)), y = Math.round(player.y - 9);
         ret(ctx, x - 1, y - 1, 9, 10, ARTE.contorno); ret(ctx, x, y, 7, 8, "#f8fafc");
         ret(ctx, x + 1, y + 2, 5, 1, "#94a3b8"); ret(ctx, x + 1, y + 4, 2, 3, "#3b82f6"); ret(ctx, x + 3, y + 5, 1, 2, "#22c55e"); ret(ctx, x + 4, y + 3, 1, 4, "#f97316");
@@ -11371,7 +11515,7 @@
       // RH: porta lilás com coraçãozinho (pisca quando tem briga e ninguém chamou)
       const a = emerg.ativa;
       if (a && a.tipo === "briga" && !a.chamado && Math.floor(Date.now() / 300) % 2 === 0) ret(ctx, PORTA_RH.x - 14, 1, 28, 26, "#ef4444");
-      desenharPortaSala(PORTA_RH, "RH", "#a78bfa", "#c4b5fd", (x, y) => { ret(ctx, x + 6, y + 12, 2, 2, "#f43f5e"); ret(ctx, x + 9, y + 12, 2, 2, "#f43f5e"); ret(ctx, x + 6, y + 13, 5, 2, "#f43f5e"); ret(ctx, x + 7, y + 15, 3, 1, "#f43f5e"); });
+      desenharPortaSala(PORTA_RH, "RH+FIN", "#a78bfa", "#c4b5fd", (x, y) => { ret(ctx, x + 6, y + 12, 2, 2, "#f43f5e"); ret(ctx, x + 9, y + 12, 2, 2, "#f43f5e"); ret(ctx, x + 6, y + 13, 5, 2, "#f43f5e"); ret(ctx, x + 7, y + 15, 3, 1, "#f43f5e"); });
       // TI: porta azul-escura com monitorzinho (pisca na tela roxa)
       if (a && a.tipo === "telaRoxa" && !a.chamado && Math.floor(Date.now() / 300) % 2 === 0) ret(ctx, PORTA_TI.x - 14, 1, 28, 26, "#a855f7");
       desenharPortaSala(PORTA_TI, "TI", "#334155", "#475569", (x, y) => { ret(ctx, x + 5, y + 11, 8, 6, "#0f172a"); ret(ctx, x + 6, y + 12, 6, 4, "#22c55e"); ret(ctx, x + 8, y + 17, 2, 1, "#0f172a"); });
@@ -11414,6 +11558,7 @@
       }
       desenharGarrafaNaMao();
       if (cena === "chefe") desenharMesaChefeFrente(sl); // a frente da mesa cobre as pernas do Geraldo
+      desenharRecibosSala(sl);
       JUICE.render(ctx);
       desenharPainelDeAcao();
       ctx.restore();
@@ -11604,9 +11749,19 @@
       if (rh.ativo) { r(103, 22, 34, 9, C); r(104, 23, 32, 7, "#fef3c7"); desenharBitmap("JA VOLTO", X + 120, Y + 24, "#7c3aed", 1, "center"); }
       // puff e planta grande
       r(16, 112, 28, 18, C); r(17, 113, 26, 16, "#f472b6"); r(19, 115, 22, 4, "#f9a8d4");
-      r(204, 118, 16, 12, C); r(205, 119, 14, 10, "#9a3412"); r(200, 104, 24, 16, "#15803d"); r(205, 98, 14, 8, "#22c55e");
       // tapete redondo (quadrado, é pixel)
       r(84, 84, 72, 30, "#ddd6fe"); r(86, 86, 68, 26, "#ede9fe");
+      // Cantinho do financeiro: a Pri, com planilha, calculadora, cofrinho e a pilha de notas
+      r(224, 92, 12, 14, C); r(225, 93, 10, 12, "#9a3412"); r(222, 82, 16, 12, "#15803d"); r(226, 78, 8, 6, "#22c55e"); // plantinha
+      renderPixelCharacter(X + 190, Y + 102, "DOWN", 0, "#22c55e", false, false, 1, 1, false, false, APARENCIA_PRI);
+      r(158, 100, 64, 22, C); r(159, 101, 62, 7, "#e7e5e4"); r(159, 101, 62, 1, "#fafaf9"); r(159, 108, 62, 13, "#a8a29e");
+      r(170, 111, 40, 8, "#065f46"); desenharBitmap("FINANCEIRO", X + 190, Y + 112, "#bbf7d0", 1, "center");
+      r(162, 90, 18, 12, C); r(163, 91, 16, 9, "#f8fafc");                                             // monitor com a planilha
+      for (let k = 0; k < 3; k++) for (let j = 0; j < 3; j++) r(164 + j * 5, 92 + k * 3, 4, 2, (k + j) % 3 ? "#bbf7d0" : "#22c55e");
+      r(168, 100, 6, 2, "#475569");
+      r(198, 101, 8, 6, "#334155"); r(199, 102, 6, 1, "#86efac"); r(199, 104, 2, 1, "#cbd5e1"); r(202, 104, 2, 1, "#cbd5e1"); // calculadora
+      r(209, 101, 8, 6, "#f9a8d4"); r(210, 100, 2, 1, "#f9a8d4"); r(216, 102, 1, 2, "#f9a8d4"); r(211, 102, 1, 1, "#111827"); // cofrinho
+      r(184, 102, 10, 5, "#fef9c3"); r(185, 101, 8, 1, "#fef08a");                                       // pilha de notas
     }
     function desenharSalaTI(sl) {
       const X = sl.ox, Y = sl.oy, C = ARTE.contorno;
@@ -11798,7 +11953,8 @@
       { v: "postit", linhas: ["Proibir moda de", "viola antes das 10h."] },
       { v: "postit", linhas: ["Happy hour na sexta.", "Ou happy minute,", "já ajuda."] },
       { v: "postit", linhas: ["Contratar alguém só", "pra lavar caneca.", "Pode ser eu se pagar."] },
-      { v: "postit", linhas: ["Nome na marmita é", "obrigatório?", "— Kauã"] }
+      { v: "postit", linhas: ["Nome na marmita é", "obrigatório?", "— Kauã"] },
+      { v: "postit", linhas: ["Reembolso do Uber", "em menos de 3 meses,", "por favor.", "— todo mundo"] }
     ] };
     ARQUIVOS_CHEFE.ocorrencias = { aba: "ARQUIVO · OCORRÊNCIAS 2026", itens: [
       { v: "papel", titulo: "LIVRO DE OCORRÊNCIAS", lista: [["Nº 001 · Marmita sumiu", 0], ["Nº 002 · Marmita sumiu (de novo)", 0], ["Nº 003 · Rádio trocada pra caipira", 0], ["Nº 004 · Ar-condicionado em 16 °C", 0], ["Nº 005 · Último café sem reposição", 0], ["Nº 006 · Estilete com nome sumiu", 0]] },
@@ -11809,6 +11965,17 @@
       { v: "papel", titulo: "🎈 ANIVERSARIANTES DO MÊS", lista: [["Robson · dia 12 · bolo de cenoura c/ chocolate", 0], ["Jéssica · dia 19 · bolo de pote (NÃO MEXE)", 0], ["Enzo · dia 28 · primeiro na firma, vai ganhar balão", 0]] },
       { v: "foto", titulo: "FESTA JUNINA 2025", linhas: ["O Geraldo de caipira,", "cantando Roupa Nova.", "Ninguém entendeu nada."] },
       { v: "postit", linhas: ["Dinâmica de grupo:", "sexta, 16h.", "Trazer sorriso", "(obrigatório)"] }
+    ] };
+    ARQUIVOS_CHEFE.planilha = { aba: "PLANILHA DA PRI (NÃO MEXE)", itens: [
+      { v: "papel", titulo: "CENTROS DE CUSTO · NOVEMBRO", lista: [["Café: estourou (de novo)", 0], ["Fita adesiva: estourou", 0], ["Karaokê do Geraldo: NEGADO", 1], ["Bolo de aniversário: aprovado em 3x", 0], ["Pilhas do rádio AM: aprovado (ele pediu com jeitinho)", 0]] },
+      { v: "papel", titulo: "QUANDO CAI O VR", linhas: ["Cai: dia 5.", "Ou dia 6, se o banco quiser.", "Ou quando a Pri apertar o botão."], carimbo: "CONFIDENCIAL", cor: "vermelho" },
+      { v: "postit", linhas: ["Pedido de aumento:", "mandar pro Geraldo.", "Ele manda pra mim.", "Eu mando pro Geraldo."] }
+    ] };
+    ARQUIVOS_CHEFE.prestacao = { aba: "PRESTAÇÃO DE CONTAS · NOVEMBRO", itens: [
+      { v: "papel", titulo: "RECIBO · COZINHA", linhas: ["1 pacote de café 500 g · R$ 24,90", "Obs.: acabou em 2 dias."], carimbo: "APROVADO", cor: "verde" },
+      { v: "papel", titulo: "RECIBO · SALA DO CHEFE", linhas: ["Rodízio de pizza · R$ 189,00", "Descrição: \"reunião estratégica\"", "Participantes: Geraldo"], carimbo: "GLOSADO", cor: "vermelho" },
+      { v: "papel", titulo: "RECIBO · PORTARIA", linhas: ["4 pilhas AA pro rádio AM · R$ 12,00", "Assinado: Seu Dirceu (com letra caprichada)"], carimbo: "APROVADO", cor: "verde" },
+      { v: "postit", linhas: ["Reembolso em até", "30 dias. Ou 60.", "Ou quando o VR cair.", "— Pri"] }
     ] };
     ARQUIVOS_CHEFE.caderno = { aba: "CADERNO DE VISITAS · PORTARIA", itens: [
       { v: "papel", titulo: "REGISTRO DE HOJE", lista: [["07:00 · Caminhão das 7h. Chegou às 7h. Registrado por ser inédito.", 0], ["09:15 · Entregador de pizza. Ninguém pediu pizza. Ficou pro almoço.", 0], ["10:40 · Diretor. Não assinou. Disse: 'sabe quem eu sou?'", 0], ["11:30 · Mãe do Enzo trouxe o casaco dele", 0], ["14:00 · Técnico da impressora. Não tinha nada quebrado. Saiu confuso.", 0]] },
@@ -11879,6 +12046,7 @@
       { v: "caneca", cor: "#f9a8d4", cor2: "#ffffff", texto: "NÃO FALE COMIGO ANTES DO CAFÉ", dono: "Jéssica", linhas: ["Rosa com glitter. Leve a sério."] },
       { v: "caneca", cor: "#ea580c", cor2: "#111827", texto: "1 LITRO", dono: "Robson", linhas: ["Térmica gigante, fita crepe com o nome há 6 anos."] },
       { v: "caneca", cor: "#111827", cor2: "#a855f7", texto: "ROCK", dono: "Kauã", linhas: ["De banda, lascada na borda.", "\"Dá personalidade.\""] },
+      { v: "caneca", cor: "#065f46", cor2: "#bbf7d0", texto: "DEBITO E CREDITO", dono: "Pri", linhas: ["Com porta-copo de planilha.", "Volta pro armário lavada e etiquetada."] },
       { v: "caneca", cor: "#fde047", cor2: "#16a34a", texto: "PRIMEIRO EMPREGO!", dono: "Enzo", linhas: ["Presente da mãe. Ainda com o laço."] },
       { v: "caneca", cor: "#0f172a", cor2: "#22c55e", texto: "JÁ TENTOU DESLIGAR E LIGAR?", dono: "Vini (TI)", linhas: ["Tem um adesivo de tela roxa colado."] },
       { v: "caneca", cor: "#ede9fe", cor2: "#7c3aed", texto: "GRATIDÃO", dono: "GISELE (RH)", linhas: ["Com um sachê de camomila dentro. Sempre."] },
@@ -12502,6 +12670,14 @@
     }
 
     /* ---------- Tela roxa no WMS e a TI ---------- */
+    const APARENCIA_PRI = {
+      id: "pri", capacete: "#f4f6fa", cabelo: "#111827", pele: "#c68642", bochecha: "#b0703f",
+      camisa: "#065f46", colete: "#22c55e", calca: "#1f2937", cabeloLongo: true
+    };
+    const APARENCIA_MOTORISTA = {
+      id: "motorista", capacete: "#dc2626", cabelo: "#3b2416", pele: "#d9a07a", bochecha: "#c9846a",
+      camisa: "#1f2937", colete: "#f97316", calca: "#1e3a8a", cabeloLongo: false
+    };
     const APARENCIA_PORTEIRO = {
       id: "porteiro", capacete: "#1e3a8a", cabelo: "#9ca3af", pele: "#b07a52", bochecha: "#a86a4c",
       camisa: "#1e3a8a", colete: "#334155", calca: "#1f2937", cabeloLongo: false
@@ -14019,6 +14195,12 @@
         entrar_guarita: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
         entrar_reuniao: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
         cameras: ["[E] VER AS CAMERAS", "#0f172a", "#86efac", "#ffffff"],
+        conversar_pri: ["[E] FALAR COM A PRI", "#064e3b", "#bbf7d0", "#ffffff"],
+        fucar_planilha: ["[E] ESPIAR A PLANILHA", "#422006", "#fde68a", "#ffffff"],
+        pegar_nota: ["[E] PEGAR A NOTA ASSINADA", "#064e3b", "#bbf7d0", "#ffffff"],
+        entregar_nota: ["[E] ENTREGAR A NOTA", "#064e3b", "#bbf7d0", "#ffffff"],
+        pegar_recibo: ["[E] PEGAR O RECIBO", "#422006", "#fde68a", "#ffffff"],
+        entregar_recibos: ["[E] ENTREGAR OS RECIBOS", "#064e3b", "#bbf7d0", "#ffffff"],
         conversar_porteiro: ["[E] FALAR COM O SEU DIRCEU", "#1f2937", "#cbd5e1", "#ffffff"],
         cadeira_diretor: ["[E] CADEIRA DO DIRETOR", "#1f2937", "#fde68a", "#ffffff"],
         fucar_chaves: ["[E] QUADRO DE CHAVES", "#422006", "#fde68a", "#ffffff"],

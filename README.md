@@ -280,3 +280,10 @@ O turno não acaba mais quando um problema estoura o tempo. Alguém resolve por 
 ## Barra de cima
 
 Uma linha só com tempo, pedidos entregues, pontos e água (no celular, junto com a fila, a carga, a rádio e o som). Embaixo fica uma única linha de status: o objetivo, ou o recado do rádio enquanto alguém fala.
+
+## Pri do financeiro
+
+A Pri divide a sala com a Gisele (a porta virou **RH+FIN**). O cantinho dela fica embaixo à direita: planilha no monitor, calculadora, cofrinho, pilha de notas e plaquinha FINANCEIRO. Dá pra conversar com ela e espiar a planilha (centros de custo, "quando cai o VR" e o karaokê do Geraldo negado). Ela também aparece nos textos dos outros: o Geraldo empurra o aumento pra ela, ele comenta o VR na ronda, o Seu Dirceu fala do horário dela, a caneca "DÉBITO E CRÉDITO" está no armário e tem post-it de reembolso na caixa de sugestões.
+
+- **Problema: 🧾 Nota presa na doca** (90 s, +120 pontos): o motorista da DOCA 1 não sai sem a nota fiscal assinada. Pegue a nota com a Pri e leve até ele na porta da doca. Se passar do prazo, é a Pri que manda o recado.
+- **Demanda: 🧾 Prestação de contas** (congela os pedidos, +150 pontos): a Pri precisa fechar o mês e faltam 3 recibos, um na cozinha, um na sala do chefe e um na portaria. A seta leva de sala em sala; no fim ela abre a pasta com os recibos (o rodízio de pizza do Geraldo foi glosado).
