@@ -527,6 +527,8 @@
     .balao-nome { display: block; font-size: 0.8em; color: #475569; margin-bottom: 2px; letter-spacing: 0.04em; }
     /* Aviso de demanda */
     #modal-demanda { background: rgba(15, 23, 42, 0.55); }
+    .aviso-demanda.alerta { border-color: #b91c1c; box-shadow: 6px 6px 0 #7f1d1d; }
+    .aviso-demanda.alerta h2 { color: #b91c1c; }
     .aviso-demanda {
       width: min(92%, 460px);
       box-sizing: border-box;
@@ -2128,7 +2130,7 @@
         <div class="tr-cara">:(</div>
         <h2 id="tr-titulo">ERRO NO SISTEMA</h2>
         <p>O WMS encontrou um problema e precisa de ajuda. Nenhum pedido novo sai do balcão até alguém da TI consertar.</p>
-        <p class="tr-acao">➜ Vá até o balcão do WMS e chame a TI.</p>
+        <p class="tr-acao">➜ Vá até a sala da TI (porta TI, ao lado do balcão) e chame o Vini. Você tem 2 minutos.</p>
         <p class="tr-codigo">CÓDIGO: <span id="tr-codigo">WMS_PICKING_EXCEPTION 0x0000CAIXA</span></p>
         <p class="tr-codigo">Coletando informações do erro: <span id="tr-pct">0</span>%</p>
         <button class="btn tr-btn" id="btn-tela-roxa">ENTENDI</button>
@@ -2553,7 +2555,7 @@
       estrelas: { tres: 99999, duas: 99999 },
       tempoColetaPorVolume: 1.0,
       geracao: { intervalo: 35, meta: Infinity, armazenagem: false, numeroInicial: 2000 },
-      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 120, telaRoxa: 38, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75, cafe: 999 } },
+      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 120, telaRoxa: 120, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75, cafe: 999 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -2933,6 +2935,18 @@
         "Ei! Tá procurando alguma coisa? Isso aí é... material de trabalho.",
         "Pode fechar isso aí, por gentileza. É confidencial. E pessoal. E, tecnicamente, da empresa.",
         "Opa opa opa! Mexendo nas minhas coisas? Vou fingir que não vi. Mas eu vi."
+      ],
+      falasRHSala: [
+        "Oi! Tudo bem com você? Tá se hidratando?",
+        "Lembrete: sexta tem dinâmica de grupo. Traga seu melhor sorriso. É obrigatório.",
+        "Minha porta está sempre aberta. Menos quando está fechada.",
+        "Se alguém brigar, você já sabe onde me achar."
+      ],
+      falasTISala: [
+        "Abriu chamado? Não? Então eu não te vi aqui.",
+        "Já tentou desligar e ligar? Eu falo isso pra mim mesmo também.",
+        "Se a tela ficar roxa, me chama. Se ficar verde, aí é contigo.",
+        "Não, eu não sei a senha do Wi-Fi. Sei sim. Mas não."
       ],
       chefeTchau: ["Mais alguma coisa? Não? Ótimo. A porta é ali. Bom trabalho!"],
       ligacaoFalhou: ["Ninguém atendeu o telefone e o cliente cancelou o pedido.", "O telefone tocou, tocou... e o cliente foi comprar no concorrente."],
@@ -5999,6 +6013,7 @@
       // 7b. Urgências: fogo, extintor na parede e posição da descarga
       desenharPortaEscritorio();
       desenharPortaCozinha();
+      desenharPortasRHeTI();
       desenharBebedouro();
       desenharSujeira();
       desenharBatida();
@@ -8028,7 +8043,9 @@
       extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER",
       atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR",
       entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
-      conversar: "FALAR", entregar_cafe: "ENTREGAR", fucar_mesa: "FUÇAR", fucar_arquivo: "FUÇAR", fucar_mural: "OLHAR"
+      conversar: "FALAR", entregar_cafe: "ENTREGAR", fucar_mesa: "FUÇAR", fucar_arquivo: "FUÇAR", fucar_mural: "OLHAR",
+      chamar_rh: "CHAMAR RH", conversar_rh: "FALAR", conversar_ti: "FALAR",
+      fucar_sugestoes: "ABRIR", fucar_aniversarios: "OLHAR", fucar_ocorrencias: "FUÇAR", fucar_quadro: "OLHAR", fucar_chamados: "ESPIAR", fucar_cabos: "FUÇAR"
     };
     let rotuloAcaoAtual = "";
     function atualizarBotoesVeiculo() {
@@ -8923,7 +8940,7 @@
        ========================================================================== */
     const EXTINTOR_POS = { x: 668, y: 30 }; // armário vermelho na parede, perto da consolidação
     // Urgências sem o apito repetido (só um aviso ao começar): a visita da diretoria e o pedido abandonado
-    const SEM_APITO = ["visita", "abandono"];
+    const SEM_APITO = ["visita", "abandono", "briga", "telaRoxa"]; // briga e tela roxa avisam com um alerta na tela
     const emerg = { ativa: null, proxima: Infinity, ordem: [], ultimo: null, alarme: 0, hud: 0, extintorNaMao: false, spray: false,
                     // Turno sem fim: o que vem a seguir ("problema" = sorteio de problema; ou o tipo da demanda)
                     pendentes: [], gatilhoProblema: Infinity, proxDemanda: 0,
@@ -9143,6 +9160,11 @@
         emerg.brigaRadioFeita = true; // a primeira briga do turno é sempre a da rádio caipira
         abrirRadioPeao();
         mensagemRadioPeao(null, `${bonito2(n1)} e ${bonito2(n2)} começaram a discutir...`);
+        if (MISSAO_ATUAL.semFim) abrirAvisoDemanda("🚨", "BRIGA NO GALPÃO!", [
+          `${bonito2(n1)} e ${bonito2(n2)} estão discutindo.`,
+          "Vá até a sala do RH (porta RH, na parede de cima).",
+          "Chame o RH na mesa dela. Ela resolve o resto."
+        ], "Você tem 2 minutos. A seta mostra o caminho.", "alerta");
         falaDaBriga(a, 0);
         if (a.dialogo.tema === "rádio" && RADIO_MUSICA.trocarTemporaria(RADIO_CAIPIRA.url)) {
           a.trocouRadio = true;
@@ -9193,14 +9215,14 @@
       const texto = {
         incendio: `Fogo no pallet ${a.pallet ? a.pallet.label : ""}! Pegue o extintor.`,
         batida: "Cuidado! Duas empilhadeiras vindo de frente no corredor...",
-        telaRoxa: "O WMS deu tela roxa! Vá ao balcão e chame a TI.",
+        telaRoxa: "O WMS deu tela roxa! Vá até a sala da TI e chame o Vini.",
         limpeza: `Alguém derrubou uma caixa na ${a.rua ? a.rua.id : "rua"}! Vá limpar antes que alguém escorregue.`,
         ligacao: "Telefone tocando no balcão! É o cliente do pedido que você está separando. Vá atender.",
         inventario: "Inventário rápido: conte as caixas de 3 endereços e digite no WMS. Os pedidos ficam congelados.",
         visita: "A DIRETORIA VEM AÍ! Limpe a bagunça antes do diretor chegar.",
         caminhao: "Chegou caminhão! Sem pressa: leve os 3 pallets do recebimento pro estoque. Os pedidos ficam congelados.",
         treino: "O Enzo vai te seguir nos próximos 3 pedidos. Cada passo só conta com ele do lado. Não deixe ele se perder!",
-        briga: `${a.brigoes ? a.brigoes[0].nome + " e " + a.brigoes[1].nome : "Dois colegas"} estão brigando! Ligue pro RH no ramal da parede.`,
+        briga: `${a.brigoes ? a.brigoes[0].nome + " e " + a.brigoes[1].nome : "Dois colegas"} estão brigando! Vá até a sala do RH e chame o RH.`,
         abandono: `${a.colega} largou o emprego! O pedido ${a.pedido ? a.pedido.def.numero : ""} ${ROSTOS_COLEGAS[a.colega] ? ROSTOS_COLEGAS[a.colega].pronome : "dele"} está no topo do balcão.`,
         coletor: "O coletor sumiu! Sem ele, sem WMS. Siga o bip.",
         descarga: `Descarga urgente: leve o pallet até a ${a.pos ? a.pos.idCompleto : ""}.`
@@ -9380,8 +9402,10 @@
       if (a.tipo === "caminhao" && !veiculo.pilotando) return `Pallet ${a.feito + 1} de ${a.total}: suba na empilhadeira${fimE}.`;
       if (a.tipo === "caminhao" && a.etapa === "PEGAR") return `Pallet ${a.feito + 1} de ${a.total}: pegue no recebimento${fimE}.`;
       if (a.tipo === "abandono") return `Pegue o ${a.pedido.def.numero} no balcão e entregue antes do tempo acabar.`;
-      if (a.tipo === "briga") return a.chamado ? "O RH está a caminho. Pode voltar pros pedidos." : `Ligue pro RH no ramal da parede${fimE}.`;
-      if (a.tipo === "telaRoxa") return a.chamado ? "O Vini da TI está consertando o WMS. Aguenta aí que o balcão já volta." : `Vá ao balcão do WMS e chame a TI${fimE}.`;
+      if (a.tipo === "briga") return a.chamado ? "O RH está a caminho. Pode voltar pros pedidos."
+        : cena === "rh" ? `Chame o RH na mesa dela${fimE}.` : "Vá até a sala do RH (porta RH, na parede de cima) e chame o RH.";
+      if (a.tipo === "telaRoxa") return a.chamado ? "O Vini da TI está consertando o WMS. Aguenta aí que o balcão já volta."
+        : cena === "ti" ? `Chame o Vini na mesa dele${fimE}.` : "Vá até a sala da TI (porta TI, ao lado do balcão) e chame o Vini.";
       if (temFogo(a)) {
         return emerg.extintorNaMao
           ? `Chegue perto do fogo e segure ${E} para apagar.`
@@ -9412,8 +9436,8 @@
         return sujas.reduce((m, x) => Math.hypot(x.x - player.x, x.y - player.y) < Math.hypot(m.x - player.x, m.y - player.y) ? x : m);
       }
       if (temFogo(a)) return emerg.extintorNaMao ? { x: a.x, y: a.y } : { x: EXTINTOR_POS.x, y: EXTINTOR_POS.y + 16 };
-      if (a.tipo === "briga") return a.chamado ? null : { x: RH_RAMAL.x, y: RH_RAMAL.y + 12 };
-      if (a.tipo === "telaRoxa") return a.chamado ? null : { x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y + 16 };
+      if (a.tipo === "briga") return a.chamado ? null : { x: PORTA_RH.x, y: PORTA_RH.y + 14 };
+      if (a.tipo === "telaRoxa") return a.chamado ? null : { x: PORTA_TI.x, y: PORTA_TI.y + 14 };
       if (!veiculo.pilotando) return { x: veiculo.x, y: veiculo.y };
       if (a.etapa === "PEGAR") { const p = palletArmazenagemAtual(); return p ? { x: p.x - 30, y: p.y } : null; }
       const rua = RUAS_CONFIG.find(r => r.id === a.pos.rua);
@@ -9618,25 +9642,10 @@
           player.x >= TERMINAL_INICIAL.x - 12 && player.x <= TERMINAL_INICIAL.x + TERMINAL_INICIAL.w + 12 &&
           player.y >= TERMINAL_INICIAL.y - 12 && player.y <= TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 12) {
         if (!a.chamado) {
-          player.currentZone = { tipo: "chamar_ti" };
-          if (interactPressedThisFrame) chamarTI(a);
-          return true;
-        }
-        if (interactPressedThisFrame) {
+          if (interactPressedThisFrame) { falarTexto("Tela roxa! Chame o Vini na sala da TI (porta TI, aqui do lado).", "#c4b5fd"); return true; }
+        } else if (interactPressedThisFrame) {
           if (fila.ativo) abrirCardPedido(); // a etiqueta impressa continua valendo
           else falarTexto("O Vini ainda está consertando. Já já o balcão volta.", "#c4b5fd");
-          return true;
-        }
-      }
-      // Ramal do RH na parede: só serve quando tem briga
-      if (Math.hypot(player.x - RH_RAMAL.x, player.y - (RH_RAMAL.y + 10)) < 26) {
-        if (a && a.tipo === "briga" && !a.chamado) {
-          player.currentZone = { tipo: "ramal" };
-          if (interactPressedThisFrame) chamarRH(a);
-          return true;
-        }
-        if (interactPressedThisFrame) {
-          falarTexto("Ramal do RH: só pra quando a coisa esquentar entre o pessoal.", "#94a3b8");
           return true;
         }
       }
@@ -10544,11 +10553,17 @@
        As salas ficam fora do mapa (lá em x=5000), assim nada do galpão esbarra na personagem
        enquanto ela está lá dentro. O relógio, os pedidos e os problemas continuam correndo. */
     const PORTA_COZINHA = { x: 757, y: 30 };
+    const PORTA_RH = { x: 258, y: 30 }; // porta da sala do RH (onde ficava o ramal)
+    const PORTA_TI = { x: 343, y: 30 }; // porta da sala da TI, entre a placa de EPI e a janela, ao lado do balcão
     const SALAS = {
       cozinha: { ox: 5000, oy: 5000, w: 240, h: 150, fundo: 54, porta: PORTA_COZINHA,
                  blocos: [[194, 40, 36, 22], [178, 44, 14, 14], [94, 92, 48, 16]] },
       chefe: { ox: 6000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_ESCRITORIO,
-               blocos: [[76, 44, 88, 30], [6, 40, 28, 26], [206, 40, 28, 30]] }
+               blocos: [[76, 44, 88, 30], [6, 40, 28, 26], [206, 40, 28, 30]] },
+      rh: { ox: 7000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_RH,
+            blocos: [[82, 44, 76, 28], [12, 42, 22, 20], [206, 38, 28, 30], [16, 112, 28, 18], [200, 112, 24, 18]] },
+      ti: { ox: 8000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_TI,
+            blocos: [[78, 44, 84, 28], [172, 42, 30, 20], [204, 38, 30, 32], [16, 108, 30, 18]] }
     };
     let cena = null;          // null = galpão; "cozinha" ou "chefe"
     let geladeiraAberta = false;
@@ -10568,7 +10583,7 @@
     }
     function tratarPortasSalas() {
       if (veiculo.pilotando) return false;
-      for (const [tipo, porta] of [["chefe", PORTA_ESCRITORIO], ["cozinha", PORTA_COZINHA]]) {
+      for (const [tipo, porta] of [["chefe", PORTA_ESCRITORIO], ["cozinha", PORTA_COZINHA], ["rh", PORTA_RH], ["ti", PORTA_TI]]) {
         if (Math.abs(player.x - porta.x) < 13 && player.y < porta.y + 24) {
           player.currentZone = { tipo: "entrar_" + tipo };
           if (interactPressedThisFrame) entrarNaSala(tipo);
@@ -10589,6 +10604,13 @@
       atualizarHUD();
       atualizarBannerEmergencia();
     }
+    // Fala de quem está na sala: aparece no balão em cima da mesa
+    function mostrarFalaSala(texto) {
+      const sl = salaAtual();
+      const falante = { nome: cena === "rh" ? "RH" : cena === "ti" ? "VINI" : "GERALDO", x: sl.ox + 120, y: sl.oy + 44 };
+      mostrarBalaoNpc(falante, texto);
+      SFX.notificacao();
+    }
     function sairDaSala() {
       fecharChatChefe();
       geladeiraAberta = false;
@@ -10603,6 +10625,8 @@
       const sl = salaAtual(), a = emerg.ativa;
       if (a && a.tipo === "cafe" && cena === "cozinha" && a.etapa === "fazer") return { x: sl.ox + 111, y: sl.oy + 58 };
       if (a && a.tipo === "cafe" && cena === "chefe" && a.etapa === "levar") return { x: sl.ox + 120, y: sl.oy + 80 };
+      if (a && a.tipo === "briga" && !a.chamado && cena === "rh") return { x: sl.ox + 120, y: sl.oy + 80 };
+      if (a && a.tipo === "telaRoxa" && !a.chamado && cena === "ti") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a || fila.ativo || pedidosEsperando().length || hidra.seca) return { x: sl.ox + sl.w / 2, y: sl.oy + sl.h }; // tem coisa lá fora
       return null;
     }
@@ -10656,6 +10680,30 @@
           if (interactPressedThisFrame) { SFX.playTone(900, "sine", 0.08, 0.03, 0.02); falarTexto(sortearTexto("pia"), "#e2e8f0"); }
           return;
         }
+      } else if (cena === "rh" || cena === "ti") {
+        const pontos = cena === "rh"
+          ? [["sugestoes", 8, 44, 48, 76], ["aniversarios", 164, 192, 48, 64], ["ocorrencias", 190, 240, 48, 86]]
+          : [["quadro", 10, 72, 48, 64], ["chamados", 164, 204, 48, 76], ["cabos", 8, 58, 96, 132]];
+        for (const [id, x0, x1, y0, y1] of pontos) {
+          if (lx >= x0 && lx < x1 && ly >= y0 && ly < y1) {
+            player.currentZone = { tipo: "fucar_" + id };
+            if (interactPressedThisFrame) abrirArquivo(id);
+            return;
+          }
+        }
+        if (ly >= 72 && ly < 104 && Math.abs(lx - 120) < 42) {
+          const ehRH = cena === "rh";
+          const npc = ehRH ? rh : ti;
+          const precisa = a && !a.chamado && a.tipo === (ehRH ? "briga" : "telaRoxa");
+          player.currentZone = { tipo: precisa ? (ehRH ? "chamar_rh" : "chamar_ti") : (ehRH ? "conversar_rh" : "conversar_ti") };
+          if (interactPressedThisFrame) {
+            if (npc.ativo) falarTexto(ehRH ? "A mesa do RH está vazia: ela saiu pra resolver uma treta." : "O Vini saiu pra atender um chamado. A cadeira ainda está girando.", "#e2e8f0");
+            else if (precisa) {
+              if (ehRH) chamarRH(a); else chamarTI(a);
+              mostrarFalaSala(ehRH ? "Briga de novo? Já tô indo! Vou levar os lencinhos." : "Tela roxa de novo? Abrindo chamado... pronto, já tô indo.");
+            } else mostrarFalaSala(sortearTexto(ehRH ? "falasRHSala" : "falasTISala"));
+          }
+        }
       } else if (cena === "chefe") {
         const fucar = (tipo) => { player.currentZone = { tipo: "fucar_" + tipo }; if (interactPressedThisFrame) abrirArquivo(tipo); };
         if (lx >= 46 && lx < 76 && ly >= 48 && ly < 84) return fucar("mesa");
@@ -10694,6 +10742,25 @@
       ret(ctx, x, y + 3, 4, 2, "#f8fafc");
       ret(ctx, x + 1, y - 2, 2, 1, "#111827");
     }
+    function desenharPortaSala(porta, rotulo, cor, cor2, icone) {
+      const x = porta.x - 11, y = 4;
+      ret(ctx, x - 1, y - 1, 24, 22, ARTE.contorno);
+      ret(ctx, x, y, 22, 20, cor);
+      ret(ctx, x, y, 22, 1, cor2);
+      ret(ctx, x + 3, y + 3, 16, 6, "#a5c8e4"); ret(ctx, x + 3, y + 3, 16, 1, "#dbeafe");
+      ret(ctx, x + 17, y + 12, 2, 2, "#facc15");
+      icone(x, y);
+      desenharBitmap(rotulo, porta.x, y + 22, "#f8fafc", 1, "center");
+    }
+    function desenharPortasRHeTI() {
+      // RH: porta lilás com coraçãozinho (pisca quando tem briga e ninguém chamou)
+      const a = emerg.ativa;
+      if (a && a.tipo === "briga" && !a.chamado && Math.floor(Date.now() / 300) % 2 === 0) ret(ctx, PORTA_RH.x - 14, 1, 28, 26, "#ef4444");
+      desenharPortaSala(PORTA_RH, "RH", "#a78bfa", "#c4b5fd", (x, y) => { ret(ctx, x + 6, y + 12, 2, 2, "#f43f5e"); ret(ctx, x + 9, y + 12, 2, 2, "#f43f5e"); ret(ctx, x + 6, y + 13, 5, 2, "#f43f5e"); ret(ctx, x + 7, y + 15, 3, 1, "#f43f5e"); });
+      // TI: porta azul-escura com monitorzinho (pisca na tela roxa)
+      if (a && a.tipo === "telaRoxa" && !a.chamado && Math.floor(Date.now() / 300) % 2 === 0) ret(ctx, PORTA_TI.x - 14, 1, 28, 26, "#a855f7");
+      desenharPortaSala(PORTA_TI, "TI", "#334155", "#475569", (x, y) => { ret(ctx, x + 5, y + 11, 8, 6, "#0f172a"); ret(ctx, x + 6, y + 12, 6, 4, "#22c55e"); ret(ctx, x + 8, y + 17, 2, 1, "#0f172a"); });
+    }
     function desenharPortaCozinha() {
       const x = PORTA_COZINHA.x - 11, y = 4;
       ret(ctx, x - 1, y - 1, 24, 22, ARTE.contorno);
@@ -10720,7 +10787,10 @@
       const camX = Math.round(camera.x) + JUICE.shakeX, camY = Math.round(camera.y) + JUICE.shakeY;
       ctx.save();
       ctx.translate(-camX, -camY);
-      if (cena === "cozinha") desenharCozinha(sl); else desenharSalaChefe(sl);
+      if (cena === "cozinha") desenharCozinha(sl);
+      else if (cena === "rh") desenharSalaRH(sl);
+      else if (cena === "ti") desenharSalaTI(sl);
+      else desenharSalaChefe(sl);
       if (player.invulnerableTimer <= 0 || Math.floor(Date.now() / 80) % 2 === 0) {
         renderPixelCharacter(player.x, player.y, player.dir, player.walkFrame, "#facc15", (volumesColetados > 0), pacoteEmbalado,
           player.squashX, player.squashY, (player.flashWhite > 0), (player.flashRed > 0));
@@ -10879,6 +10949,96 @@
       ret(ctx, X + 140, Y + 46, 14, 7, "#f8fafc"); ret(ctx, X + 142, Y + 45, 14, 7, "#e5e7eb");                                       // papéis
       ret(ctx, X + 126, Y + 45, 6, 6, ARTE.contorno); ret(ctx, X + 127, Y + 46, 4, 4, "#facc15");                                      // caneca nº1
     }
+    function desenharSalaRH(sl) {
+      const X = sl.ox, Y = sl.oy, C = ARTE.contorno;
+      const r = (x, y, w, h, c) => ret(ctx, X + x, Y + y, w, h, c);
+      // parede lilás, rodapé e piso de madeira clara
+      desenharCascaSala(sl, "#ede9fe", "#c4b5fd", "#e7d3b3", "#dcc39e", 40);
+      for (let ty = 40; ty < sl.h - 3; ty += 6) r(0, ty, sl.w, 1, "#cfb38b");
+      // faixa "GRATIDÃO" e quadrinho de frase motivacional
+      r(14, 6, 58, 12, "#7c3aed"); desenharBitmap("GRATIDAO", X + 43, Y + 9, "#fef3c7", 1, "center");
+      r(18, 21, 22, 15, C); r(19, 22, 20, 13, "#fdf2f8"); r(22, 25, 14, 1, "#f472b6"); r(22, 28, 10, 1, "#f472b6"); r(22, 31, 12, 1, "#f472b6");
+      // janela
+      r(82, 6, 34, 24, C); r(83, 7, 32, 22, "#bae6fd"); r(83, 7, 32, 4, "#e0f2fe"); r(98, 7, 1, 22, "#f8fafc");
+      r(80, 5, 4, 26, "#f9a8d4"); r(114, 5, 4, 26, "#f9a8d4");
+      // relógio de coração
+      r(128, 8, 10, 9, "#f43f5e"); r(130, 10, 6, 5, "#fff1f2"); r(132, 11, 1, 3, C); r(132, 13, 3, 1, C);
+      // mural dos aniversariantes com balões
+      r(164, 3, 36, 30, "#3b2410"); r(166, 5, 32, 26, "#c08a56");
+      r(168, 7, 14, 10, "#fef3c7"); desenharBitmap("PARABENS", X + 182, Y + 19, "#7c3aed", 1, "center");
+      r(185, 7, 10, 8, "#bfdbfe"); r(170, 24, 8, 5, "#fca5a5"); r(181, 25, 12, 4, "#bbf7d0");
+      [[199, "#f43f5e"], [204, "#facc15"], [209, "#38bdf8"]].forEach(([bx, c]) => { r(bx, 6, 6, 7, c); r(bx + 2, 13, 1, 8, "#94a3b8"); });
+      // caixa de sugestões (vermelha, com fenda) num banquinho
+      r(14, 52, 18, 10, "#64748b"); r(12, 42, 22, 12, C); r(13, 43, 20, 10, "#dc2626"); r(17, 45, 12, 2, "#111827");
+      desenharBitmap("SUGEST", X + 23, Y + 48, "#fef3c7", 1, "center");
+      // arquivo de ocorrências
+      r(206, 38, 28, 32, C); r(207, 39, 26, 30, "#c4b5fd");
+      [0, 1, 2].forEach(i => { r(209, 41 + i * 9, 22, 7, "#a78bfa"); r(216, 43 + i * 9, 8, 2, "#4c1d95"); });
+      // RH na mesa (se não saiu pra resolver briga)
+      r(110, 30, 20, 14, C); r(111, 31, 18, 12, "#4c1d95");
+      if (!rh.ativo) renderPixelCharacter(X + 120, Y + 46, "DOWN", 0, rh.vestColor, false, false, 1, 1, false, false, APARENCIA_RH);
+      // mesa clarinha com computador, difusor, plantinha e caixa de lenço
+      r(82, 44, 76, 28, C); r(83, 45, 74, 9, "#f5e6d3"); r(83, 45, 74, 2, "#fff7ed"); r(83, 54, 74, 17, "#d6b48c");
+      r(86, 57, 32, 12, "#c9a275"); r(122, 57, 32, 12, "#c9a275");
+      r(88, 36, 16, 11, C); r(89, 37, 14, 8, "#c4b5fd"); r(94, 45, 4, 2, "#475569");
+      r(138, 44, 6, 6, "#e0f2fe"); if (Math.floor(Date.now() / 400) % 2) r(140, 40, 2, 3, "#e2e8f0");    // difusor soltando vapor
+      r(148, 46, 6, 5, "#f8fafc"); r(150, 44, 2, 2, "#ffffff");                                              // lenços
+      r(124, 45, 5, 5, "#a16207"); r(124, 42, 5, 4, "#22c55e");                                              // plantinha
+      if (rh.ativo) { r(103, 22, 34, 9, C); r(104, 23, 32, 7, "#fef3c7"); desenharBitmap("JA VOLTO", X + 120, Y + 24, "#7c3aed", 1, "center"); }
+      // puff e planta grande
+      r(16, 112, 28, 18, C); r(17, 113, 26, 16, "#f472b6"); r(19, 115, 22, 4, "#f9a8d4");
+      r(204, 118, 16, 12, C); r(205, 119, 14, 10, "#9a3412"); r(200, 104, 24, 16, "#15803d"); r(205, 98, 14, 8, "#22c55e");
+      // tapete redondo (quadrado, é pixel)
+      r(84, 84, 72, 30, "#ddd6fe"); r(86, 86, 68, 26, "#ede9fe");
+    }
+    function desenharSalaTI(sl) {
+      const X = sl.ox, Y = sl.oy, C = ARTE.contorno;
+      const r = (x, y, w, h, c) => ret(ctx, X + x, Y + y, w, h, c);
+      const pisca = (n) => Math.floor(Date.now() / (180 + n * 37)) % 2 === 0;
+      // parede escura, piso de placas e cabos pelo chão
+      desenharCascaSala(sl, "#1e293b", "#0f172a", "#334155", "#2b3647", 40);
+      r(40, 120, 70, 1, "#0f172a"); r(110, 74, 1, 47, "#0f172a"); r(150, 100, 60, 1, "#1d4ed8"); r(150, 72, 1, 29, "#1d4ed8");
+      // quadro branco rabiscado
+      r(12, 4, 60, 30, C); r(13, 5, 58, 28, "#f8fafc");
+      r(16, 9, 10, 6, "#ffffff"); r(16, 9, 10, 1, "#2563eb"); r(16, 14, 10, 1, "#2563eb"); r(16, 9, 1, 6, "#2563eb"); r(25, 9, 1, 6, "#2563eb");
+      r(27, 12, 12, 1, "#2563eb"); r(40, 9, 9, 6, "#fef3c7"); r(50, 12, 10, 1, "#dc2626"); r(60, 9, 8, 6, "#fca5a5");
+      desenharBitmap("???", X + 42, Y + 20, "#dc2626", 1, "center"); r(16, 27, 30, 1, "#16a34a"); r(16, 30, 20, 1, "#16a34a");
+      // pôster
+      r(80, 6, 30, 22, C); r(81, 7, 28, 20, "#0f172a"); desenharBitmap("SEM", X + 95, Y + 9, "#facc15", 1, "center");
+      desenharBitmap("CHAMADO", X + 95, Y + 16, "#facc15", 1, "center"); r(84, 23, 22, 2, "#ef4444");
+      // ventiladorzinho e prateleira de coletores quebrados
+      r(120, 10, 40, 3, "#475569");
+      [124, 132, 140, 148].forEach((cx, i) => { r(cx, 4, 6, 6, C); r(cx + 1, 5, 4, 4, i === 2 ? "#a855f7" : "#64748b"); });
+      // rack de servidor com leds piscando
+      r(204, 6, 30, 64, C); r(205, 7, 28, 62, "#111827");
+      for (let i = 0; i < 6; i++) {
+        r(207, 10 + i * 10, 24, 7, "#1f2937");
+        r(209, 12 + i * 10, 2, 2, pisca(i) ? "#22c55e" : "#14532d");
+        r(213, 12 + i * 10, 2, 2, pisca(i + 3) ? "#38bdf8" : "#0c4a6e");
+        r(218, 12 + i * 10, 10, 1, "#374151");
+      }
+      // PC de testes no cantinho (os chamados)
+      r(172, 42, 30, 20, C); r(173, 43, 28, 18, "#475569");
+      r(176, 30, 20, 14, C); r(177, 31, 18, 11, "#0f172a"); r(178, 33, 10, 1, "#22c55e"); r(178, 36, 14, 1, "#22c55e"); r(178, 39, 8, 1, "#22c55e");
+      // Vini na mesa (se não saiu pra consertar)
+      r(110, 30, 20, 14, C); r(111, 31, 18, 12, "#0f172a");
+      if (!ti.ativo) renderPixelCharacter(X + 120, Y + 46, "DOWN", 0, ti.vestColor, false, false, 1, 1, false, false, APARENCIA_TI);
+      // mesa preta com três monitores, latinhas e teclado gamer
+      r(78, 44, 84, 28, C); r(79, 45, 82, 9, "#334155"); r(79, 45, 82, 1, "#475569"); r(79, 54, 82, 17, "#1f2937");
+      // dois monitores nas pontas (o Vini fica no meio) e um monitor em pé de lado
+      [[84, "#1d4ed8"], [134, "#a855f7"]].forEach(([mx, c], i) => {
+        r(mx, 32, 22, 14, C); r(mx + 1, 33, 20, 11, "#0b1220");
+        for (let l = 0; l < 3; l++) r(mx + 3, 35 + l * 3, 6 + ((l * 7 + i * 5) % 12), 1, c);
+      });
+      r(157, 28, 6, 18, C); r(158, 29, 4, 15, "#0b1220"); r(159, 31, 2, 1, "#22c55e"); r(159, 34, 2, 1, "#22c55e");
+      r(100, 47, 40, 4, "#111827"); for (let k = 0; k < 8; k++) r(102 + k * 5, 48, 3, 2, ["#ef4444", "#f97316", "#facc15", "#22c55e", "#38bdf8", "#6366f1", "#a855f7", "#ec4899"][k]);
+      r(146, 47, 4, 6, "#16a34a"); r(151, 47, 4, 6, "#16a34a"); r(84, 47, 4, 6, "#ef4444");              // latinhas
+      if (ti.ativo) { r(100, 20, 40, 9, C); r(101, 21, 38, 7, "#0b1220"); desenharBitmap("ATENDENDO", X + 120, Y + 22, "#38bdf8", 1, "center"); }
+      // caixa de papelão com cabos saindo
+      r(16, 108, 30, 18, C); r(17, 109, 28, 16, "#b45309"); r(17, 109, 28, 3, "#d97706");
+      desenharBitmap("CABOS", X + 31, Y + 116, "#fde68a", 1, "center");
+      r(20, 104, 2, 6, "#111827"); r(26, 102, 2, 8, "#2563eb"); r(34, 103, 2, 7, "#dc2626"); r(40, 105, 2, 5, "#f8fafc");
+    }
     function desenharMesaChefeFrente(sl) {
       const X = sl.ox, Y = sl.oy;
       ret(ctx, X + 76, Y + 55, 88, 20, ARTE.contorno);
@@ -10907,6 +11067,39 @@
         { v: "postit", linhas: ["Reunião c/ diretor:", "dizer que a ideia", "do café foi MINHA"] }
       ] }
     };
+    ARQUIVOS_CHEFE.sugestoes = { aba: "CAIXA DE SUGESTÕES (ANÔNIMAS)", itens: [
+      { v: "postit", linhas: ["Ar em 22 graus FIXO.", "Ass: anônimo", "(Jéssica)"] },
+      { v: "postit", linhas: ["Proibir moda de", "viola antes das 10h."] },
+      { v: "postit", linhas: ["Happy hour na sexta.", "Ou happy minute,", "já ajuda."] },
+      { v: "postit", linhas: ["Contratar alguém só", "pra lavar caneca.", "Pode ser eu se pagar."] },
+      { v: "postit", linhas: ["Nome na marmita é", "obrigatório?", "— Kauã"] }
+    ] };
+    ARQUIVOS_CHEFE.ocorrencias = { aba: "ARQUIVO · OCORRÊNCIAS 2026", itens: [
+      { v: "papel", titulo: "LIVRO DE OCORRÊNCIAS", lista: [["Nº 001 · Marmita sumiu", 0], ["Nº 002 · Marmita sumiu (de novo)", 0], ["Nº 003 · Rádio trocada pra caipira", 0], ["Nº 004 · Ar-condicionado em 16 °C", 0], ["Nº 005 · Último café sem reposição", 0], ["Nº 006 · Estilete com nome sumiu", 0]] },
+      { v: "papel", titulo: "AUTOAVALIAÇÃO · GERALDO", linhas: ["Liderança: 10", "Comunicação: 10", "Humildade: 10 (a mais alta)"], carimbo: "SEM REVISÃO", cor: "vermelho" },
+      { v: "papel", titulo: "PEDIDO DE FÉRIAS · GERALDO", linhas: ["Período: 20/12 a 10/01", "Aprovado por: Geraldo"], carimbo: "APROVADO", cor: "verde" }
+    ] };
+    ARQUIVOS_CHEFE.aniversarios = { aba: "MURAL DOS ANIVERSARIANTES", itens: [
+      { v: "papel", titulo: "🎈 ANIVERSARIANTES DO MÊS", lista: [["Robson · dia 12 · bolo de cenoura c/ chocolate", 0], ["Jéssica · dia 19 · bolo de pote (NÃO MEXE)", 0], ["Enzo · dia 28 · primeiro na firma, vai ganhar balão", 0]] },
+      { v: "foto", titulo: "FESTA JUNINA 2025", linhas: ["O Geraldo de caipira,", "cantando Roupa Nova.", "Ninguém entendeu nada."] },
+      { v: "postit", linhas: ["Dinâmica de grupo:", "sexta, 16h.", "Trazer sorriso", "(obrigatório)"] }
+    ] };
+    ARQUIVOS_CHEFE.quadro = { aba: "QUADRO BRANCO DA TI", itens: [
+      { v: "papel", titulo: "REDE DO GALPÃO (DESENHO)", linhas: ["Internet → roteador → fita isolante → tudo", "Coletores → Wi-Fi → reza", "Impressora → ninguém sabe"] },
+      { v: "papel", titulo: "TELA ROXA: CAUSAS", lista: [["Atualização", 1], ["Cabo solto", 1], ["Estagiário", 1], ["???", 0]] },
+      { v: "postit", linhas: ["Senha do Wi-Fi:", "perguntar pro Vini.", "(não perguntem", "pro Vini)"] }
+    ] };
+    ARQUIVOS_CHEFE.chamados = { aba: "PC DO VINI · FILA DE CHAMADOS", itens: [
+      { v: "papel", titulo: "#4512 · IMPRESSORA NÃO IMPRIME", linhas: ["Aberto por: Geraldo", "Solução: ela estava desligada."], carimbo: "RESOLVIDO", cor: "verde" },
+      { v: "papel", titulo: "#4513 · INTERNET LENTA", linhas: ["Aberto por: Geraldo", "Solução: fechar 47 abas."], carimbo: "RESOLVIDO", cor: "verde" },
+      { v: "papel", titulo: "#4520 · \"AUMENTA A INTERNET SÓ NO MEU PC\"", linhas: ["Aberto por: Geraldo", "Solução: adesivo de foguinho no monitor.", "Ele disse que ficou mais rápido."], carimbo: "RESOLVIDO?", cor: "vermelho" },
+      { v: "postit", linhas: ["Tela roxa:", "reiniciar, rezar,", "reiniciar."] }
+    ] };
+    ARQUIVOS_CHEFE.cabos = { aba: "CAIXA DE CABOS DO VINI", itens: [
+      { v: "papel", titulo: "INVENTÁRIO DA CAIXA", lista: [["37 cabos (nenhum serve em nada)", 0], ["Adaptador de 3 pra 2 pra 3 pinos", 0], ["Mouse de bolinha (relíquia)", 0], ["Controle de um ar que não existe mais", 0]] },
+      { v: "papel", titulo: "PENDRIVE ACHADO", linhas: ["Etiqueta: NÃO FORMATAR", "FOTOS DA FESTA 2019"], carimbo: "NÃO ABRIR", cor: "vermelho" },
+      { v: "postit", linhas: ["Cabo do coletor 4:", "emprestado pro", "Geraldo carregar", "o celular. Nunca voltou."] }
+    ] };
     ARQUIVOS_CHEFE.geladeira = { tema: "geladeira", aba: "GELADEIRA DA FIRMA", itens: [
       { v: "pote", emoji: "🍱", titulo: "Marmita", etiqueta: "KAUÃ", linhas: ["Strogonoff. Agora com nome, depois do incidente."] },
       { v: "pote", emoji: "🎂", titulo: "Bolo de pote", etiqueta: "NÃO MEXE · ASS: JÉSSICA", linhas: ["Falta uma colherada. Os suspeitos negam."] },
@@ -11520,7 +11713,8 @@
 
     /* ---------- Aviso de demanda: explica a tarefa antes de começar ---------- */
     let avisoDemandaAbertoEm = 0;
-    function abrirAvisoDemanda(icone, titulo, passos, nota) {
+    function abrirAvisoDemanda(icone, titulo, passos, nota, estilo) {
+      document.querySelector("#modal-demanda .aviso-demanda").classList.toggle("alerta", estilo === "alerta");
       estadoJogo = "DEMANDA_AVISO";
       avisoDemandaAbertoEm = performance.now();
       limparInputs();
@@ -11585,10 +11779,10 @@
       SFX.terminal();
       [0, 0.18].forEach(d => setTimeout(() => SFX.playTone(1320, "sine", 0.12, 0.06, 0.01), d * 1000));
       JUICE.textoFlutuante(player.x, player.y - 16, "TI CHAMADA!", "#c4b5fd");
-      falarTexto("Chamado aberto pra TI. O Vini já está vindo.", "#c4b5fd");
-      Object.assign(ti, { ativo: true, x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4, fase: "indo", t: 0, parado: 0 });
+      falarTexto("Chamado aberto! O Vini já está indo pro balcão.", "#c4b5fd");
+      Object.assign(ti, { ativo: true, x: PORTA_TI.x, y: PORTA_TI.y - 4, fase: "indo", t: 0, parado: 0 });
       // Para na frente do balcão, do lado do monitor
-      ti.rota = [{ x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 8 }, { x: PORTA_ESCRITORIO.x, y: TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 10 },
+      ti.rota = [{ x: PORTA_TI.x, y: PORTA_TI.y + 8 }, ...rotaAte(PORTA_TI.x, PORTA_TI.y + 8, TERMINAL_INICIAL.x + 15, TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 10),
                  { x: TERMINAL_INICIAL.x + 15, y: TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 10 }];
       atualizarHUD();
       atualizarBannerEmergencia();
@@ -11609,7 +11803,7 @@
           JUICE.textoFlutuante(a.x, a.y - 22, "WMS ONLINE!", "#34d399");
           SFX.notificacao();
           ti.fase = "voltando";
-          ti.rota = [{ x: PORTA_ESCRITORIO.x, y: TERMINAL_INICIAL.y + TERMINAL_INICIAL.h + 10 }, { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4 }];
+          ti.rota = [...rotaAte(ti.x, ti.y, PORTA_TI.x, PORTA_TI.y + 8), { x: PORTA_TI.x, y: PORTA_TI.y - 4 }];
           ti.parado = 1.2;
           concluirEmergencia();
         }
@@ -11629,7 +11823,6 @@
     }
 
     /* ---------- Briga entre colegas e o RH ---------- */
-    const RH_RAMAL = { x: 258, y: 30 }; // telefone na parede de cima, entre a janela e a placa de EPI
     const APARENCIA_RH = {
       id: "rh", capacete: "#f4f6fa", cabelo: "#3b2416", pele: "#d9a07a", bochecha: "#c9846a",
       camisa: "#6d28d9", colete: "#a78bfa", calca: "#1f2937", cabeloLongo: true
@@ -11751,9 +11944,9 @@
       // Toque de telefone
       [0, 0.18].forEach(d => setTimeout(() => SFX.playTone(1320, "sine", 0.12, 0.06, 0.01), d * 1000));
       JUICE.textoFlutuante(player.x, player.y - 16, "RH CHAMADO!", "#c4b5fd");
-      falarTexto("Ligou pro RH. Já tem gente vindo. Pode voltar pros pedidos.", "#c4b5fd");
-      Object.assign(rh, { ativo: true, x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4, fase: "indo", t: 0, parado: 0 });
-      rh.rota = [{ x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 8 }, ...rotaAte(PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8, a.x, a.y + 14)];
+      falarTexto("Chamou o RH. Ela já está indo pra briga. Pode voltar pros pedidos.", "#c4b5fd");
+      Object.assign(rh, { ativo: true, x: PORTA_RH.x, y: PORTA_RH.y - 4, fase: "indo", t: 0, parado: 0 });
+      rh.rota = [{ x: PORTA_RH.x, y: PORTA_RH.y + 8 }, ...rotaAte(PORTA_RH.x, PORTA_RH.y + 8, a.x, a.y + 14)];
       atualizarHUD();
       atualizarBannerEmergencia();
     }
@@ -11774,7 +11967,7 @@
         if (rh.t <= 0) {
           a.brigoes.forEach(n => { n.brigando = false; n.rota = null; n.parado = 1.0; });
           rh.fase = "voltando";
-          rh.rota = [...rotaAte(rh.x, rh.y, PORTA_ESCRITORIO.x, PORTA_ESCRITORIO.y + 8), { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y - 4 }];
+          rh.rota = [...rotaAte(rh.x, rh.y, PORTA_RH.x, PORTA_RH.y + 8), { x: PORTA_RH.x, y: PORTA_RH.y - 4 }];
           JUICE.textoFlutuante(a.x, a.y - 30, "PAZ!", "#c4b5fd");
           concluirEmergencia();
           if (a.trocouRadio) {
@@ -11796,18 +11989,6 @@
     }
 
     function desenharRH() {
-      // Ramal na parede (pisca vermelho enquanto ninguém ligou)
-      const a = emerg.ativa;
-      const chamando = a && a.tipo === "briga" && !a.chamado;
-      const x = RH_RAMAL.x - 5, y = 8;
-      if (chamando && Math.floor(Date.now() / 300) % 2 === 0) ret(ctx, x - 3, y - 3, 16, 17, "#ef4444");
-      ret(ctx, x - 1, y - 1, 12, 13, ARTE.contorno);
-      ret(ctx, x, y, 10, 11, "#e7dcc4");
-      ret(ctx, x + 1, y + 1, 3, 9, "#3f3f46");       // fone
-      ret(ctx, x + 5, y + 2, 4, 3, "#94a3b8");       // visor
-      ret(ctx, x + 5, y + 6, 1, 1, "#3f3f46"); ret(ctx, x + 7, y + 6, 1, 1, "#3f3f46");
-      ret(ctx, x + 5, y + 8, 1, 1, "#3f3f46"); ret(ctx, x + 7, y + 8, 1, 1, "#3f3f46");
-      desenharBitmap("RH", RH_RAMAL.x, 26, "#ddd6fe", 1, "center");
       if (!rh.ativo) return;
       const passo = (rh.fase === "conversando") ? 0 : Math.floor(Date.now() / 130) % 4;
       renderPixelCharacter(rh.x, rh.y, rh.dir, passo, rh.vestColor, false, false, 1, 1, false, false, APARENCIA_RH);
@@ -13070,6 +13251,15 @@
         fucar_mesa: ["[E] FUCAR A GAVETA", "#422006", "#fde68a", "#ffffff"],
         fucar_arquivo: ["[E] FUCAR O ARQUIVO", "#422006", "#fde68a", "#ffffff"],
         fucar_mural: ["[E] OLHAR O MURAL", "#422006", "#fde68a", "#ffffff"],
+        chamar_rh: ["[E] CHAMAR O RH", "#4c1d95", "#ddd6fe", "#ffffff"],
+        conversar_rh: ["[E] FALAR COM O RH", "#1f2937", "#ddd6fe", "#ffffff"],
+        conversar_ti: ["[E] FALAR COM O VINI", "#1f2937", "#bfdbfe", "#ffffff"],
+        fucar_sugestoes: ["[E] CAIXA DE SUGESTOES", "#422006", "#fde68a", "#ffffff"],
+        fucar_aniversarios: ["[E] MURAL DE ANIVERSARIOS", "#422006", "#fde68a", "#ffffff"],
+        fucar_ocorrencias: ["[E] FUCAR O ARQUIVO", "#422006", "#fde68a", "#ffffff"],
+        fucar_quadro: ["[E] OLHAR O QUADRO", "#422006", "#fde68a", "#ffffff"],
+        fucar_chamados: ["[E] ESPIAR OS CHAMADOS", "#422006", "#fde68a", "#ffffff"],
+        fucar_cabos: ["[E] FUCAR A CAIXA DE CABOS", "#422006", "#fde68a", "#ffffff"],
         entregar_cafe: ["[E] ENTREGAR O CAFE", "#422006", "#fde68a", "#ffffff"],
         atender: ["[E] ATENDER O TELEFONE", "#422006", "#fde68a", "#ffffff"],
         contar: ["SEGURE [E] CONTAR", "#172554", "#bfdbfe", "#ffffff"],

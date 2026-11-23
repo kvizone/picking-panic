@@ -75,8 +75,8 @@ O coletor sumiu, e sem ele não tem seta nem minimapa. Siga o bip, que fica mais
 | 🚚 Descarga urgente | Suba na empilhadeira, pegue o pallet no recebimento e guarde na posição sorteada da rua (R0X-PYY), no nível pedido | 120s / 100s |
 | 🪣 Pedido abandonado | Robson ou Jéssica chuta o balde e vai embora, e aparece no rádio (com rosto, igual ao chefe) contando o que largou. Logo depois o chefe reage. O pedido cai no topo do balcão, com o primeiro item já separado: termine e entregue | 150s / 130s |
 | 🧹 Caixa derrubada | Alguém derrubou uma caixa numa das ruas. Vá até lá e segure a ação pra varrer (a bagunça some aos poucos) | 45s (turno sem fim) |
-| 🖥️ Tela roxa no WMS | O sistema trava: abre a tela roxa "ERRO NO SISTEMA" e o balcão para de liberar pedido. Vá ao balcão e chame a TI. Ao chamar, o relógio para e o técnico (colete azul) vem consertar. Quem já tem pedido na mão pode continuar | 40s / 35s |
-| 😡 Briga no galpão | Dois colegas param e começam a brigar, numa de 5 discussões com roteiro (rádio, ar-condicionado, marmita, último café da garrafa e estilete sumido); a moça do RH responde sobre o assunto. Na briga da rádio, a música troca pra Casa dos Caipiras e volta pra 89 FM quando o RH resolve. Na do ar, um quer 16 °C e o outro está derretendo; o RH trava em 22 °C. No turno sem fim, o prazo pra chamar o RH é de 2 minutos. Ligue pro RH no ramal da parede de cima (perto da placa EPI). Ao ligar, o relógio para e a moça do RH sai da sala, acalma os dois e volta | 40s / 35s |
+| 🖥️ Tela roxa no WMS | O sistema trava: abre a tela roxa "ERRO NO SISTEMA" e o balcão para de liberar pedido. Vá até a sala da TI (porta TI, ao lado do balcão) e chame o Vini na mesa dele. No turno sem fim são 2 minutos, sem apito. Ao chamar, o relógio para e o Vini sai pela porta da TI pra consertar. Quem já tem pedido na mão pode continuar | 40s / 35s |
+| 😡 Briga no galpão | Dois colegas param e começam a brigar, numa de 5 discussões com roteiro (rádio, ar-condicionado, marmita, último café da garrafa e estilete sumido); a moça do RH responde sobre o assunto. Na briga da rádio, a música troca pra Casa dos Caipiras e volta pra 89 FM quando o RH resolve. Na do ar, um quer 16 °C e o outro está derretendo; o RH trava em 22 °C. No turno sem fim, o prazo é de 2 minutos, sem apito: um alerta na tela avisa e a seta vira prioridade. Vá até a sala do RH (porta lilás na parede de cima) e chame o RH na mesa dela. Ao chamar, o relógio para e ela sai pela porta do RH, acalma os dois e volta | 40s / 35s |
 | 💥 Batida de empilhadeiras | Duas empilhadeiras levando carga pro caminhão batem de frente no corredor entre as bancadas e pega fogo. Apague com o extintor. A carga do último pedido entregue queima e volta pro balcão como "-R" pra refazer | 34s / 30s |
 
 O extintor e a empilhadeira ficam sempre no mapa, mas só funcionam na urgência deles. Os pedidos não param: enquanto você resolve a urgência, o prazo deles continua correndo.
@@ -143,6 +143,14 @@ Por enquanto a marcação é o número de pedidos finalizados, no prazo ou atras
 A etiqueta mostra os horários no relógio do turno: entrada do pedido, prazo e atraso (em vermelho quando passou).
 
 
+
+## Salas do RH e da TI
+
+Duas portas novas na parede de cima: **RH** (lilás, com coraçãozinho) e **TI** (azul-escura, ao lado do balcão). A porta pisca quando tem briga ou tela roxa esperando.
+
+- **Sala do RH:** faixa "GRATIDÃO", mural de aniversariantes com balões, difusor soltando vapor, caixa de lenço e puff rosa. Dá pra conversar com ela e fuçar a caixa de sugestões anônimas, o mural dos aniversariantes (com a foto do Geraldo cantando Roupa Nova na festa junina) e o arquivo de ocorrências (com a autoavaliação nota 10 do Geraldo e as férias que ele mesmo aprovou).
+- **Sala da TI:** rack com leds piscando, quadro branco rabiscado, pôster "SEM CHAMADO", latinhas e teclado colorido. Dá pra conversar com o Vini e fuçar o quadro (a rede passa por uma fita isolante), a fila de chamados (o Geraldo pediu pra aumentar a internet só no PC dele) e a caixa de cabos.
+- Quando a pessoa sai pra atender, a mesa fica com a plaquinha "JÁ VOLTO" ou "ATENDENDO".
 
 ## Salas: cozinha e sala do chefe
 
