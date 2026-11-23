@@ -272,3 +272,11 @@ Duas portas novas na parede de cima: **PORTARIA** (ao lado da placa de SAÍDA, d
 - **Portaria:** o Seu Dirceu fica na mesa com rádio AM, garrafa térmica e palavra cruzada. Pela janela dá pra ver a cancela abrindo e fechando. Dá pra conversar com ele e fuçar o quadro de chaves (com a chave misteriosa de 9 anos), o caderno de visitas e a caixa de achados e perdidos (o estilete da briga, o crachá do Enzo, o controle do ar travado em 16 °C...).
 - **Câmeras de segurança:** na mesa da portaria. Mostram o galpão ao vivo, em verde de monitor, com REC piscando e o horário do turno: ruas, balcão, bancadas e docas. A CAM 05 (sala do chefe) está "desligada a pedido do Geraldo". O turno continua enquanto você assiste. No teclado: setas ou 1 a 5 trocam a câmera.
 - **Sala de reunião:** mesa comprida com projetor, telão com o slide 1 de 87, quadro de post-its, cadeira do diretor reservada e flipchart com a agenda (palestras e dinâmicas da Gisele e do Vini). Pensada pra receber dinâmicas de RH e palestras no futuro.
+
+## Problema que passa do prazo (turno sem fim)
+
+O turno não acaba mais quando um problema estoura o tempo. Alguém resolve por você, você perde os pontos daquele problema (80 a 150) e a Gisele do RH manda um recado no rádio, com falas próprias pra briga, tela roxa e visita do diretor. O relatório do fim do turno mostra quantos problemas passaram do prazo e quanto custaram. Desidratar ainda encerra o turno.
+
+## Barra de cima
+
+Uma linha só com tempo, pedidos entregues, pontos e água (no celular, junto com a fila, a carga, a rádio e o som). Embaixo fica uma única linha de status: o objetivo, ou o recado do rádio enquanto alguém fala.

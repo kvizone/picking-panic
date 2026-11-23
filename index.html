@@ -1577,6 +1577,25 @@
     #hud #hud-obj-step { display: none; }
     #hud .obj-linha-meta:not(:has(#radio-box.show)) { display: none; }
 
+    /* Barra de cima enxuta: tempo, entregues, pontos e água numa linha só;
+       o recado do rádio aparece no lugar do objetivo (uma linha de status, não duas) */
+    #hud .timer-container { flex-direction: row; align-items: center; flex-wrap: nowrap; gap: calc(8px * var(--escala)); }
+    #hud .timer-container > .hud-entregues, #hud .timer-container > .hud-pontos, #hud .timer-container > .hud-agua { margin-top: 0; font-size: calc(8px * var(--escala)); }
+    #hud .timer-container > .penalty-indicator { margin-top: 0; }
+    #hud .objective-container:has(#radio-box.show) .objective-desc { display: none; }
+    #hud #radio-box { font-size: calc(9px * var(--escala)); line-height: 1.45; border-top: 0; padding-top: 0; }
+    html.retrato #hud #radio-box { min-height: 0; }
+    html.retrato #hud .rot-entregues { display: none; }
+    /* Celular em pé: tempo, entregues, pontos, água e os botões cabem na 1ª linha; o status vai na 2ª */
+    html.retrato #hud .hud-top-bar { flex-wrap: wrap; padding-left: calc(5px * var(--escala)); padding-right: calc(5px * var(--escala)); }
+    html.retrato #hud .timer-container { gap: calc(4px * var(--escala)); padding-right: 0; margin-right: 0; border-right: 0; flex: 0 1 auto; min-width: 0; }
+    html.retrato #hud .timer-value { font-size: calc(10px * var(--escala)); letter-spacing: 0; }
+    html.retrato #hud .agua-barra { width: calc(16px * var(--escala)); }
+    html.retrato #hud .hud-agua { gap: 1px; }
+    html.retrato #hud .hud-right-group { gap: calc(3px * var(--escala)); margin-left: auto; flex: 0 0 auto; }
+    html.retrato #hud .hud-icone { padding: calc(2px * var(--escala)) calc(3px * var(--escala)); font-size: calc(10px * var(--escala)); }
+    html.retrato #hud .inv-status { font-size: calc(7px * var(--escala)); }
+
     /* Chefe reclamando */
     .chefe-popup {
       position: absolute;
@@ -1946,7 +1965,7 @@
         <div class="timer-container" id="hud-timer-box" title="Pausar">
           <span class="timer-value" id="hud-timer">00:00.0</span>
           <span class="penalty-indicator" id="hud-penalty">+0.0s</span>
-          <span class="hud-entregues" id="hud-entregues" title="Pedidos entregues neste turno">✔ <span id="hud-entregues-n">0</span> ENTREGUES</span>
+          <span class="hud-entregues" id="hud-entregues" title="Pedidos entregues neste turno">✔ <span id="hud-entregues-n">0</span><span class="rot-entregues"> ENTREGUES</span></span>
           <span class="hud-pontos" id="hud-pontos" title="Pontos do turno">★ <span id="hud-pontos-n">0</span> <i id="hud-combo"></i></span>
           <span class="hud-agua" id="hud-agua" title="Hidratação: beba água no bebedouro"><span class="agua-ico">💧</span><span class="agua-barra"><i id="agua-nivel"></i></span><span id="agua-txt"></span></span>
         </div>
@@ -3042,6 +3061,22 @@
         "A impressora funciona. O Vini colou um papel: 'NÃO ENCOSTA. ELA ESTÁ FELIZ'.",
         "Toner cheio, papel na bandeja, nenhuma luz piscando. Ninguém sabe explicar.",
         "Impressora ligada e sem atolar papel. O Vini chama isso de 'o milagre de 2026'."
+      ],
+      rhProblema: [
+        "Oi, é a Gisele do RH! O problema \"{nome}\" passou do prazo e outra pessoa resolveu. Desconto de {n} pontos. Sem drama, fica de olho no próximo. 💜",
+        "Gisele do RH passando: \"{nome}\" ficou sem solução a tempo. Anotei aqui, tá? Menos {n} pontos. Respira que o turno continua.",
+        "Registro de ocorrência: \"{nome}\" não foi resolvido no prazo. Menos {n} pontos. Se quiser conversar, minha porta tá sempre aberta. Menos quando tá fechada."
+      ],
+      rhBriga: [
+        "Ninguém me chamou e a briga acabou no grito. Agora eu vou ter que fazer dinâmica de grupo com os dois. Menos {n} pontos pra você. 💜",
+        "A briga parou sozinha, mas metade do galpão parou junto pra assistir. Da próxima vez, me chama! Menos {n} pontos."
+      ],
+      rhTelaRoxa: [
+        "O Vini viu a tela roxa sozinho depois de um tempão. Ele mandou dizer que chamado aberto é chamado resolvido. Menos {n} pontos. 💜",
+        "O WMS ficou roxo tempo demais e o Vini descobriu pelo grupo da firma. Menos {n} pontos. Da próxima, chama ele!"
+      ],
+      rhVisita: [
+        "O diretor passou e viu a bagunça. O Geraldo tá explicando até agora. Menos {n} pontos pra você. Eu trouxe lencinho pra ele. 💜"
       ],
       falasPorteiro: [
         "Bom dia! Assina o caderno? Não? Então me conta uma fofoca que eu libero.",
@@ -5068,7 +5103,7 @@
     function zerarPontos() {
       Object.assign(pont, { total: 0, combo: 1, maxCombo: 1, limpo: true, minutos: 0,
         pedidos: 0, noPrazo: 0, ptsPedidos: 0, problemas: 0, ptsProblemas: 0,
-        demandas: 0, ptsDemandas: 0, visita: 0, ptsPenal: 0, ptsTempo: 0 });
+        demandas: 0, ptsDemandas: 0, visita: 0, ptsPenal: 0, ptsTempo: 0, perdidos: 0, ptsPerdidos: 0 });
       atualizarPontosHUD();
     }
     function cargoDe(pts) { let c = CARGOS[0][1]; CARGOS.forEach(([min, nome]) => { if (pts >= min) c = nome; }); return c; }
@@ -9395,6 +9430,39 @@
       atualizarHUD();
     }
 
+    function problemaPerdido(a) {
+      const info = URGENCIA_INFO[a.tipo];
+      const perda = a.tipo === "visita" ? 150 : (PONTOS_PROBLEMA[a.tipo] || 80);
+      // Arruma o que o problema deixou no galpão
+      if (a.tipo === "coletor") coletor.achado = true;
+      if (a.tipo === "descarga") { veiculo.comPallet = false; recebimento.pallets = []; recebimento.vazias = new Set(); }
+      if (a.tipo === "abandono" && a.pedido) a.pedido.def.urgente = false;
+      if (a.tipo === "briga") {
+        (a.brigoes || []).forEach(n => { n.brigando = false; n.rota = null; n.parado = 1.0; });
+        if (a.trocouRadio) RADIO_MUSICA.voltarDaTemporaria();
+        if (typeof fecharRadioPeao === "function") fecharRadioPeao();
+      }
+      if (a.tipo === "visita") {
+        diretor.ativo = false; ronda.ativo = false; ronda.escoltando = false; ronda.proxima = tempoDecorrido + 60;
+      }
+      if (a.tipo === "incendio" || a.tipo === "batida") enzoTerminaAulaFogo();
+      emerg.ativa = null;
+      emerg.extintorNaMao = false;
+      emerg.spray = false;
+      emerg.semEvento = 0;
+      emerg.proxima = tempoDecorrido + intervaloProblema();
+      document.documentElement.classList.remove("emergencia", "demanda");
+      document.getElementById("emergencia-banner").classList.remove("visivel");
+      if (treinoAtivo) atualizarBannerEmergencia();
+      atualizarChipFila();
+      const tirou = -somarPontos(-perda, `-${perda} PTS`, "#ef4444");
+      pont.perdidos++; pont.ptsPerdidos += tirou;
+      SFX.estrelaPerdida();
+      const especial = { briga: "rhBriga", telaRoxa: "rhTelaRoxa", visita: "rhVisita" }[a.tipo];
+      const fala = sortearTexto(especial || "rhProblema").replace("{nome}", info.nome.toLowerCase()).replace("{n}", perda);
+      setTimeout(() => popupRadio(fala, { colega: "GISELE", tag: "GISELE · RH", duracao: 8000 }), 400);
+      atualizarHUD();
+    }
     function concluirEmergencia() {
       const a = emerg.ativa;
       if (!a) return;
@@ -9502,6 +9570,8 @@
         emerg.ativa = null;
         document.documentElement.classList.remove("emergencia");
         document.getElementById("emergencia-banner").classList.remove("visivel");
+        // Turno sem fim: o problema "se resolve" sem você, custa pontos e a Gisele manda um recado (o turno segue)
+        if (MISSAO_ATUAL.semFim) { problemaPerdido(a); return; }
         if (veiculo.pilotando && !ehVeiculo()) veiculo.pilotando = false;
         falharFase(info.falha, info.tituloFalha);
         return;
@@ -13508,6 +13578,8 @@
         falar("bateriaBaixa", "#ef4444");
       }
       if (coletor.bateria <= 0) {
+        // Turno sem fim: alguém acha o coletor, você só perde os pontos
+        if (MISSAO_ATUAL.semFim && emerg.ativa && emerg.ativa.tipo === "coletor") { problemaPerdido(emerg.ativa); return; }
         falharFase("bateriaAcabou");
         return;
       }
@@ -13631,7 +13703,8 @@
         (pont.demandas || pont.visita) ? linha(`📋 Demandas: ${pont.demandas}${pont.visita ? " + visita do diretor" : ""}`, `+${fmtPts(pont.ptsDemandas)}`) : "",
         linha(`⏱️ Turno: ${mmss(tempoDecorrido)}`, `+${fmtPts(pont.ptsTempo)}`),
         pont.maxCombo > 1 ? linha(`🔥 Maior combo`, `x${pont.maxCombo.toFixed(1)}`) : "",
-        pont.ptsPenal ? linha(`💥 Trombadas e afins`, fmtPts(pont.ptsPenal), true) : ""
+        pont.ptsPenal ? linha(`💥 Trombadas e afins`, fmtPts(pont.ptsPenal), true) : "",
+        pont.perdidos ? linha(`😬 Problemas que passaram do prazo: ${pont.perdidos}`, `-${fmtPts(pont.ptsPerdidos)}`, true) : ""
       ].join("");
       document.getElementById("rel-nome").value = RANK.nomeSalvo();
       document.getElementById("rel-salvar").disabled = false;
@@ -13937,7 +14010,7 @@
         extintor: ["[E] PEGAR EXTINTOR", "#7f1d1d", "#fecaca", "#ffffff"],
         ramal: ["[E] LIGAR PRO RH", "#4c1d95", "#ddd6fe", "#ffffff"],
         chamar_ti: ["[E] CHAMAR A TI", "#4c1d95", "#ddd6fe", "#ffffff"],
-        bebedouro: ["[E] BEBER ÁGUA", "#0c4a6e", "#bae6fd", "#ffffff"],
+        bebedouro: ["[E] BEBER AGUA", "#0c4a6e", "#bae6fd", "#ffffff"],
         limpar: ["SEGURE [E] LIMPAR", "#422006", "#fde68a", "#ffffff"],
         entrar_chefe: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
         entrar_cozinha: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
