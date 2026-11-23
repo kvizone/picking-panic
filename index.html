@@ -1763,6 +1763,10 @@
     .imp-pizza { display: flex; gap: 12px; align-items: center; }
     .imp-pizza span { flex: 0 0 64px; height: 64px; border-radius: 50%; background: conic-gradient(#2563eb 0 55%, #f97316 55% 85%, #22c55e 85% 100%); }
     .imp-pizza p { font-size: 10px; margin: 0; }
+    .imp-swot { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 0 12px; font-family: system-ui, sans-serif; font-size: 11px; }
+    .imp-swot div { border: 2px solid #cbd5e1; padding: 6px; background: #f8fafc; }
+    .imp-swot b { display: block; color: #1e3a8a; margin-bottom: 3px; }
+    .imp-prompt { font-family: monospace; font-size: 10px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 6px; }
     .imp-pag { text-align: right; font-size: 9px; color: #94a3b8; margin-top: 10px !important; }
     /* ===== Chat na sala do chefe ===== */
     .chat-chefe {
@@ -1975,38 +1979,7 @@
         </div>
         <div id="imp-relatorio" hidden>
           <p class="imp-saiu">🖨️ Saiu! 3 páginas, colorido, sem atolar. Dá uma espiada:</p>
-          <div class="imp-folha">
-            <p class="imp-ia">Claro! Posso te ajudar a criar um relatório completo, profissional e impactante sobre o desempenho do galpão. Vamos lá! 🚀</p>
-            <h3>RELATÓRIO ESTRATÉGICO DE PERFORMANCE OPERACIONAL 360°</h3>
-            <p class="imp-sub">Elaborado por: Geraldo (gestor) · Confidencial · Versão final v3</p>
-            <div class="imp-grafico">
-              <div class="imp-bar" style="--h:38%"><i>Seg</i></div>
-              <div class="imp-bar" style="--h:44%"><i>Ter</i></div>
-              <div class="imp-bar" style="--h:41%"><i>Qua</i></div>
-              <div class="imp-bar" style="--h:47%"><i>Qui</i></div>
-              <div class="imp-bar dest" style="--h:96%"><i>Sex*</i></div>
-            </div>
-            <p class="imp-legenda">Figura 1: Pedidos separados por dia, demonstrando um crescimento exponencial e sinérgico 📈<br>*Sexta estimada com base no otimismo do gestor.</p>
-            <p class="imp-pag">Página 1 de 3</p>
-          </div>
-          <div class="imp-folha">
-            <h4>1. Análise do cenário</h4>
-            <p>No cenário atual, o galpão se consolida como um ecossistema dinâmico de soluções logísticas, onde cada caixa representa uma oportunidade de alavancar valor e engajamento. É importante ressaltar que a sinergia entre pessoas, processos e paletes é fundamental.</p>
-            <ul>
-              <li>✅ <b>Liderança inspiradora</b> (Geraldo)</li>
-              <li>✅ <b>Café</b> como vetor estratégico de produtividade</li>
-              <li>✅ <b>Música ambiente</b> em processo de alinhamento (rock x moda de viola)</li>
-              <li>⚠️ <b>Ponto de atenção:</b> [inserir ponto de atenção aqui]</li>
-            </ul>
-            <div class="imp-pizza"><span></span><p><b style="color:#2563eb">■</b> Separação 55% &nbsp; <b style="color:#f97316">■</b> Reuniões sobre a separação 30% &nbsp; <b style="color:#22c55e">■</b> Procurando o estilete 15%</p></div>
-            <p class="imp-pag">Página 2 de 3</p>
-          </div>
-          <div class="imp-folha">
-            <h4>2. Conclusão</h4>
-            <p>Em suma, os dados apontam que o galpão está pronto para o próximo nível. Recomenda-se, com base em evidências robustas, um reconhecimento salarial ao gestor responsável pela visão estratégica.</p>
-            <p class="imp-ia">Aqui está o seu relatório! 😊 Espero que ajude na sua reunião. Se quiser, posso:<br>• transformar isso em uma apresentação de slides<br>• deixar o tom mais formal<br>• adicionar mais gráficos impressionantes<br>É só pedir!</p>
-            <p class="imp-pag">Página 3 de 3 · [Nome da Empresa]</p>
-          </div>
+          <div id="imp-folhas"></div>
           <button type="button" class="btn imp-btn" id="imp-pegar">PEGAR AS FOLHAS</button>
         </div>
       </div>
@@ -3155,6 +3128,11 @@
         "Pra mim deu! Larguei o pedido {p} no balcão pela metade. O primeiro item já tá separado, o resto é com você. Fui!",
         "Vou abrir minha lojinha de açaí. O {p} ficou no balcão, só falta o resto dos itens. Tchau, galera!",
         "Chutei o balde, literalmente. O pedido {p} é seu agora: o primeiro item já tá separado, tá no balcão."
+      ],
+      despedidaKAUÃ: [
+        "Fui chamado pra jogar no time da várzea. Profissional, mano! O {p} ficou no balcão, o primeiro item já tá separado. Valeu!",
+        "Vou trabalhar com meu tio no food truck de pastel. Deixei o {p} no balcão, só falta um item. Passa lá pra comer um!",
+        "Virei influencer de unboxing. Ironia, né? O {p} tá no balcão com o primeiro item separado. Me segue lá!"
       ],
       despedidaJÉSSICA: [
         "Passei no concurso!!! O pedido {p} ficou no balcão com o primeiro item separado. Termina pra mim? Fui!",
@@ -8579,11 +8557,11 @@
       notificarPedido(p);
     }
 
-    function criarDefPicking() {
+    function criarDefPicking(nForcado) {
       {
         // Fila cheia: pedidos menores pra dar pra zerar (3+ esperando: 1 item; 2 esperando: no máximo 2)
         const esperando = (typeof fila !== "undefined" && fila.pedidos) ? pedidosEsperando().length : 0;
-        const n = esperando >= 3 ? 1 : esperando === 2 ? 2 : (Math.random() < 0.4 ? 3 : 2);
+        const n = nForcado || (esperando >= 3 ? 1 : esperando === 2 ? 2 : (Math.random() < 0.4 ? 3 : 2));
         const enderecos = new Set();
         const nomes = new Set();
         const itens = [];
@@ -9127,8 +9105,9 @@
       emerg.temasBriga = [];
       emerg.visitaEm = MISSAO_ATUAL.semFim ? 600 + Math.random() * 60 : Infinity; // entre 10 e 11 minutos
       // Roteiro de estreia (primeiros 15 min): cada demanda clássica aparece uma vez, pra quem está conhecendo o jogo.
-      // Café aos 2:30, Enzo aos 5:00, caminhão (empilhadeira) aos 7:30; a visita da diretoria vem entre 10 e 11 min.
-      emerg.roteiro = MISSAO_ATUAL.semFim ? [[150, "cafe"], [300, "treino"], [450, "caminhao"]] : [];
+      // Café aos 2:30, Enzo aos 5:00, caminhão (empilhadeira) aos 7:30, relatório aos 12:30;
+      // a visita da diretoria vem entre 10 e 11 min.
+      emerg.roteiro = MISSAO_ATUAL.semFim ? [[150, "cafe"], [300, "treino"], [450, "caminhao"], [750, "relatorio"]] : [];
       // Turno sem fim: o primeiro problema é sempre a tela roxa (é o problema dos 3 primeiros pedidos);
       // depois, tudo anda pela contagem de pedidos
       if (MISSAO_ATUAL.semFim && u) {
@@ -9626,7 +9605,8 @@
     // Pedido largado pelo colega: cai no topo do balcão, já com o primeiro item separado
     function criarPedidoAbandonado(npc, limite) {
       fila.seq++;
-      const def = criarDefPicking();
+      // Pedido largado: 2 itens com o primeiro já separado, então sempre falta só 1 pra coletar
+      const def = criarDefPicking(2);
       Object.assign(def, { numero: "#" + fila.seq, urgente: true, dono: npc.nome, jaSeparado: true,
                            prazo: limite / fatorTempo() });
       const p = { def, indice: fila.pedidos.length, status: "esperando", chegouEm: tempoDecorrido, aceitoEm: 0,
@@ -10097,17 +10077,17 @@
         paleta: { o: ARTE.contorno, H: "#f4f6fa", L: "#ffffff", B: "#b8c0cc", h: "#7a4a2a", s: "#e7b48d", S: "#c48f6a",
                   b: "#5a3520", w: "#ffffff", e: "#111827", m: "#5a1f1f", t: "#ffffff", d: "#7f1d1d", r: "#e8846f",
                   V: "#10b981", c: "#1f3b4d", R: "#e8eef5" }
+      },
+      "KAUÃ": {
+        sobrancelha: "sbbbbssbbbbs", bochecha: false, cabeloLongo: false, voz: 140, pronome: "dele", fundo: "#ddd6fe", corTag: "#7c3aed",
+        paleta: { o: ARTE.contorno, H: "#fb923c", L: "#fed7aa", B: "#c2410c", h: "#2b2b2b", s: "#8a5a3c", S: "#6b4029",
+                  b: "#1f1a17", w: "#ffffff", e: "#111827", m: "#4a1d14", t: "#ffffff", d: "#7f1d1d", r: "#a8604a",
+                  V: "#8b5cf6", c: "#3b2f4f", R: "#e8eef5" }
       }
     };
 
     // Rostos que só aparecem no Rádio Peão (não entram no sorteio de quem larga o emprego)
     const ROSTOS_PEAO = {
-      "KAUÃ": {
-        sobrancelha: "sbbbbssbbbbs", bochecha: false, cabeloLongo: false, fundo: "#ddd6fe", corTag: "#7c3aed",
-        paleta: { o: ARTE.contorno, H: "#fb923c", L: "#fed7aa", B: "#c2410c", h: "#2b2b2b", s: "#8a5a3c", S: "#6b4029",
-                  b: "#1f1a17", w: "#ffffff", e: "#111827", m: "#4a1d14", t: "#ffffff", d: "#7f1d1d", r: "#a8604a",
-                  V: "#8b5cf6", c: "#3b2f4f", R: "#e8eef5" }
-      },
       "GISELE": {
         sobrancelha: "ssbbbssbbbss", bochecha: true, cabeloLongo: true, fundo: "#e9d5ff", corTag: "#6d28d9",
         paleta: { o: ARTE.contorno, H: "#f4f6fa", L: "#ffffff", B: "#b8c0cc", h: "#3b2416", s: "#d9a07a", S: "#b9805a",
@@ -10930,14 +10910,94 @@
     }
     const PASSOS_IMPRESSAO = [
       ["📧", "Abrir o e-mail do Geraldo", "Assunto: URGENTE!!!! RELATORIO (LER)"],
-      ["📎", "Baixar o anexo", "relatorio_final_v3_AGORAVAI (2).pdf"],
+      ["📎", "Baixar o anexo", "relatorio_final_v3_AGORAVAI (2).pdf"], // o nome muda com o relatório da vez
       ["⚙️", "Ajustar a impressão", "3 páginas · colorido (ele exige colorido) · retrato"],
       ["🖨️", "Imprimir", "Impressora da TI · bandeja 1"]
     ];
-    const impressao = { passo: 0, abertoEm: 0, timer: null };
+    const impressao = { passo: 0, abertoEm: 0, timer: null, vez: 0 };
+    // Três relatórios diferentes, em rodízio (quem joga muito tempo vê os três)
+    const grafBarras = (barras, legenda) => `<div class="imp-grafico">${barras.map(([r, h, d]) =>
+      `<div class="imp-bar${d ? " dest" : ""}" style="--h:${h}%"><i>${r}</i></div>`).join("")}</div><p class="imp-legenda">${legenda}</p>`;
+    const grafPizza = (fatias) => {
+      let acc = 0;
+      const cores = ["#2563eb", "#f97316", "#22c55e"];
+      const grad = fatias.map(([, v], i) => `${cores[i]} ${acc}% ${(acc += v)}%`).join(", ");
+      return `<div class="imp-pizza"><span style="background:conic-gradient(${grad})"></span><p>${fatias.map(([t, v], i) =>
+        `<b style="color:${cores[i]}">■</b> ${t} ${v}%`).join(" &nbsp; ")}</p></div>`;
+    };
+    const RELATORIOS = [
+      {
+        arquivo: "relatorio_final_v3_AGORAVAI (2).pdf",
+        paginas: [
+          `<p class="imp-ia">Claro! Posso te ajudar a criar um relatório completo, profissional e impactante sobre o desempenho do galpão. Vamos lá! 🚀</p>
+           <h3>RELATÓRIO ESTRATÉGICO DE PERFORMANCE OPERACIONAL 360°</h3>
+           <p class="imp-sub">Elaborado por: Geraldo (gestor) · Confidencial · Versão final v3</p>` +
+          grafBarras([["Seg", 38], ["Ter", 44], ["Qua", 41], ["Qui", 47], ["Sex*", 96, 1]],
+            "Figura 1: Pedidos separados por dia, demonstrando um crescimento exponencial e sinérgico 📈<br>*Sexta estimada com base no otimismo do gestor."),
+          `<h4>1. Análise do cenário</h4>
+           <p>No cenário atual, o galpão se consolida como um ecossistema dinâmico de soluções logísticas, onde cada caixa representa uma oportunidade de alavancar valor e engajamento. É importante ressaltar que a sinergia entre pessoas, processos e paletes é fundamental.</p>
+           <ul><li>✅ <b>Liderança inspiradora</b> (Geraldo)</li><li>✅ <b>Café</b> como vetor estratégico de produtividade</li>
+           <li>✅ <b>Música ambiente</b> em processo de alinhamento (rock x moda de viola)</li><li>⚠️ <b>Ponto de atenção:</b> [inserir ponto de atenção aqui]</li></ul>` +
+          grafPizza([["Separação", 55], ["Reuniões sobre a separação", 30], ["Procurando o estilete", 15]]),
+          `<h4>2. Conclusão</h4>
+           <p>Em suma, os dados apontam que o galpão está pronto para o próximo nível. Recomenda-se, com base em evidências robustas, um reconhecimento salarial ao gestor responsável pela visão estratégica.</p>
+           <p class="imp-ia">Aqui está o seu relatório! 😊 Espero que ajude na sua reunião. Se quiser, posso:<br>• transformar isso em uma apresentação de slides<br>• deixar o tom mais formal<br>• adicionar mais gráficos impressionantes<br>É só pedir!</p>`
+        ],
+        rodape: "[Nome da Empresa]"
+      },
+      {
+        arquivo: "plano_engajamento_FINAL_final_ESSE.pdf",
+        paginas: [
+          `<p class="imp-ia">Que iniciativa incrível! 💡 Vou criar um Plano de Engajamento e Bem-Estar alinhado às melhores práticas do mercado.</p>
+           <h3>PLANO DE ENGAJAMENTO E BEM-ESTAR 2027</h3>
+           <p class="imp-sub">Uma jornada de transformação humana · por Geraldo</p>` +
+          grafBarras([["Jan", 40], ["Fev", 35], ["Mar", 42], ["Dia do VR", 98, 1], ["Abr", 39]],
+            "Figura 1: Nível de felicidade da equipe ao longo do ano 😊<br>Fonte: observação do gestor da janela da sala."),
+          `<h4>1. Ações propostas</h4>
+           <p>Para potencializar o engajamento, propõe-se um conjunto de iniciativas disruptivas e de baixo custo (custo zero, de preferência).</p>
+           <ul><li>🎉 <b>Happy Minute</b> toda sexta-feira (1 minuto)</li><li>☕ Garrafa de café <b>maior</b> (estudo em andamento)</li>
+           <li>🎶 Playlist oficial do galpão, curada pelo gestor (Roupa Nova)</li><li>🔁 [Ação 4: completar depois]</li></ul>` +
+          grafPizza([["VR caiu", 60], ["Sexta-feira", 30], ["Ar em 22 °C", 10]]),
+          `<h4>2. Conclusão</h4>
+           <p>Pessoas felizes entregam mais pedidos. Logo, o gestor que deixa as pessoas felizes merece ser reconhecido. Os números falam por si.</p>
+           <p class="imp-ia">Espero que este plano ajude a construir uma cultura incrível! 🌱 Observação: como modelo de linguagem, não tenho acesso aos dados reais do seu galpão, então usei números ilustrativos. Quer que eu monte um cronograma de implantação?</p>`
+        ],
+        rodape: "Página gerada automaticamente"
+      },
+      {
+        arquivo: "analise_SWOT_galpao_revisada_pelo_geraldo.pdf",
+        paginas: [
+          `<p class="imp-ia">Ótima pergunta! Vou elaborar uma análise SWOT detalhada e estratégica do galpão para a diretoria. 📊</p>
+           <h3>ANÁLISE SWOT (FOFA) DO GALPÃO</h3>
+           <p class="imp-sub">Documento estratégico · Nível diretoria · Geraldo</p>` +
+          grafBarras([["Café (L)", 70], ["Pedidos", 52], ["Reuniões", 88, 1], ["Ideias", 20]],
+            "Figura 1: Principais indicadores da semana. Observa-se forte crescimento em reuniões, o que demonstra alinhamento 🤝"),
+          `<h4>1. Matriz SWOT</h4>
+           <div class="imp-swot">
+             <div><b>💪 Forças</b>Liderança do Geraldo. Bebedouro funcionando.</div>
+             <div><b>😬 Fraquezas</b>Wi-Fi. Senha do Wi-Fi. O Wi-Fi em geral.</div>
+             <div><b>🌟 Oportunidades</b>Roupa Nova no rádio às sextas.</div>
+             <div><b>⚡ Ameaças</b>Diretoria fazendo visita sem avisar.</div>
+           </div>` +
+          grafPizza([["Pontos fortes", 70], ["Pontos a desenvolver", 25], ["Wi-Fi", 5]]),
+          `<h4>2. Recomendações</h4>
+           <p>Diante do exposto, recomenda-se manter a atual gestão, ampliar o orçamento do café e reavaliar a remuneração da liderança, por ser a principal força identificada.</p>
+           <p class="imp-ia">Aqui está a sua análise SWOT! ✅ Lembre-se de revisar os dados antes de apresentar. Posso também gerar uma versão resumida em 1 página, se preferir!</p>
+           <p class="imp-prompt">&gt; faz um relatorio bem chique pra diretoria, 3 pg, colorido, que pareça que eu fiz</p>`
+        ],
+        rodape: "[Logo aqui]"
+      }
+    ];
+    function montarRelatorioGeraldo() {
+      const rel = RELATORIOS[impressao.vez % RELATORIOS.length];
+      PASSOS_IMPRESSAO[1][2] = rel.arquivo;
+      document.getElementById("imp-folhas").innerHTML = rel.paginas.map((html, i) =>
+        `<div class="imp-folha">${html}<p class="imp-pag">Página ${i + 1} de 3${i === 2 ? " · " + rel.rodape : ""}</p></div>`).join("");
+    }
     function abrirImpressao() {
       impressao.passo = 0;
       impressao.abertoEm = performance.now();
+      montarRelatorioGeraldo();
       estadoJogo = "IMPRESSAO";
       limparInputs();
       document.getElementById("imp-relatorio").hidden = true;
@@ -10996,6 +11056,7 @@
       const a = emerg.ativa;
       if (a && a.tipo === "relatorio") {
         a.etapa = "levar";
+        impressao.vez++; // o próximo relatório é outro
         JUICE.textoFlutuante(player.x, player.y - 20, "3 PAGINAS!", "#bfdbfe");
         falarTexto("Saiu quentinho, sem atolar. Agora leva pro Geraldo!", "#bfdbfe");
         atualizarHUD(); atualizarBannerEmergencia();

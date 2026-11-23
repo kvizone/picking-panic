@@ -158,6 +158,7 @@ Pra quem está conhecendo o jogo, o turno sem fim tem um roteiro fixo de demanda
 | 5:00 | 🎓 Enzo chega pro treino |
 | 7:30 | 🚛 Caminhão (empilhadeira) |
 | 10:00 a 11:00 | 🏢 Visita da diretoria |
+| 12:30 | 🖨️ Relatório do Geraldo |
 
 Cada uma começa quando você está sem pedido na mão. Os problemas (tela roxa, incêndio, briga...) seguem normais. Depois dos 15 min, volta o rodízio: uma demanda a cada 3 pedidos entregues (caminhão, Enzo, relatório, inventário, café e bolo), o que dá mais ou menos uma a cada 5 ou 6 minutos com os pedidos a cada 95 s.
 
@@ -165,7 +166,7 @@ Cada uma começa quando você está sem pedido na mão. Os problemas (tela roxa,
 
 Entram no rodízio de demandas do turno sem fim (os pedidos congelam enquanto isso, igual ao café):
 
-- **🖨️ Relatório do Geraldo:** vá até a impressora da sala da TI (ela funciona, ninguém sabe explicar). Abre a tela do PC: abrir o e-mail "URGENTE!!!! RELATORIO", baixar o `relatorio_final_v3_AGORAVAI (2).pdf`, ajustar (3 páginas, colorido) e imprimir. Depois dá pra espiar as 3 páginas: gráfico com a sexta "estimada com base no otimismo do gestor", pizza de tempo, "[inserir ponto de atenção aqui]" e as frases de IA no começo e no fim ("Claro! Posso te ajudar...", "Aqui está o seu relatório! 😊"). Leve as folhas até a mesa do Geraldo. +140 pontos.
+- **🖨️ Relatório do Geraldo:** vá até a impressora da sala da TI (ela funciona, ninguém sabe explicar). Abre a tela do PC: abrir o e-mail "URGENTE!!!! RELATORIO", baixar o `relatorio_final_v3_AGORAVAI (2).pdf`, ajustar (3 páginas, colorido) e imprimir. Depois dá pra espiar as 3 páginas: gráfico com a sexta "estimada com base no otimismo do gestor", pizza de tempo, "[inserir ponto de atenção aqui]" e as frases de IA no começo e no fim ("Claro! Posso te ajudar...", "Aqui está o seu relatório! 😊"). Leve as folhas até a mesa do Geraldo. +140 pontos. São 3 relatórios em rodízio: o "Relatório estratégico 360°", o "Plano de engajamento e bem-estar 2027" (felicidade da equipe com pico no dia do VR) e a "Análise SWOT do galpão" (com o prompt do Geraldo esquecido no rodapé).
 - **🎂 Bolo surpresa:** a Gisele avisa que é aniversário de um colega. Pegue o bolo na geladeira da cozinha, segure a ação na mesa pra acender a vela e leve até o aniversariante no galpão (a seta segue a pessoa). O galpão canta parabéns. +160 pontos.
 
 ## Salas do RH e da TI
@@ -251,3 +252,7 @@ A missão e o mapa ficam como dados no topo do script, para facilitar a criaçã
 ## Status
 
 🚧 Protótipo em desenvolvimento: versão 0.5 com 6 fases em sequência e pedidos caindo no balcão WMS. Próximas fases no [ROADMAP](ROADMAP.md).
+
+## Pedido abandonado
+
+Robson, Jéssica e Kauã podem largar o emprego. O pedido largado sempre tem 2 itens com o primeiro já separado, então falta só 1 item pra coletar.
