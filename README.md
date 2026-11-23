@@ -148,6 +148,13 @@ A etiqueta mostra os horários no relógio do turno: entrada do pedido, prazo e 
 
 O Geraldo só reclama quando 5 pedidos atrasados ficam parados no balcão (e pra lembrar de beber água). Ele não comenta mais penalidade, briga, tela roxa nem pedido atrasado sozinho. No turno sem fim, pedidos novos entram a cada 95 segundos (era 35), mais a folga quando a fila está cheia.
 
+## Novas demandas: relatório e bolo surpresa
+
+Entram no rodízio de demandas do turno sem fim (os pedidos congelam enquanto isso, igual ao café):
+
+- **🖨️ Relatório do Geraldo:** vá até a impressora da sala da TI (ela funciona, ninguém sabe explicar). Abre a tela do PC: abrir o e-mail "URGENTE!!!! RELATORIO", baixar o `relatorio_final_v3_AGORAVAI (2).pdf`, ajustar (3 páginas, colorido) e imprimir. Depois dá pra espiar as 3 páginas: gráfico com a sexta "estimada com base no otimismo do gestor", pizza de tempo, "[inserir ponto de atenção aqui]" e as frases de IA no começo e no fim ("Claro! Posso te ajudar...", "Aqui está o seu relatório! 😊"). Leve as folhas até a mesa do Geraldo. +140 pontos.
+- **🎂 Bolo surpresa:** a Gisele avisa que é aniversário de um colega. Pegue o bolo na geladeira da cozinha, segure a ação na mesa pra acender a vela e leve até o aniversariante no galpão (a seta segue a pessoa). O galpão canta parabéns. +160 pontos.
+
 ## Salas do RH e da TI
 
 Todas as portas mostram o botão ENTRAR. Duas portas novas na parede de cima: **RH** (lilás, com coraçãozinho) e **TI** (azul-escura, ao lado do balcão). A porta pisca quando tem briga ou tela roxa esperando.

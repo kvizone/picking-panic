@@ -1729,6 +1729,41 @@
     html.toque .tema-geladeira .arq-corpo, html.toque .tema-armario .arq-corpo { grid-template-columns: 1fr 1fr; }
     html.toque .arq-corpo { grid-template-columns: 1fr; }
     html.toque .arq-item { font-size: 9px; }
+    /* ===== Impressão do relatório ===== */
+    #modal-impressao { align-items: flex-start; overflow-y: auto; }
+    .imp-caixa { width: min(560px, 94%); margin: 28px auto 24px; }
+    #imp-tela { background: #0f172a; border: 3px solid #38bdf8; box-shadow: 6px 6px 0 rgba(0,0,0,0.8); padding: 0 0 16px; color: #e2e8f0; text-align: left; }
+    .imp-barra { display: flex; justify-content: space-between; background: #1e3a8a; padding: 6px 10px; font-size: 8px; letter-spacing: 1px; color: #bfdbfe; }
+    #imp-tela h2 { font-size: 12px; margin: 14px 16px 10px; color: #fde68a; font-weight: normal; }
+    .imp-passos { list-style: none; margin: 0 16px; padding: 0; }
+    .imp-passos li { display: flex; gap: 10px; align-items: center; padding: 8px; margin-bottom: 6px; border: 2px solid #1e293b; opacity: 0.5; }
+    .imp-passos li.atual { opacity: 1; border-color: #38bdf8; background: #172554; }
+    .imp-passos li.feito { opacity: 0.85; }
+    .imp-passos li.feito .imp-ic { color: #22c55e; }
+    .imp-ic { font-size: 16px; width: 22px; text-align: center; }
+    .imp-passos b { display: block; font-weight: normal; font-size: 10px; }
+    .imp-passos small { display: block; font-size: 8px; color: #94a3b8; margin-top: 3px; font-family: monospace; }
+    .imp-progresso { margin: 8px 16px 0; font-size: 10px; color: #86efac; }
+    .imp-btn { display: block; margin: 14px auto 0; min-width: 60%; background: #2563eb; color: #fff; border: 3px solid #000; box-shadow: 4px 4px 0 #000; padding: 12px; font-size: 11px; }
+    .imp-btn:disabled { background: #475569; }
+    .imp-saiu { color: #fde68a; font-size: 10px; text-align: center; margin: 0 0 10px; text-shadow: 1px 1px 0 #000; }
+    .imp-folha { background: #fff; color: #1f2937; padding: 18px 20px 12px; margin: 0 auto 12px; box-shadow: 4px 4px 0 rgba(0,0,0,0.6); text-align: left;
+      font-family: Georgia, "Times New Roman", serif; font-size: 12px; line-height: 1.5; }
+    .imp-folha h3 { font-family: inherit; font-size: 15px; color: #1e3a8a; margin: 6px 0 4px; }
+    .imp-folha h4 { font-family: inherit; font-size: 14px; color: #1e3a8a; margin: 0 0 6px; }
+    .imp-folha p { margin: 0 0 8px; }
+    .imp-folha ul { margin: 0 0 10px; padding-left: 4px; list-style: none; }
+    .imp-ia { background: #f1f5f9; border-left: 3px solid #a855f7; padding: 6px 8px; font-family: system-ui, sans-serif; font-size: 11px; color: #475569; }
+    .imp-sub { font-size: 10px; color: #64748b; font-style: italic; }
+    .imp-grafico { display: flex; align-items: flex-end; gap: 10px; height: 110px; border-left: 2px solid #334155; border-bottom: 2px solid #334155; padding: 0 10px; margin: 10px 0 18px; }
+    .imp-bar { flex: 1; height: var(--h); background: linear-gradient(#60a5fa, #2563eb); position: relative; }
+    .imp-bar.dest { background: linear-gradient(#fb923c, #ea580c); }
+    .imp-bar i { position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 9px; font-style: normal; color: #334155; }
+    .imp-legenda { font-size: 10px; color: #475569; font-style: italic; }
+    .imp-pizza { display: flex; gap: 12px; align-items: center; }
+    .imp-pizza span { flex: 0 0 64px; height: 64px; border-radius: 50%; background: conic-gradient(#2563eb 0 55%, #f97316 55% 85%, #22c55e 85% 100%); }
+    .imp-pizza p { font-size: 10px; margin: 0; }
+    .imp-pag { text-align: right; font-size: 9px; color: #94a3b8; margin-top: 10px !important; }
     /* ===== Chat na sala do chefe ===== */
     .chat-chefe {
       position: absolute; left: 50%; bottom: calc(14px * var(--escala)); transform: translate(-50%, 20px);
@@ -1926,6 +1961,54 @@
         <div class="arq-aba" id="arq-aba">ARQUIVO</div>
         <div class="arq-corpo" id="arq-corpo"></div>
         <button type="button" class="btn arq-fechar" id="btn-arq-fechar">GUARDAR TUDO DE VOLTA</button>
+      </div>
+    </div>
+    <!-- Impressão do relatório do Geraldo -->
+    <div id="modal-impressao" class="modal-overlay">
+      <div class="imp-caixa" role="dialog" aria-labelledby="imp-titulo">
+        <div id="imp-tela">
+          <div class="imp-barra"><span>🖥️ PC DA TI · IMPRIMIR</span><span>● ● ●</span></div>
+          <h2 id="imp-titulo">Imprimir o relatório do Geraldo</h2>
+          <ol class="imp-passos" id="imp-passos"></ol>
+          <p class="imp-progresso" id="imp-progresso" hidden></p>
+          <button type="button" class="btn imp-btn" id="imp-btn">ABRIR</button>
+        </div>
+        <div id="imp-relatorio" hidden>
+          <p class="imp-saiu">🖨️ Saiu! 3 páginas, colorido, sem atolar. Dá uma espiada:</p>
+          <div class="imp-folha">
+            <p class="imp-ia">Claro! Posso te ajudar a criar um relatório completo, profissional e impactante sobre o desempenho do galpão. Vamos lá! 🚀</p>
+            <h3>RELATÓRIO ESTRATÉGICO DE PERFORMANCE OPERACIONAL 360°</h3>
+            <p class="imp-sub">Elaborado por: Geraldo (gestor) · Confidencial · Versão final v3</p>
+            <div class="imp-grafico">
+              <div class="imp-bar" style="--h:38%"><i>Seg</i></div>
+              <div class="imp-bar" style="--h:44%"><i>Ter</i></div>
+              <div class="imp-bar" style="--h:41%"><i>Qua</i></div>
+              <div class="imp-bar" style="--h:47%"><i>Qui</i></div>
+              <div class="imp-bar dest" style="--h:96%"><i>Sex*</i></div>
+            </div>
+            <p class="imp-legenda">Figura 1: Pedidos separados por dia, demonstrando um crescimento exponencial e sinérgico 📈<br>*Sexta estimada com base no otimismo do gestor.</p>
+            <p class="imp-pag">Página 1 de 3</p>
+          </div>
+          <div class="imp-folha">
+            <h4>1. Análise do cenário</h4>
+            <p>No cenário atual, o galpão se consolida como um ecossistema dinâmico de soluções logísticas, onde cada caixa representa uma oportunidade de alavancar valor e engajamento. É importante ressaltar que a sinergia entre pessoas, processos e paletes é fundamental.</p>
+            <ul>
+              <li>✅ <b>Liderança inspiradora</b> (Geraldo)</li>
+              <li>✅ <b>Café</b> como vetor estratégico de produtividade</li>
+              <li>✅ <b>Música ambiente</b> em processo de alinhamento (rock x moda de viola)</li>
+              <li>⚠️ <b>Ponto de atenção:</b> [inserir ponto de atenção aqui]</li>
+            </ul>
+            <div class="imp-pizza"><span></span><p><b style="color:#2563eb">■</b> Separação 55% &nbsp; <b style="color:#f97316">■</b> Reuniões sobre a separação 30% &nbsp; <b style="color:#22c55e">■</b> Procurando o estilete 15%</p></div>
+            <p class="imp-pag">Página 2 de 3</p>
+          </div>
+          <div class="imp-folha">
+            <h4>2. Conclusão</h4>
+            <p>Em suma, os dados apontam que o galpão está pronto para o próximo nível. Recomenda-se, com base em evidências robustas, um reconhecimento salarial ao gestor responsável pela visão estratégica.</p>
+            <p class="imp-ia">Aqui está o seu relatório! 😊 Espero que ajude na sua reunião. Se quiser, posso:<br>• transformar isso em uma apresentação de slides<br>• deixar o tom mais formal<br>• adicionar mais gráficos impressionantes<br>É só pedir!</p>
+            <p class="imp-pag">Página 3 de 3 · [Nome da Empresa]</p>
+          </div>
+          <button type="button" class="btn imp-btn" id="imp-pegar">PEGAR AS FOLHAS</button>
+        </div>
       </div>
     </div>
     <!-- Conversa na sala do chefe -->
@@ -2555,7 +2638,7 @@
       estrelas: { tres: 99999, duas: 99999 },
       tempoColetaPorVolume: 1.0,
       geracao: { intervalo: 95, meta: Infinity, armazenagem: false, numeroInicial: 2000 }, // +1 min entre pedidos novos
-      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 120, telaRoxa: 120, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75, cafe: 999 } },
+      urgencias: { primeira: 25, intervalo: 45, tempos: { incendio: 28, coletor: 55, descarga: 100, abandono: 140, batida: 32, briga: 120, telaRoxa: 120, limpeza: 45, caminhao: 999, treino: 999, ligacao: 35, inventario: 999, visita: 75, cafe: 999, relatorio: 999, bolo: 999 } },
       bateriaSegundos: 55,
       pedidos: [
         {
@@ -2935,6 +3018,20 @@
         "Ei! Tá procurando alguma coisa? Isso aí é... material de trabalho.",
         "Pode fechar isso aí, por gentileza. É confidencial. E pessoal. E, tecnicamente, da empresa.",
         "Opa opa opa! Mexendo nas minhas coisas? Vou fingir que não vi. Mas eu vi."
+      ],
+      pedidoRelatorio: [
+        "Preciso do relatório impresso pra reunião das 15h. Já mandei no seu e-mail. Colorido, hein!",
+        "Imprime meu relatório? Tá no seu e-mail. Fiz com muito carinho. E com uma ferramenta aí."
+      ],
+      relatorioEntregue: [
+        "Três páginas! Fui eu que escrevi, viu? Levei a manhã toda. Bom, a ferramenta levou uns 8 segundos.",
+        "Colorido, perfeito. A diretoria vai ver o gráfico e nem vai ler o resto. Igual eu.",
+        "Ótimo. Agora só falta eu descobrir o que está escrito aqui antes da reunião."
+      ],
+      impressoraBoa: [
+        "A impressora funciona. O Vini colou um papel: 'NÃO ENCOSTA. ELA ESTÁ FELIZ'.",
+        "Toner cheio, papel na bandeja, nenhuma luz piscando. Ninguém sabe explicar.",
+        "Impressora ligada e sem atolar papel. O Vini chama isso de 'o milagre de 2026'."
       ],
       falasRHSala: [
         "Oi! Tudo bem com você? Tá se hidratando?",
@@ -4456,6 +4553,12 @@
         if (e.code === "Enter" || e.code === "KeyE" || e.code === "Space" || e.code === "Escape") { SFX.menuEnter(); fecharPedidoOk(); }
         return;
       }
+      if (estadoJogo === "IMPRESSAO") {
+        if ((e.code === "KeyE" || e.code === "Enter" || e.code === "Space") && !e.repeat) {
+          if (!document.getElementById("imp-relatorio").hidden) pegarFolhas(); else avancarImpressao();
+        }
+        return;
+      }
       if (estadoJogo === "ARQUIVO") {
         if ((e.code === "Escape" || e.code === "KeyE" || e.code === "Enter") && !e.repeat && performance.now() - arquivoAbertoEm > 500) fecharArquivo();
         return;
@@ -4916,7 +5019,7 @@
     /* ---------- Pontuação do turno ---------- */
     const PONTOS_PROBLEMA = { incendio: 150, descarga: 150, batida: 120, abandono: 120, briga: 100, ligacao: 100,
                               telaRoxa: 80, coletor: 80, limpeza: 80 };
-    const PONTOS_DEMANDA = { caminhao: 200, inventario: 150, treino: 150, visita: 300, cafe: 120 };
+    const PONTOS_DEMANDA = { caminhao: 200, inventario: 150, treino: 150, visita: 300, cafe: 120, relatorio: 140, bolo: 160 };
     const CARGOS = [[0, "Novato"], [500, "Auxiliar"], [1500, "Separador"], [3000, "Conferente"],
                     [5000, "Líder de Turno"], [8000, "Supervisor"], [12000, "Lenda do Galpão"]];
     const pont = {};
@@ -5155,7 +5258,7 @@
     let stepSoundTimer = 0;
 
     function update(dt) {
-      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU" || estadoJogo === "PEDIDO_OK" || estadoJogo === "TELA_ROXA" || estadoJogo === "DEMANDA_AVISO" || estadoJogo === "INVENTARIO" || estadoJogo === "ARQUIVO") {
+      if (estadoJogo === "PAUSADO" || estadoJogo === "MENU" || estadoJogo === "VITORIA" || estadoJogo === "FALHOU" || estadoJogo === "PEDIDO_OK" || estadoJogo === "TELA_ROXA" || estadoJogo === "DEMANDA_AVISO" || estadoJogo === "INVENTARIO" || estadoJogo === "ARQUIVO" || estadoJogo === "IMPRESSAO") {
         return;
       }
 
@@ -8044,6 +8147,7 @@
       atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR",
       entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", entrar_rh: "ENTRAR", entrar_ti: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
       conversar: "FALAR", entregar_cafe: "ENTREGAR", fucar_mesa: "FUÇAR", fucar_arquivo: "FUÇAR", fucar_mural: "OLHAR",
+      imprimir: "IMPRIMIR", impressora: "OLHAR", entregar_relatorio: "ENTREGAR", pegar_bolo: "PEGAR BOLO", acender_vela: "ACENDER", entregar_bolo: "SURPRESA!",
       chamar_rh: "CHAMAR GISELE", conversar_rh: "FALAR", conversar_ti: "FALAR",
       fucar_sugestoes: "ABRIR", fucar_aniversarios: "OLHAR", fucar_ocorrencias: "FUÇAR", fucar_quadro: "OLHAR", fucar_chamados: "ESPIAR", fucar_cabos: "FUÇAR"
     };
@@ -8955,7 +9059,7 @@
     // Ritmo do turno sem fim: a cada 3 pedidos entregues vem uma demanda;
     // no meio desses 3 pedidos (depois do 1º ou do 2º) estoura um problema
     const PEDIDOS_POR_CICLO = 3;
-    const DEMANDAS_SEM_FIM = ["caminhao", "treino", "inventario", "cafe"];
+    const DEMANDAS_SEM_FIM = ["caminhao", "treino", "relatorio", "inventario", "cafe", "bolo"];
 
     const URGENCIA_INFO = {
       incendio: { icone: "🔥", nome: "INCÊNDIO", falha: "fogoEspalhou", tituloFalha: "INCÊNDIO FORA DE CONTROLE" },
@@ -8966,6 +9070,8 @@
       caminhao: { icone: "🚛", nome: "CAMINHÃO", demanda: true },
       inventario: { icone: "📋", nome: "INVENTÁRIO", demanda: true },
       cafe: { icone: "☕", nome: "CAFÉ DO CHEFE", demanda: true },
+      relatorio: { icone: "🖨️", nome: "RELATÓRIO DO CHEFE", demanda: true },
+      bolo: { icone: "🎂", nome: "BOLO SURPRESA", demanda: true },
       ligacao: { icone: "📞", nome: "CLIENTE NA LINHA", falha: "ligacaoFalhou", tituloFalha: "O CLIENTE CANCELOU" },
       visita: { icone: "🏢", nome: "VISITA DA DIRETORIA", falha: "visitaFalhou", tituloFalha: "O DIRETOR VIU A BAGUNÇA", especial: true },
       treino: { icone: "🎓", nome: "TREINANDO O ENZO", demanda: true, semCongelar: true },
@@ -9121,6 +9227,10 @@
         iniciarInventario(a);
       } else if (tipo === "cafe") {
         iniciarCafe(a);
+      } else if (tipo === "relatorio") {
+        iniciarRelatorio(a);
+      } else if (tipo === "bolo") {
+        iniciarBolo(a);
       } else if (tipo === "visita") {
         iniciarVisita(a);
       } else if (tipo === "limpeza") {
@@ -9357,6 +9467,8 @@
         const [feito, total, rotulo] = a.tipo === "caminhao" ? [a.feito, a.total, `${a.feito}/${a.total}`]
           : a.tipo === "inventario" ? [a.contados, 4, a.contados < 3 ? `CONTADOS ${a.contados}/3` : "DIGITAR NO WMS"]
           : a.tipo === "cafe" ? [a.etapa === "fazer" ? a.preparo : 1, 2, a.etapa === "fazer" ? "FAZER O CAFÉ" : "LEVAR PRO CHEFE"]
+          : a.tipo === "relatorio" ? [a.etapa === "imprimir" ? 0 : 1, 2, a.etapa === "imprimir" ? "IMPRIMIR" : "LEVAR PRO CHEFE"]
+          : a.tipo === "bolo" ? [{ pegar: 0, vela: a.vela, entregar: 2 }[a.etapa], 3, { pegar: "PEGAR O BOLO", vela: "ACENDER A VELA", entregar: "SURPRESA!" }[a.etapa]]
           : progressoTreino(a);
         rel.textContent = rotulo;
         rel.classList.remove("critico");
@@ -9387,6 +9499,14 @@
       if (a.tipo === "cafe") return a.etapa === "fazer"
         ? (cena === "cozinha" ? `Segure ${E} na cafeteira até o café ficar pronto.` : "Faça um café na COZINHA (porta na parede de cima, à direita do CHEFE).")
         : (cena === "chefe" ? `Entregue o café na mesa do Geraldo${fimE}.` : "Leve a garrafa de café até a sala do CHEFE.");
+      if (a.tipo === "relatorio") return a.etapa === "imprimir"
+        ? (cena === "ti" ? `Use a impressora da TI, no canto${fimE}.` : "Vá até a sala da TI (porta TI, ao lado do balcão) e imprima o relatório.")
+        : (cena === "chefe" ? `Entregue o relatório na mesa do Geraldo${fimE}.` : "Leve o relatório até a sala do CHEFE.");
+      if (a.tipo === "bolo") {
+        if (a.etapa === "pegar") return cena === "cozinha" ? `Pegue o bolo na geladeira${fimE}.` : "Vá até a COZINHA e pegue o bolo na geladeira.";
+        if (a.etapa === "vela") return cena === "cozinha" ? `Segure ${E} na mesa da cozinha pra acender a vela.` : "Volte pra COZINHA e acenda a vela na mesa.";
+        return cena ? `Saia da sala e leve o bolo até ${a.nomeBonito}.` : `Leve o bolo até ${a.nomeBonito}${a.npc ? "" : " na sala do CHEFE"}. Shhh, é surpresa!${fimE}`;
+      }
       if (a.tipo === "inventario") return a.contados < 3
         ? `Conte as caixas em ${a.posicoes[a.contados].pos.idCompleto} (segure ${E}). ${anotacoesInventario(a)}`
         : `Vá ao balcão e digite a contagem no WMS${fimE}. ${anotacoesInventario(a)}`;
@@ -9419,6 +9539,11 @@
       if (a.tipo === "limpeza") return { x: a.x, y: a.y };
       if (a.tipo === "ligacao") return { x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y + 16 };
       if (a.tipo === "cafe") return a.etapa === "fazer" ? { x: PORTA_COZINHA.x, y: PORTA_COZINHA.y + 14 } : { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 14 };
+      if (a.tipo === "relatorio") return a.etapa === "imprimir" ? { x: PORTA_TI.x, y: PORTA_TI.y + 14 } : { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 14 };
+      if (a.tipo === "bolo") {
+        if (a.etapa !== "entregar") return { x: PORTA_COZINHA.x, y: PORTA_COZINHA.y + 14 };
+        return a.npc ? { x: a.npc.x, y: a.npc.y } : { x: PORTA_ESCRITORIO.x, y: PORTA_ESCRITORIO.y + 14 };
+      }
       if (a.tipo === "inventario") {
         if (a.contados >= 3) return { x: TERMINAL_INICIAL.x + 24, y: TERMINAL_INICIAL.y + 16 };
         const p = a.posicoes[a.contados].pos;
@@ -9566,6 +9691,11 @@
       const a = emerg.ativa;
       if (veiculo.pilotando) { tratarDescarga(); return true; }
       player.currentZone = null;
+      if (a && a.tipo === "bolo" && a.etapa === "entregar" && a.npc && Math.hypot(player.x - a.npc.x, player.y - a.npc.y) < 26) {
+        player.currentZone = { tipo: "entregar_bolo" };
+        if (interactPressedThisFrame) entregarBolo(a);
+        return true;
+      }
       // Empilhadeira estacionada: dá pra subir a qualquer hora (E perto, botão no celular ou F)
       if (pertoDaEmpilhadeira() && descargaAtiva()) {
         player.currentZone = { tipo: "veiculo" };
@@ -10054,7 +10184,7 @@
       g.imageSmoothingEnabled = false;
       g.clearRect(0, 0, cv.width, cv.height);
       const spr = quemFala
-        ? spriteDeTexto("rosto_" + quemFala + boca, linhasColega(ROSTOS_COLEGAS[quemFala], boca), ROSTOS_COLEGAS[quemFala].paleta)
+        ? spriteDeTexto("rosto_" + quemFala + boca, linhasColega((ROSTOS_COLEGAS[quemFala] || ROSTOS_PEAO[quemFala]), boca), (ROSTOS_COLEGAS[quemFala] || ROSTOS_PEAO[quemFala]).paleta)
         : spriteDeTexto("chefe" + boca, linhasChefe(boca), PALETA_CHEFE);
       g.drawImage(spr, 0, 0);
     }
@@ -10067,7 +10197,7 @@
       const span = document.getElementById("chefe-texto");
       const tag = document.getElementById("chefe-tag");
       const rosto = document.getElementById("chefe-rosto");
-      const info = quemFala ? ROSTOS_COLEGAS[quemFala] : null;
+      const info = quemFala ? (ROSTOS_COLEGAS[quemFala] || ROSTOS_PEAO[quemFala]) : null;
       tag.textContent = opcoes.tag || "GERALDO · CHEFE";
       tag.style.background = info ? info.corTag : "";
       rosto.style.background = info ? info.fundo : "";
@@ -10558,7 +10688,7 @@
       rh: { ox: 7000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_RH,
             blocos: [[82, 44, 76, 28], [12, 42, 22, 20], [206, 38, 28, 30], [16, 112, 28, 18], [200, 112, 24, 18]] },
       ti: { ox: 8000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_TI,
-            blocos: [[78, 44, 84, 28], [172, 42, 30, 20], [204, 38, 30, 32], [16, 108, 30, 18]] }
+            blocos: [[78, 44, 84, 28], [172, 42, 30, 20], [204, 38, 30, 32], [16, 108, 30, 18], [196, 106, 32, 20]] }
     };
     let cena = null;          // null = galpão; "cozinha" ou "chefe"
     let geladeiraAberta = false;
@@ -10620,6 +10750,11 @@
       const sl = salaAtual(), a = emerg.ativa;
       if (a && a.tipo === "cafe" && cena === "cozinha" && a.etapa === "fazer") return { x: sl.ox + 111, y: sl.oy + 58 };
       if (a && a.tipo === "cafe" && cena === "chefe" && a.etapa === "levar") return { x: sl.ox + 120, y: sl.oy + 80 };
+      if (a && a.tipo === "relatorio" && cena === "ti" && a.etapa === "imprimir") return { x: sl.ox + 209, y: sl.oy + 100 };
+      if (a && a.tipo === "relatorio" && cena === "chefe" && a.etapa === "levar") return { x: sl.ox + 120, y: sl.oy + 80 };
+      if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "pegar") return { x: sl.ox + 205, y: sl.oy + 66 };
+      if (a && a.tipo === "bolo" && cena === "cozinha" && a.etapa === "vela") return { x: sl.ox + 118, y: sl.oy + 84 };
+      if (a && a.tipo === "bolo" && cena === "chefe" && a.etapa === "entregar" && !a.npc) return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a && a.tipo === "briga" && !a.chamado && cena === "rh") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a && a.tipo === "telaRoxa" && !a.chamado && cena === "ti") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a || fila.ativo || pedidosEsperando().length || hidra.seca) return { x: sl.ox + sl.w / 2, y: sl.oy + sl.h }; // tem coisa lá fora
@@ -10660,8 +10795,34 @@
           return;
         }
         if (Math.abs(lx - 205) < 22 && ly < 80) {
+          if (a && a.tipo === "bolo" && a.etapa === "pegar") {
+            player.currentZone = { tipo: "pegar_bolo" };
+            if (interactPressedThisFrame) {
+              a.etapa = "vela"; a.vela = 0;
+              SFX.coletarItem ? SFX.coletarItem() : SFX.minigameSucesso();
+              JUICE.textoFlutuante(player.x, player.y - 20, "BOLO NA MAO!", "#fde047");
+              falarTexto("Bolo de cenoura com cobertura de chocolate! Agora acende a vela na mesa.", "#fde047");
+              atualizarHUD(); atualizarBannerEmergencia();
+            }
+            return;
+          }
           player.currentZone = { tipo: "geladeira" };
           if (interactPressedThisFrame) { geladeiraAberta = true; abrirArquivo("geladeira"); }
+          return;
+        }
+        if (a && a.tipo === "bolo" && a.etapa === "vela" && ly >= 76 && ly < 128 && Math.abs(lx - 118) < 38) {
+          player.currentZone = { tipo: "acender_vela" };
+          if (keys["KeyE"]) {
+            a.vela = Math.min(1, a.vela + dt / 2);
+            if (Math.random() < 0.1) SFX.playTone(1800 + Math.random() * 400, "square", 0.02, 0.02, 0.005);
+            if (a.vela >= 1) {
+              a.etapa = "entregar";
+              SFX.minigameSucesso();
+              JUICE.textoFlutuante(player.x, player.y - 20, "VELA ACESA!", "#fb923c");
+              falarTexto(`Vela acesa! Leva com cuidado até ${a.nomeBonito}. Shhh!`, "#fb923c");
+            }
+            atualizarHUD(); atualizarBannerEmergencia();
+          }
           return;
         }
         geladeiraAberta = false;
@@ -10679,6 +10840,15 @@
         const pontos = cena === "rh"
           ? [["sugestoes", 8, 44, 48, 76], ["aniversarios", 164, 192, 48, 64], ["ocorrencias", 190, 240, 48, 86]]
           : [["quadro", 10, 72, 48, 64], ["chamados", 164, 204, 48, 76], ["cabos", 8, 58, 96, 132]];
+        if (cena === "ti" && lx >= 180 && ly >= 90 && ly < 134) {
+          const imprimir = a && a.tipo === "relatorio" && a.etapa === "imprimir";
+          player.currentZone = { tipo: imprimir ? "imprimir" : "impressora" };
+          if (interactPressedThisFrame) {
+            if (imprimir) abrirImpressao();
+            else falarTexto(sortearTexto("impressoraBoa"), "#e2e8f0");
+          }
+          return;
+        }
         for (const [id, x0, x1, y0, y1] of pontos) {
           if (lx >= x0 && lx < x1 && ly >= y0 && ly < y1) {
             player.currentZone = { tipo: "fucar_" + id };
@@ -10706,8 +10876,15 @@
         if (lx >= 186 && ly >= 48 && ly < 86) return fucar("arquivo");
         if (ly >= 74 && ly < 106 && Math.abs(lx - 120) < 44) {
           const levando = a && a.tipo === "cafe" && a.etapa === "levar";
-          player.currentZone = { tipo: levando ? "entregar_cafe" : "conversar" };
-          if (interactPressedThisFrame) { if (levando) entregarCafe(a); else abrirChatChefe(); }
+          const relatorio = a && a.tipo === "relatorio" && a.etapa === "levar";
+          const bolo = a && a.tipo === "bolo" && a.etapa === "entregar" && !a.npc;
+          player.currentZone = { tipo: levando ? "entregar_cafe" : relatorio ? "entregar_relatorio" : bolo ? "entregar_bolo" : "conversar" };
+          if (interactPressedThisFrame) {
+            if (levando) entregarCafe(a);
+            else if (relatorio) entregarRelatorio(a);
+            else if (bolo) entregarBolo(a);
+            else abrirChatChefe();
+          }
         }
       }
     }
@@ -10728,8 +10905,141 @@
       concluirEmergencia();
       popupRadio(sortearTexto("cafeEntregue"), { tag: "GERALDO · SATISFEITO", duracao: 6500 });
     }
+    /* Relatório do Geraldo: imprime na TI e leva pra sala dele */
+    function iniciarRelatorio(a) {
+      Object.assign(a, { etapa: "imprimir" });
+      abrirAvisoDemanda("🖨️", "RELATÓRIO PRO GERALDO", [
+        "Vá até a sala da TI (porta TI, ao lado do balcão).",
+        "Imprima o relatório que o Geraldo mandou no seu e-mail.",
+        "Leve as folhas até a mesa dele, na sala do CHEFE."
+      ], "Sem pressa: os pedidos ficam congelados enquanto isso.");
+      popupRadio(sortearTexto("pedidoRelatorio"), { duracao: 6500 });
+    }
+    const PASSOS_IMPRESSAO = [
+      ["📧", "Abrir o e-mail do Geraldo", "Assunto: URGENTE!!!! RELATORIO (LER)"],
+      ["📎", "Baixar o anexo", "relatorio_final_v3_AGORAVAI (2).pdf"],
+      ["⚙️", "Ajustar a impressão", "3 páginas · colorido (ele exige colorido) · retrato"],
+      ["🖨️", "Imprimir", "Impressora da TI · bandeja 1"]
+    ];
+    const impressao = { passo: 0, abertoEm: 0, timer: null };
+    function abrirImpressao() {
+      impressao.passo = 0;
+      impressao.abertoEm = performance.now();
+      estadoJogo = "IMPRESSAO";
+      limparInputs();
+      document.getElementById("imp-relatorio").hidden = true;
+      document.getElementById("imp-tela").hidden = false;
+      desenharPassosImpressao();
+      document.getElementById("modal-impressao").style.display = "flex";
+      SFX.playTone(520, "triangle", 0.06, 0.04, 0.01);
+    }
+    function desenharPassosImpressao() {
+      const lista = document.getElementById("imp-passos");
+      lista.innerHTML = PASSOS_IMPRESSAO.map(([ic, titulo, det], i) =>
+        `<li class="${i < impressao.passo ? "feito" : i === impressao.passo ? "atual" : ""}"><span class="imp-ic">${i < impressao.passo ? "✔" : ic}</span>` +
+        `<span><b>${titulo}</b><small>${escaparHtml(det)}</small></span></li>`).join("");
+      const btn = document.getElementById("imp-btn");
+      btn.disabled = false;
+      btn.textContent = impressao.passo < PASSOS_IMPRESSAO.length ? PASSOS_IMPRESSAO[impressao.passo][1].toUpperCase() : "PEGAR AS FOLHAS";
+      document.getElementById("imp-progresso").hidden = true;
+    }
+    function avancarImpressao() {
+      if (performance.now() - impressao.abertoEm < 600) return; // o toque que abriu não conta
+      const btn = document.getElementById("imp-btn");
+      if (btn.disabled) return;
+      if (impressao.passo < PASSOS_IMPRESSAO.length - 1) {
+        impressao.passo++; SFX.menuBlip(); desenharPassosImpressao(); return;
+      }
+      if (impressao.passo === PASSOS_IMPRESSAO.length - 1) {
+        // Imprimindo: 3 páginas saindo, sem drama
+        impressao.passo++;
+        desenharPassosImpressao();
+        btn.disabled = true; btn.textContent = "IMPRIMINDO...";
+        const prog = document.getElementById("imp-progresso"); prog.hidden = false;
+        let pag = 0;
+        const tick = () => {
+          pag++;
+          prog.textContent = `Imprimindo página ${pag} de 3...`;
+          SFX.playTone(180, "sawtooth", 0.25, 0.025, 0.02); SFX.playTone(240, "sawtooth", 0.2, 0.02, 0.02, 0.25);
+          if (pag < 3) impressao.timer = setTimeout(tick, 750);
+          else impressao.timer = setTimeout(() => {
+            SFX.minigameSucesso();
+            document.getElementById("imp-tela").hidden = true;
+            document.getElementById("imp-relatorio").hidden = false;
+            document.getElementById("imp-relatorio").scrollTop = 0;
+            document.getElementById("modal-impressao").scrollTop = 0;
+            impressao.abertoEm = performance.now();
+          }, 750);
+        };
+        tick();
+        return;
+      }
+    }
+    function pegarFolhas() {
+      if (performance.now() - impressao.abertoEm < 600) return;
+      document.getElementById("modal-impressao").style.display = "none";
+      estadoJogo = "JOGANDO";
+      limparInputs();
+      const a = emerg.ativa;
+      if (a && a.tipo === "relatorio") {
+        a.etapa = "levar";
+        JUICE.textoFlutuante(player.x, player.y - 20, "3 PAGINAS!", "#bfdbfe");
+        falarTexto("Saiu quentinho, sem atolar. Agora leva pro Geraldo!", "#bfdbfe");
+        atualizarHUD(); atualizarBannerEmergencia();
+      }
+    }
+    function entregarRelatorio(a) {
+      SFX.minigameSucesso();
+      JUICE.textoFlutuante(player.x, player.y - 20, "RELATORIO ENTREGUE!", "#fde047");
+      concluirEmergencia();
+      popupRadio(sortearTexto("relatorioEntregue"), { tag: "GERALDO · ORGULHOSO", duracao: 7000 });
+    }
+
+    /* Bolo surpresa: geladeira → vela na mesa da cozinha → aniversariante */
+    function iniciarBolo(a) {
+      const colegas = colegasNoGalpao().filter(n => ROSTOS_COLEGAS[n.nome]);
+      const npc = colegas.length ? sortear(colegas) : null;
+      const art = npc && ROSTOS_COLEGAS[npc.nome].pronome === "dela" ? "a" : "o";
+      const nomeBonito = npc ? `${art} ${bonito2(npc)}` : "o Geraldo"; // "a Jéssica", "o Robson"
+      Object.assign(a, { etapa: "pegar", vela: 0, npc, nomeBonito });
+      abrirAvisoDemanda("🎂", "BOLO SURPRESA!", [
+        `Hoje é aniversário d${nomeBonito}! A Gisele escondeu o bolo na geladeira da COZINHA.`,
+        "Pegue o bolo e acenda a vela na mesa da cozinha (segure a ação).",
+        `Leve até ${npc ? nomeBonito + " no galpão" : "a sala do CHEFE"}. Shhh, é surpresa!`
+      ], "Sem pressa: os pedidos ficam congelados enquanto isso.");
+      popupRadio(`Psiu! Hoje é aniversário d${nomeBonito}. O bolo tá na geladeira, atrás das marmitas. Não deixa ver!`, { tag: "GISELE · RH", colega: "GISELE", duracao: 6500 });
+    }
+    function entregarBolo(a) {
+      SFX.minigameSucesso();
+      JUICE.textoFlutuante(player.x, player.y - 22, "PARABENS!", "#f472b6");
+      JUICE.particulas(player.x, player.y, "confete", 30);
+      const npc = a.npc;
+      concluirEmergencia();
+      const falas = npc ? [
+        "Pra mim?! Eu jurava que ninguém lembrava. Alguém tem uma faca? Serve estilete?",
+        "Gente, que surpresa! Bolo de cenoura com chocolate? Agora eu choro.",
+        "Vocês lembraram! Primeiro pedaço é de quem trouxe. O segundo é meu. O terceiro também."
+      ] : ["Um bolo? Pra mim? Ah, nem precisava. Precisava sim. Cadê a foto pro mural?"];
+      setTimeout(() => popupRadio(sortear(falas), npc ? { tag: `${bonito2(npc).toUpperCase()} · ANIVERSARIANTE`, colega: npc.nome, duracao: 7000 } : { tag: "GERALDO · EMOCIONADO", duracao: 7000 }), 300);
+      falarTexto("🎶 O galpão inteiro cantou parabéns. Desafinado, mas com muito amor.", "#f472b6");
+    }
     function levandoCafe() { const a = emerg.ativa; return !!(a && a.tipo === "cafe" && a.etapa === "levar"); }
     function desenharGarrafaNaMao() {
+      const a = emerg.ativa;
+      if (a && !veiculo.pilotando && a.tipo === "relatorio" && a.etapa === "levar") {
+        const x = Math.round(player.x + (player.dir === "LEFT" ? -11 : 5)), y = Math.round(player.y - 9);
+        ret(ctx, x - 1, y - 1, 9, 10, ARTE.contorno); ret(ctx, x, y, 7, 8, "#f8fafc");
+        ret(ctx, x + 1, y + 2, 5, 1, "#94a3b8"); ret(ctx, x + 1, y + 4, 2, 3, "#3b82f6"); ret(ctx, x + 3, y + 5, 1, 2, "#22c55e"); ret(ctx, x + 4, y + 3, 1, 4, "#f97316");
+        return;
+      }
+      if (a && !veiculo.pilotando && a.tipo === "bolo" && a.etapa !== "pegar") {
+        const x = Math.round(player.x - 5), y = Math.round(player.y - 20);
+        ret(ctx, x - 1, y + 3, 12, 7, ARTE.contorno); ret(ctx, x, y + 4, 10, 5, "#7c2d12"); ret(ctx, x, y + 4, 10, 2, "#f8fafc");
+        ret(ctx, x + 2, y + 6, 1, 1, "#f472b6"); ret(ctx, x + 6, y + 7, 1, 1, "#facc15");
+        ret(ctx, x + 4, y, 2, 4, "#60a5fa");
+        if (a.etapa === "entregar") { const f = Math.floor(Date.now() / 120) % 2; ret(ctx, x + 4, y - 3 + f, 2, 3 - f, "#fb923c"); ret(ctx, x + 4, y - 1, 2, 1, "#fde047"); }
+        return;
+      }
       if (!levandoCafe() || veiculo.pilotando) return;
       const x = Math.round(player.x + (player.dir === "LEFT" ? -9 : 6)), y = Math.round(player.y - 10);
       ret(ctx, x - 1, y - 1, 6, 11, ARTE.contorno);
@@ -11033,6 +11343,13 @@
       r(16, 108, 30, 18, C); r(17, 109, 28, 16, "#b45309"); r(17, 109, 28, 3, "#d97706");
       desenharBitmap("CABOS", X + 31, Y + 116, "#fde68a", 1, "center");
       r(20, 104, 2, 6, "#111827"); r(26, 102, 2, 8, "#2563eb"); r(34, 103, 2, 7, "#dc2626"); r(40, 105, 2, 5, "#f8fafc");
+      // impressora (a que funciona) num móvel baixo, com o bilhete do Vini
+      r(196, 114, 32, 14, C); r(197, 115, 30, 12, "#475569");
+      r(198, 102, 28, 14, C); r(199, 103, 26, 12, "#e2e8f0"); r(199, 103, 26, 2, "#f8fafc");
+      r(202, 107, 18, 2, "#334155"); r(222, 106, 2, 2, Math.floor(Date.now() / 500) % 2 ? "#22c55e" : "#15803d");
+      const imprimindo = estadoJogo === "IMPRESSAO" && impressao.passo >= PASSOS_IMPRESSAO.length;
+      r(203, 98 + (imprimindo ? -3 : 0), 14, 5 + (imprimindo ? 3 : 0), "#ffffff");
+      r(205, 116, 12, 8, "#fef08a"); r(206, 118, 10, 1, "#1d4ed8"); r(206, 120, 8, 1, "#1d4ed8");
     }
     function desenharMesaChefeFrente(sl) {
       const X = sl.ox, Y = sl.oy;
@@ -13248,6 +13565,12 @@
         fucar_mesa: ["[E] FUCAR A GAVETA", "#422006", "#fde68a", "#ffffff"],
         fucar_arquivo: ["[E] FUCAR O ARQUIVO", "#422006", "#fde68a", "#ffffff"],
         fucar_mural: ["[E] OLHAR O MURAL", "#422006", "#fde68a", "#ffffff"],
+        imprimir: ["[E] IMPRIMIR O RELATORIO", "#1f2937", "#bfdbfe", "#ffffff"],
+        impressora: ["[E] OLHAR A IMPRESSORA", "#1f2937", "#bfdbfe", "#ffffff"],
+        entregar_relatorio: ["[E] ENTREGAR O RELATORIO", "#422006", "#fde68a", "#ffffff"],
+        pegar_bolo: ["[E] PEGAR O BOLO", "#422006", "#fde68a", "#ffffff"],
+        acender_vela: ["SEGURE [E] ACENDER A VELA", "#7c2d12", "#fed7aa", "#ffffff"],
+        entregar_bolo: ["[E] SURPRESA!", "#7c2d12", "#fed7aa", "#ffffff"],
         chamar_rh: ["[E] CHAMAR A GISELE", "#4c1d95", "#ddd6fe", "#ffffff"],
         conversar_rh: ["[E] FALAR COM A GISELE", "#1f2937", "#ddd6fe", "#ffffff"],
         conversar_ti: ["[E] FALAR COM O VINI", "#1f2937", "#bfdbfe", "#ffffff"],
@@ -13316,6 +13639,8 @@
     document.getElementById("start-nome").addEventListener("input", () => desenharRanking());
     document.getElementById("rel-salvar").addEventListener("click", () => salvarNoRanking());
     document.getElementById("cc-fechar").addEventListener("click", () => { if (performance.now() - chatChefe.abertoEm > 600) fecharChatChefe(); });
+    document.getElementById("imp-btn").addEventListener("click", () => avancarImpressao());
+    document.getElementById("imp-pegar").addEventListener("click", () => pegarFolhas());
     document.getElementById("btn-arq-fechar").addEventListener("click", () => {
       // O mesmo toque que abriu a pasta (botão de ação no celular) não pode fechar ela
       if (performance.now() - arquivoAbertoEm < 600) return;
