@@ -8042,7 +8042,7 @@
       receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
       extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER",
       atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR",
-      entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
+      entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", entrar_rh: "ENTRAR", entrar_ti: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", canecas: "ABRIR", pia: "LAVAR",
       conversar: "FALAR", entregar_cafe: "ENTREGAR", fucar_mesa: "FUÇAR", fucar_arquivo: "FUÇAR", fucar_mural: "OLHAR",
       chamar_rh: "CHAMAR GISELE", conversar_rh: "FALAR", conversar_ti: "FALAR",
       fucar_sugestoes: "ABRIR", fucar_aniversarios: "OLHAR", fucar_ocorrencias: "FUÇAR", fucar_quadro: "OLHAR", fucar_chamados: "ESPIAR", fucar_cabos: "FUÇAR"
@@ -9160,11 +9160,6 @@
         emerg.brigaRadioFeita = true; // a primeira briga do turno é sempre a da rádio caipira
         abrirRadioPeao();
         mensagemRadioPeao(null, `${bonito2(n1)} e ${bonito2(n2)} começaram a discutir...`);
-        if (MISSAO_ATUAL.semFim) abrirAvisoDemanda("🚨", "BRIGA NO GALPÃO!", [
-          `${bonito2(n1)} e ${bonito2(n2)} estão discutindo.`,
-          "Vá até a sala do RH (porta RH, na parede de cima).",
-          "Chame a Gisele na mesa dela. Ela resolve o resto."
-        ], "Você tem 2 minutos. A seta mostra o caminho.", "alerta");
         falaDaBriga(a, 0);
         if (a.dialogo.tema === "rádio" && RADIO_MUSICA.trocarTemporaria(RADIO_CAIPIRA.url)) {
           a.trocouRadio = true;
@@ -13239,8 +13234,10 @@
         chamar_ti: ["[E] CHAMAR A TI", "#4c1d95", "#ddd6fe", "#ffffff"],
         bebedouro: ["[E] BEBER ÁGUA", "#0c4a6e", "#bae6fd", "#ffffff"],
         limpar: ["SEGURE [E] LIMPAR", "#422006", "#fde68a", "#ffffff"],
-        entrar_chefe: ["[E] SALA DO CHEFE", "#1f2937", "#fde68a", "#ffffff"],
-        entrar_cozinha: ["[E] ENTRAR NA COZINHA", "#1f2937", "#fde68a", "#ffffff"],
+        entrar_chefe: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
+        entrar_cozinha: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
+        entrar_rh: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
+        entrar_ti: ["[E] ENTRAR", "#1f2937", "#fde68a", "#ffffff"],
         sair: ["[E] SAIR", "#1f2937", "#cbd5e1", "#ffffff"],
         cafeteira: ["SEGURE [E] FAZER CAFE", "#422006", "#fde68a", "#ffffff"],
         geladeira: ["[E] ABRIR GELADEIRA", "#1f2937", "#cbd5e1", "#ffffff"],
