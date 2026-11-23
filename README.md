@@ -267,7 +267,7 @@ O galpão é da **ASAP Logística** ("seu pedido pra ontem"). O nome aparece emb
 
 ## Portaria e sala de reunião
 
-Duas portas novas na parede de cima: **PORTARIA** (ao lado da placa de SAÍDA) e **REUNIÃO** (entre o relógio e a placa de PERIGO).
+Duas portas novas na parede de cima: **PORTARIA** (ao lado da placa de SAÍDA, de frente pro corredor da R01) e **REUNIÃO** (entre o relógio e a placa de PERIGO).
 
 - **Portaria:** o Seu Dirceu fica na mesa com rádio AM, garrafa térmica e palavra cruzada. Pela janela dá pra ver a cancela abrindo e fechando. Dá pra conversar com ele e fuçar o quadro de chaves (com a chave misteriosa de 9 anos), o caderno de visitas e a caixa de achados e perdidos (o estilete da briga, o crachá do Enzo, o controle do ar travado em 16 °C...).
 - **Câmeras de segurança:** na mesa da portaria. Mostram o galpão ao vivo, em verde de monitor, com REC piscando e o horário do turno: ruas, balcão, bancadas e docas. A CAM 05 (sala do chefe) está "desligada a pedido do Geraldo". O turno continua enquanto você assiste. No teclado: setas ou 1 a 5 trocam a câmera.

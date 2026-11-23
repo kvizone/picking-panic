@@ -1717,6 +1717,13 @@
     .arq-pote p { margin: 0; }
     /* Armário de canecas: madeira com prateleiras */
     .pasta-arq.tema-armario { background: #8b5a2b; border-color: #3b2410; }
+    /* Caixa de achados e perdidos: papelão claro, texto escuro */
+    .pasta-arq.tema-caixa { background: #e3c08d; background-image: linear-gradient(#ecd0a4, #d8b07a); border-color: #3b2410; }
+    .tema-caixa .arq-aba { background: #ecd0a4; color: #3b2410; }
+    .tema-caixa .arq-corpo { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .tema-caixa .arq-pote { background: #fffbeb; border: 2px solid #b45309; box-shadow: 2px 3px 0 rgba(59, 36, 16, 0.35); color: #292524; }
+    .tema-caixa .arq-pote b { color: #1c1917; font-size: 9px; }
+    .tema-caixa .arq-pote p { color: #44403c; font-size: 8px; }
     .tema-armario .arq-aba { background: #8b5a2b; color: #fde68a; }
     .tema-armario .arq-corpo { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px 0; }
     .arq-caneca { text-align: center; color: #fef3c7; font-size: 8px; line-height: 1.6; padding: 4px 8px 12px; border-bottom: 8px solid #5b3a1a; box-shadow: 0 3px 0 #3b2410; }
@@ -1732,7 +1739,7 @@
     }
     .caneca::before { content: ""; position: absolute; left: 4px; right: 4px; top: 3px; height: 4px; background: rgba(255, 255, 255, 0.35); border-radius: 2px; }
     .caneca span { font-size: 7px; line-height: 1.35; color: var(--c2); text-align: center; word-break: break-word; }
-    html.toque .tema-geladeira .arq-corpo, html.toque .tema-armario .arq-corpo { grid-template-columns: 1fr 1fr; }
+    html.toque .tema-geladeira .arq-corpo, html.toque .tema-armario .arq-corpo, html.toque .tema-caixa .arq-corpo { grid-template-columns: 1fr 1fr; }
     html.toque .arq-corpo { grid-template-columns: 1fr; }
     html.toque .arq-item { font-size: 9px; }
     /* ===== Câmeras de segurança ===== */
@@ -10736,7 +10743,7 @@
     const PORTA_COZINHA = { x: 757, y: 30 };
     const PORTA_RH = { x: 258, y: 30 }; // porta da sala do RH (onde ficava o ramal)
     const PORTA_TI = { x: 343, y: 30 };
-    const PORTA_GUARITA = { x: 112, y: 30 };  // portaria, ao lado da placa de SAÍDA
+    const PORTA_GUARITA = { x: 98, y: 30 };   // portaria, ao lado da placa de SAÍDA, de frente pro corredor da R01
     const PORTA_REUNIAO = { x: 632, y: 30 };  // sala de reunião, entre o relógio e a placa de PERIGO // porta da sala da TI, entre a placa de EPI e a janela, ao lado do balcão
     const SALAS = {
       cozinha: { ox: 5000, oy: 5000, w: 240, h: 150, fundo: 54, porta: PORTA_COZINHA,
@@ -10783,7 +10790,9 @@
       if (tipo === "chefe" && ronda.escoltando) { falarTexto("Agora não: o Geraldo está com o diretor.", "#fca5a5"); return; }
       const sl = SALAS[tipo];
       if (carrinho.pego) { const c = posicaoCarrinho(); carrinho.x = c.x; carrinho.y = c.y; carrinho.pego = false; }
+      // Volta na frente da porta; se ali tiver estante, fica no corredor de cima (nunca preso)
       voltaDaSala = { x: sl.porta.x, y: sl.porta.y + 20 };
+      if (checkCollision(voltaDaSala.x, voltaDaSala.y, player.radius)) voltaDaSala.y = sl.porta.y + 6;
       cena = tipo;
       player.x = sl.ox + sl.w / 2; player.y = sl.oy + sl.h - 14; player.dir = "UP";
       SFX.playTone(520, "square", 0.04, 0.05, 0.005);
@@ -11741,7 +11750,7 @@
       { v: "postit", linhas: ["Pegou chave?", "Assina aqui.", "Não assinou?", "Eu sei quem foi."] },
       { v: "postit", linhas: ["Chave reserva da", "sala do chefe:", "escondida no vaso.", "(não conta pra ele)"] }
     ] };
-    ARQUIVOS_CHEFE.achados = { aba: "ACHADOS E PERDIDOS", tema: "armario", itens: [
+    ARQUIVOS_CHEFE.achados = { aba: "ACHADOS E PERDIDOS", tema: "caixa", itens: [
       { v: "pote", emoji: "🔪", titulo: "Estilete com nome", etiqueta: "ROBSON", linhas: ["O da briga. Estava na bancada 2 o tempo todo."] },
       { v: "pote", emoji: "🪪", titulo: "Crachá", etiqueta: "ENZO", linhas: ["Terceiro crachá perdido no mês."] },
       { v: "pote", emoji: "🎛️", titulo: "Controle do ar", etiqueta: "???", linhas: ["Travado em 16 °C. Explica muita coisa."] },
@@ -11810,7 +11819,7 @@
       const pasta = ARQUIVOS_CHEFE[onde];
       document.getElementById("arq-aba").textContent = pasta.aba;
       document.querySelector("#modal-arquivo .pasta-arq").className = "pasta-arq" + (pasta.tema ? " tema-" + pasta.tema : "");
-      document.getElementById("btn-arq-fechar").textContent = pasta.tema === "geladeira" ? "FECHAR A GELADEIRA" : pasta.tema === "armario" ? (onde === "achados" ? "GUARDAR NA CAIXA" : "FECHAR O ARMÁRIO") : "GUARDAR TUDO DE VOLTA";
+      document.getElementById("btn-arq-fechar").textContent = pasta.tema === "geladeira" ? "FECHAR A GELADEIRA" : pasta.tema === "caixa" ? "GUARDAR NA CAIXA" : pasta.tema === "armario" ? "FECHAR O ARMÁRIO" : "GUARDAR TUDO DE VOLTA";
       const clipe = '<svg class="arq-clipe" viewBox="0 0 16 40" aria-hidden="true"><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#64748b" stroke-width="2.6" stroke-linecap="round" transform="translate(0.7 0.7)"/><path d="M5 34 V8 a3 3 0 0 1 6 0 V30 a5 5 0 0 1 -10 0 V12" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/></svg>';
       document.getElementById("arq-corpo").innerHTML = pasta.itens.map((it, i) => {
         const rot = [-2.5, 1.8, -1.2, 2.4][i % 4];
