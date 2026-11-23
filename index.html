@@ -7392,6 +7392,9 @@
       const dpr = window.devicePixelRatio || 1;
       const w = container.clientWidth * dpr;
       const h = container.clientHeight * dpr;
+      // Área do jogo sem tamanho (aba escondida, troca de tela, celular girando): mantém o tamanho anterior.
+      // Uma tela de 0 px quebrava o desenho e congelava o jogo.
+      if (w < 32 || h < 32) return;
 
       let scale;
       {
@@ -7400,8 +7403,8 @@
         scale = TOQUE_DISPOSITIVO
           ? Math.max(1, Math.floor(Math.min(w, h) / 270))
           : Math.max(1, Math.round(h / 320));
-        const novoW = Math.min(WORLD_WIDTH, Math.floor(w / scale));
-        const novoH = Math.min(WORLD_HEIGHT, Math.floor(h / scale));
+        const novoW = Math.max(64, Math.min(WORLD_WIDTH, Math.floor(w / scale)));
+        const novoH = Math.max(64, Math.min(WORLD_HEIGHT, Math.floor(h / scale)));
         if (novoW !== VIEW_W || novoH !== VIEW_H) {
           VIEW_W = novoW;
           VIEW_H = novoH;
@@ -7446,6 +7449,7 @@
     })();
 
     function desenharBufferNoDisplay() {
+      if (!bufferCanvas.width || !bufferCanvas.height || !displayCanvas.width || !displayCanvas.height) return;
       displayCtx.imageSmoothingEnabled = false;
       displayCtx.drawImage(bufferCanvas, 0, 0, VIEW_W, VIEW_H, 0, 0, displayCanvas.width, displayCanvas.height);
     }
@@ -14566,7 +14570,17 @@
        ========================================================================== */
     let lastTime = performance.now();
 
+    let errosNoLoop = 0;
     function gameLoop(now) {
+      // O próximo quadro é agendado antes de tudo: um erro num quadro nunca mais congela o jogo
+      requestAnimationFrame(gameLoop);
+      try { passoDoJogo(now); }
+      catch (e) {
+        if (errosNoLoop++ < 5) console.error("Erro num quadro do jogo (o jogo segue):", e);
+        try { redimensionarDisplay(); } catch (_) { /* tenta de novo no próximo quadro */ }
+      }
+    }
+    function passoDoJogo(now) {
       const rawDt = (now - lastTime) / 1000;
       const dt = Math.min(rawDt, 0.05);
       lastTime = now;
@@ -14589,8 +14603,6 @@
       }
       renderPixelArt();
       desenharCCTV();
-
-      requestAnimationFrame(gameLoop);
     }
 
     function iniciarQuandoFontePronta() {
