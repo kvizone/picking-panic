@@ -1693,6 +1693,10 @@
     .arq-carteirinha { background: #dbeafe; background-image: none; border: 2px solid #1e3a8a; border-radius: 6px; }
     .arq-foto { background: #1e3a8a; background-image: none; color: #fde68a; border: 6px solid #fafaf9; }
     .arq-foto b { color: #f97316; font-size: 10px; }
+    .arq-polaroid { position: relative; grid-column: 1 / -1; justify-self: center; width: min(300px, 100%); transform: rotate(var(--rot));
+      background: #fafaf9; padding: 10px 10px 8px; box-shadow: 3px 4px 0 rgba(59, 36, 16, 0.5); }
+    .arq-polaroid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; filter: saturate(1.1); }
+    .arq-polaroid span { display: block; font-family: "Permanent Marker", cursive; font-size: 15px; color: #1d4ed8; text-align: center; margin-top: 6px; }
     .arq-fechar { margin-top: 6px; background: #3b2410 !important; color: #fde68a !important; }
     /* Geladeira: por dentro, branca e iluminada, com prateleiras de vidro */
     .pasta-arq.tema-geladeira { background: #f8fafc; background-image: linear-gradient(#ffffff, #e0f2fe); border-color: #475569; box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(186, 230, 253, 0.9); }
@@ -11447,7 +11451,8 @@
         { v: "carteirinha", titulo: "FÃ-CLUBE ROUPA NOVA", linhas: ["Sócio nº 0047", "Nome: Geraldo", "Foto 3x4: com cabelo"] }
       ] },
       mural: { aba: "MURAL ATRÁS DA MESA", itens: [
-        { v: "foto", titulo: "PÔSTER DO ROUPA NOVA", linhas: ["Bilhete preso no canto:", "\"Um dia eu tiro foto com eles.\""] },
+        { v: "polaroid", img: "assets/img/geraldo-roupa-nova.jpg", legenda: "Eu e o Roupa Nova ♥ show 2024" },
+        { v: "postit", linhas: ["Foto 100% real.", "Não precisa", "perguntar pro Vini."] },
         { v: "papel", titulo: "KARAOKÊ DA FIRMA · MINHA SETLIST", lista: [["Whisky a Go-Go", 0], ["A Viagem", 0], ["Linda Demais", 0], ["Dona", 0], ["Sapato Velho (bis)", 0]] },
         { v: "papel", titulo: "ESCALA DE FOLGAS · DEZEMBRO", linhas: ["Robson: não", "Jéssica: não", "Kauã: não", "Enzo: ainda procurando a R03", "Geraldo: 24, 25, 26, 31 e 1º"], carimbo: "CONFIDENCIAL", cor: "vermelho" },
         { v: "postit", linhas: ["Reunião c/ diretor:", "dizer que a ideia", "do café foi MINHA"] }
@@ -11518,6 +11523,8 @@
         const linhas = (it.linhas || []).map(l => `<p>${escaparHtml(l)}</p>`).join("");
         const lista = it.lista ? `<ol>${it.lista.map(([t, riscado]) => `<li${riscado ? ' class="riscado"' : ""}>${escaparHtml(t)}</li>`).join("")}</ol>` : "";
         const carimbo = it.carimbo ? `<span class="arq-carimbo ${it.cor || ""}">${it.carimbo}</span>` : "";
+        if (it.v === "polaroid") return `<div class="arq-polaroid" style="--rot:${rot}deg">${clipe}<img src="${it.img}" alt="Foto do Geraldo com uma banda" loading="lazy">` +
+          `<span>${escaparHtml(it.legenda)}</span></div>`;
         if (it.v === "pote") return `<div class="arq-pote" style="--rot:${rot / 2}deg"><span class="pote-emoji">${it.emoji}</span>` +
           `<span class="pote-etiqueta">${escaparHtml(it.etiqueta)}</span><b>${escaparHtml(it.titulo)}</b>${linhas}</div>`;
         if (it.v === "caneca") return `<div class="arq-caneca"><div class="caneca" style="--c1:${it.cor};--c2:${it.cor2}">` +
