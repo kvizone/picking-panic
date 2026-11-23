@@ -7935,7 +7935,7 @@
       receb_ok: "PEGAR", receb_alinhar: "ENCAIXE", pulmao_guardar: "GUARDAR",
       extintor: "EXTINTOR", fogo: "APAGAR", rua_ok: "GUARDAR", rua_alinhar: "PARE", ramal: "LIGAR RH", chamar_ti: "CHAMAR TI", bebedouro: "BEBER", limpar: "LIMPAR", descer: "DESCER",
       atender: "ATENDER", contar: "CONTAR", digitar: "DIGITAR",
-      entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", pia: "LAVAR",
+      entrar_chefe: "ENTRAR", entrar_cozinha: "ENTRAR", sair: "SAIR", cafeteira: "CAFÉ", geladeira: "ABRIR", fechar_geladeira: "FECHAR", pia: "LAVAR",
       conversar: "FALAR", entregar_cafe: "ENTREGAR"
     };
     let rotuloAcaoAtual = "";
@@ -10453,12 +10453,13 @@
        enquanto ela está lá dentro. O relógio, os pedidos e os problemas continuam correndo. */
     const PORTA_COZINHA = { x: 757, y: 30 };
     const SALAS = {
-      cozinha: { ox: 5000, oy: 5000, w: 240, h: 150, fundo: 58, porta: PORTA_COZINHA,
-                 blocos: [[188, 40, 46, 24], [88, 90, 66, 20]] },
+      cozinha: { ox: 5000, oy: 5000, w: 240, h: 150, fundo: 54, porta: PORTA_COZINHA,
+                 blocos: [[194, 40, 36, 22], [178, 44, 14, 14], [94, 92, 48, 16]] },
       chefe: { ox: 6000, oy: 5000, w: 240, h: 150, fundo: 48, porta: PORTA_ESCRITORIO,
                blocos: [[76, 44, 88, 30], [6, 40, 28, 26], [206, 40, 28, 30]] }
     };
     let cena = null;          // null = galpão; "cozinha" ou "chefe"
+    let geladeiraAberta = false;
     let voltaDaSala = null;   // onde a personagem reaparece ao sair
     const salaAtual = () => (cena ? SALAS[cena] : null);
     function colisaoSala(x, y, r) {
@@ -10498,6 +10499,7 @@
     }
     function sairDaSala() {
       fecharChatChefe();
+      geladeiraAberta = false;
       cena = null;
       player.x = voltaDaSala.x; player.y = voltaDaSala.y; player.dir = "DOWN";
       SFX.playTone(440, "square", 0.04, 0.05, 0.005);
@@ -10507,7 +10509,7 @@
     }
     function alvoNaSala() {
       const sl = salaAtual(), a = emerg.ativa;
-      if (a && a.tipo === "cafe" && cena === "cozinha" && a.etapa === "fazer") return { x: sl.ox + 116, y: sl.oy + 60 };
+      if (a && a.tipo === "cafe" && cena === "cozinha" && a.etapa === "fazer") return { x: sl.ox + 111, y: sl.oy + 58 };
       if (a && a.tipo === "cafe" && cena === "chefe" && a.etapa === "levar") return { x: sl.ox + 120, y: sl.oy + 80 };
       if (a || fila.ativo || pedidosEsperando().length || hidra.seca) return { x: sl.ox + sl.w / 2, y: sl.oy + sl.h }; // tem coisa lá fora
       return null;
@@ -10525,13 +10527,13 @@
       }
       const a = emerg.ativa;
       if (cena === "cozinha") {
-        if (Math.abs(lx - 116) < 18 && ly < 76) {
+        if (Math.abs(lx - 111) < 14 && ly < 72) {
           player.currentZone = { tipo: "cafeteira" };
           if (a && a.tipo === "cafe" && a.etapa === "fazer") {
             if (keys["KeyE"]) {
               a.preparo = Math.min(1, a.preparo + dt / 3.5);
               if (Math.random() < 0.12) SFX.playTone(140 + Math.random() * 80, "sine", 0.06, 0.04, 0.01);
-              if (Math.random() < 0.3) JUICE.particulas(sl.ox + 116 + (Math.random() - 0.5) * 6, sl.oy + 30, "poeira", 1);
+              if (Math.random() < 0.3) JUICE.particulas(sl.ox + 111 + (Math.random() - 0.5) * 4, sl.oy + 22, "poeira", 1);
               if (a.preparo >= 1) {
                 a.etapa = "levar";
                 SFX.minigameSucesso();
@@ -10546,12 +10548,17 @@
           }
           return;
         }
-        if (Math.abs(lx - 211) < 22 && ly < 82) {
-          player.currentZone = { tipo: "geladeira" };
-          if (interactPressedThisFrame) { SFX.menuBlip(); falarTexto(sortearTexto("geladeira"), "#e2e8f0"); }
+        if (Math.abs(lx - 205) < 22 && ly < 80) {
+          player.currentZone = { tipo: geladeiraAberta ? "fechar_geladeira" : "geladeira" };
+          if (interactPressedThisFrame) {
+            geladeiraAberta = !geladeiraAberta;
+            SFX.playTone(geladeiraAberta ? 300 : 180, "square", 0.05, 0.05, 0.01);
+            if (geladeiraAberta) falarTexto(sortearTexto("geladeira"), "#e2e8f0");
+          }
           return;
         }
-        if (Math.abs(lx - 38) < 18 && ly < 76) {
+        geladeiraAberta = false; // se afastou: a porta fecha sozinha
+        if (Math.abs(lx - 30) < 14 && ly < 72) {
           player.currentZone = { tipo: "pia" };
           if (interactPressedThisFrame) { SFX.playTone(900, "sine", 0.08, 0.03, 0.02); falarTexto(sortearTexto("pia"), "#e2e8f0"); }
           return;
@@ -10592,10 +10599,9 @@
     }
     function desenharPortaCozinha() {
       const x = PORTA_COZINHA.x - 11, y = 4;
-      const perto = !cena && Math.abs(player.x - PORTA_COZINHA.x) < 13 && player.y < PORTA_COZINHA.y + 24;
       ret(ctx, x - 1, y - 1, 24, 22, ARTE.contorno);
-      ret(ctx, x, y, 22, 20, perto ? "#0b0f1a" : "#9ca3af");
-      if (!perto) {
+      ret(ctx, x, y, 22, 20, "#9ca3af");
+      {
         ret(ctx, x, y, 22, 1, "#cbd5e1");
         ret(ctx, x + 6, y + 3, 10, 7, "#a5c8e4");   // janelinha redonda (quadrada, é pixel)
         ret(ctx, x + 6, y + 3, 10, 1, "#dbeafe");
@@ -10654,50 +10660,84 @@
       desenharBitmap("SAIDA", meio, Y + sl.h - 15, "#94a3b8", 1, "center");
     }
     function desenharCozinha(sl) {
-      const X = sl.ox, Y = sl.oy;
-      desenharCascaSala(sl, "#eadfc6", "#b9a27a", "#d9d4c8", "#c9c2b3", 46);
-      // azulejo da parede
-      for (let tx = X; tx < X + sl.w; tx += 8) ret(ctx, tx, Y, 1, 43, "#d8c9a8");
-      for (let ty = Y + 8; ty < Y + 43; ty += 8) ret(ctx, X, ty, sl.w, 1, "#d8c9a8");
-      desenharBitmap("COZINHA", X + 60, Y + 4, "#7c5a3a", 1, "center");
-      // janela
-      ret(ctx, X + 150, Y + 6, 30, 20, ARTE.contorno); ret(ctx, X + 151, Y + 7, 28, 18, "#93c5fd"); ret(ctx, X + 165, Y + 7, 1, 18, "#e5e7eb");
-      ret(ctx, X + 151, Y + 7, 28, 3, "#bfdbfe");
-      // bancada com armário
-      ret(ctx, X + 8, Y + 30, 156, 26, ARTE.contorno);
-      ret(ctx, X + 9, Y + 31, 154, 6, "#b7895a");
-      ret(ctx, X + 9, Y + 37, 154, 18, "#8b5e34");
-      for (let i = 0; i < 6; i++) { ret(ctx, X + 12 + i * 25, Y + 39, 22, 14, "#7a5130"); ret(ctx, X + 30 + i * 25, Y + 45, 2, 2, "#e5c07b"); }
-      // pia
-      ret(ctx, X + 26, Y + 31, 24, 5, "#94a3b8"); ret(ctx, X + 28, Y + 32, 20, 3, "#64748b");
-      ret(ctx, X + 37, Y + 24, 2, 8, "#cbd5e1"); ret(ctx, X + 37, Y + 24, 6, 2, "#cbd5e1");
-      // micro-ondas
-      ret(ctx, X + 62, Y + 19, 26, 13, ARTE.contorno); ret(ctx, X + 63, Y + 20, 24, 11, "#4b5563");
-      ret(ctx, X + 65, Y + 22, 15, 7, "#111827"); ret(ctx, X + 82, Y + 22, 3, 2, "#22c55e");
-      // cafeteira (vermelha) com a jarra
+      const X = sl.ox, Y = sl.oy, C = ARTE.contorno;
+      const r = (x, y, w, h, c) => ret(ctx, X + x, Y + y, w, h, c);
+      // parede creme com faixa de azulejo atrás da bancada e piso quadriculado miúdo
+      desenharCascaSala(sl, "#efe4cc", "#c8b48c", "#e5e0d6", "#d3ccbf", 40);
+      for (let tx = 0; tx < sl.w; tx += 6) r(tx, 22, 1, 15, "#d9ccae");
+      for (let ty = 22; ty < 37; ty += 5) r(0, ty, sl.w, 1, "#d9ccae");
+      r(0, 21, sl.w, 1, "#c8b48c");
+      // armários de cima
+      r(10, 4, 70, 15, C); r(11, 5, 68, 13, "#a16207");
+      for (let k = 0; k < 4; k++) { r(12 + k * 17, 6, 15, 11, "#b9771a"); r(12 + k * 17, 6, 15, 1, "#d08f2d"); r(24 + k * 17, 11, 1, 3, "#fde68a"); }
+      // relógio e plaquinha
+      r(92, 6, 9, 9, C); r(93, 7, 7, 7, "#f8fafc"); r(96, 8, 1, 3, C); r(96, 10, 3, 1, C);
+      r(120, 3, 42, 17, C); r(121, 4, 40, 15, "#fef3c7");
+      desenharBitmap("LAVE SUA", X + 141, Y + 5, "#92400e", 1, "center");
+      desenharBitmap("CANECA", X + 141, Y + 12, "#b91c1c", 1, "center");
+      // janela com cortininha
+      r(168, 4, 24, 17, C); r(169, 5, 22, 15, "#93c5fd"); r(169, 5, 22, 3, "#bfdbfe"); r(179, 5, 1, 15, "#e5e7eb");
+      r(167, 3, 26, 3, "#f87171"); r(167, 6, 4, 6, "#fca5a5"); r(189, 6, 4, 6, "#fca5a5");
+      // bancada (tampo + portas)
+      r(8, 33, 132, 21, C);
+      r(9, 34, 130, 5, "#cbd5e1"); r(9, 34, 130, 1, "#e2e8f0");
+      r(9, 39, 130, 14, "#b45309");
+      for (let k = 0; k < 6; k++) { r(11 + k * 21, 41, 19, 10, "#c2671a"); r(11 + k * 21, 41, 19, 1, "#d97f2e"); r(27 + k * 21, 45, 1, 2, "#fde68a"); }
+      // pia embutida e torneira
+      r(20, 34, 20, 4, "#64748b"); r(21, 35, 18, 2, "#475569");
+      r(29, 27, 2, 8, "#94a3b8"); r(29, 27, 6, 2, "#94a3b8"); r(34, 29, 1, 1, "#93c5fd");
+      // micro-ondas pequeno
+      r(48, 24, 20, 11, C); r(49, 25, 18, 9, "#374151"); r(51, 27, 11, 5, "#0f172a"); r(63, 27, 2, 2, "#22c55e"); r(63, 30, 2, 1, "#9ca3af");
+      // potes e fruteira
+      r(74, 29, 5, 6, C); r(75, 30, 3, 4, "#fde68a"); r(81, 28, 5, 7, C); r(82, 29, 3, 5, "#fca5a5");
+      r(89, 31, 11, 4, C); r(90, 31, 9, 3, "#a16207"); r(91, 29, 3, 3, "#ef4444"); r(94, 29, 3, 3, "#facc15"); r(97, 30, 2, 2, "#22c55e");
+      // cafeteira com jarra (enche enquanto prepara)
       const a = emerg.ativa, fazendo = a && a.tipo === "cafe";
       const prep = fazendo ? (a.etapa === "fazer" ? a.preparo : 1) : 0;
-      ret(ctx, X + 104, Y + 12, 24, 20, ARTE.contorno);
-      ret(ctx, X + 105, Y + 13, 22, 18, "#dc2626"); ret(ctx, X + 105, Y + 13, 22, 3, "#ef4444");
-      ret(ctx, X + 109, Y + 20, 14, 10, "#1f2937"); // vão da jarra
+      r(103, 19, 16, 16, C); r(104, 20, 14, 14, "#dc2626"); r(104, 20, 14, 2, "#f87171");
+      r(106, 25, 10, 8, "#111827");
       if (!(fazendo && a.etapa === "levar")) {
-        ret(ctx, X + 110, Y + 21, 12, 9, "#cbd5e1");
-        const nivel = Math.round(8 * prep);
-        if (nivel > 0) ret(ctx, X + 111, Y + 30 - nivel, 10, nivel, "#5b3a1a");
+        r(107, 26, 8, 7, "#cbd5e1");
+        const nivel = Math.round(6 * prep);
+        if (nivel > 0) r(108, 32 - nivel, 6, nivel, "#5b3a1a");
       }
-      ret(ctx, X + 124, Y + 15, 2, 2, prep > 0 && prep < 1 ? (Math.floor(Date.now() / 250) % 2 ? "#22c55e" : "#14532d") : "#14532d");
-      if (prep > 0 && prep < 1 && Math.floor(Date.now() / 300) % 2) desenharBitmap("~", X + 116, Y + 2, "#e5e7eb", 1, "center");
-      // canecas
-      [[134, "#facc15"], [141, "#60a5fa"], [148, "#f8fafc"]].forEach(([cx, c]) => { ret(ctx, X + cx, Y + 26, 5, 5, ARTE.contorno); ret(ctx, X + cx + 1, Y + 27, 3, 3, c); });
-      // geladeira com bilhete
-      ret(ctx, X + 188, Y + 6, 46, 58, ARTE.contorno);
-      ret(ctx, X + 189, Y + 7, 44, 56, "#f1f5f9"); ret(ctx, X + 189, Y + 26, 44, 1, "#cbd5e1");
-      ret(ctx, X + 227, Y + 12, 2, 10, "#94a3b8"); ret(ctx, X + 227, Y + 32, 2, 14, "#94a3b8");
-      ret(ctx, X + 195, Y + 33, 18, 12, "#fde047"); desenharBitmap("NAO", X + 204, Y + 34, "#b91c1c", 1, "center"); desenharBitmap("MEXE", X + 204, Y + 40, "#b91c1c", 1, "center");
-      // mesa com banquinhos
-      [[92, 82], [130, 82], [92, 114], [130, 114]].forEach(([bx, by]) => { ret(ctx, X + bx, Y + by, 12, 8, ARTE.contorno); ret(ctx, X + bx + 1, Y + by + 1, 10, 6, "#475569"); });
-      ret(ctx, X + 88, Y + 90, 66, 20, ARTE.contorno); ret(ctx, X + 89, Y + 91, 64, 18, "#a8794b"); ret(ctx, X + 89, Y + 91, 64, 3, "#c4956a");
-      ret(ctx, X + 100, Y + 96, 9, 6, "#f8fafc"); ret(ctx, X + 126, Y + 95, 12, 8, "#fef3c7"); // marmita e guardanapo
+      const piscando = prep > 0 && prep < 1;
+      r(115, 22, 2, 2, piscando && Math.floor(Date.now() / 250) % 2 ? "#22c55e" : "#14532d");
+      if (piscando && Math.floor(Date.now() / 300) % 2) desenharBitmap("~", X + 111, Y + 11, "#e5e7eb", 1, "center");
+      // canecas penduradas
+      [[123, "#facc15"], [129, "#60a5fa"], [135, "#f8fafc"]].forEach(([cx, c]) => { r(cx, 29, 5, 5, C); r(cx + 1, 30, 3, 3, c); });
+      // lixeira
+      r(178, 44, 12, 14, C); r(179, 45, 10, 12, "#4b5563"); r(179, 45, 10, 2, "#6b7280"); r(182, 42, 4, 2, "#6b7280");
+      // geladeira (fecha/abre)
+      r(196, 12, 32, 48, C);
+      r(197, 13, 30, 46, "#e2e8f0");
+      if (!geladeiraAberta) {
+        r(197, 13, 30, 15, "#f8fafc"); r(197, 28, 30, 1, "#94a3b8"); r(197, 29, 30, 30, "#f1f5f9");
+        r(223, 17, 2, 7, "#94a3b8"); r(223, 33, 2, 12, "#94a3b8");
+        r(201, 33, 13, 9, "#fde047"); desenharBitmap("NAO", X + 207, Y + 34, "#b91c1c", 1, "center");
+        r(203, 17, 4, 4, "#ef4444"); r(209, 19, 4, 3, "#22c55e"); // ímãs
+      } else {
+        // por dentro: luz, prateleiras, marmitas, bolo e o iogurte de 2024
+        r(198, 14, 28, 44, "#fefce8");
+        r(198, 28, 28, 1, "#cbd5e1"); r(198, 40, 28, 1, "#cbd5e1"); r(198, 50, 28, 1, "#cbd5e1");
+        r(200, 20, 8, 7, "#93c5fd"); r(209, 22, 6, 5, "#f8fafc"); r(216, 21, 8, 6, "#fca5a5"); r(216, 20, 8, 2, "#f9a8d4"); // potes e bolo
+        r(200, 33, 9, 6, "#22c55e"); r(210, 33, 9, 6, "#f97316"); r(220, 34, 5, 5, "#e5e7eb");                              // marmitas
+        r(200, 43, 4, 6, "#a5f3fc"); r(205, 44, 4, 5, "#fde68a"); r(213, 42, 10, 7, "#ef4444");                               // garrafa, iogurte, ketchup
+        r(201, 52, 22, 5, "#bbf7d0"); r(203, 53, 4, 3, "#16a34a"); r(209, 53, 4, 3, "#dc2626");                               // gaveta de verdura
+        // porta aberta pro lado esquerdo
+        r(186, 12, 10, 48, C); r(187, 13, 8, 46, "#f8fafc"); r(188, 18, 6, 2, "#cbd5e1"); r(188, 30, 6, 2, "#cbd5e1"); r(188, 42, 6, 2, "#cbd5e1");
+        r(189, 15, 2, 3, "#fde68a"); r(189, 27, 2, 3, "#a5f3fc");
+      }
+      // planta no canto
+      r(10, 58, 12, 10, C); r(11, 59, 10, 8, "#9a3412");
+      r(8, 48, 16, 11, "#15803d"); r(11, 45, 10, 6, "#22c55e"); r(14, 42, 4, 4, "#16a34a");
+      // tapetinho, mesa redonda-quadrada e cadeiras
+      r(80, 86, 76, 30, "#fde68a"); r(82, 88, 72, 26, "#fcd34d");
+      [[86, 94], [144, 94]].forEach(([bx, by]) => { r(bx, by, 8, 12, C); r(bx + 1, by + 1, 6, 10, "#64748b"); r(bx + 1, by + 1, 6, 2, "#94a3b8"); });
+      r(94, 92, 48, 16, C); r(95, 93, 46, 11, "#c08457"); r(95, 93, 46, 2, "#d6a274"); r(95, 104, 46, 3, "#92400e");
+      r(100, 95, 8, 5, "#f8fafc"); r(101, 96, 6, 3, "#fb923c");   // marmita aberta
+      r(126, 95, 5, 5, C); r(127, 96, 3, 3, "#60a5fa");          // caneca
+      r(112, 96, 9, 3, "#fef3c7");                               // guardanapo
     }
     function desenharSalaChefe(sl) {
       const X = sl.ox, Y = sl.oy;
@@ -12836,6 +12876,7 @@
         sair: ["[E] SAIR", "#1f2937", "#cbd5e1", "#ffffff"],
         cafeteira: ["SEGURE [E] FAZER CAFE", "#422006", "#fde68a", "#ffffff"],
         geladeira: ["[E] ABRIR GELADEIRA", "#1f2937", "#cbd5e1", "#ffffff"],
+        fechar_geladeira: ["[E] FECHAR GELADEIRA", "#1f2937", "#cbd5e1", "#ffffff"],
         pia: ["[E] LAVAR CANECA", "#1f2937", "#cbd5e1", "#ffffff"],
         conversar: ["[E] FALAR COM O GERALDO", "#1f2937", "#fde68a", "#ffffff"],
         entregar_cafe: ["[E] ENTREGAR O CAFE", "#422006", "#fde68a", "#ffffff"],
